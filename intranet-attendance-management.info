@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package key="intranet-attendance-management" url="https://openacs.org/repository/apm/packages/intranet-attendance-clocking" type="apm_application">
+    <package-name>]project-open[ Attendance Management</package-name>
+    <pretty-plural>]project-open[ Attendance Management</pretty-plural>
+    <initial-install-p>f</initial-install-p>
+    <singleton-p>t</singleton-p>
+    <implements-subsite-p>f</implements-subsite-p>
+    <inherit-templates-p>f</inherit-templates-p>
+    <auto-mount>intranet-attendance-management</auto-mount>
+
+    <version name="5.1.0.0.0" url="https://www.project-open.net/download/apm/intranet-attendance-management-5.1.0.0.0.apm">
+        <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
+        <summary>Attendance management with start-end recording</summary>
+        <release-date>2016-11-15</release-date>
+        <vendor url="https://www.project-open.com/">]project-open[</vendor>
+	<license>]project-open[ Free License (FL)</license>
+        <description format="text/plain">Allows employees to record the start and end of attendance periods and to compare this with time logged on projects.</description>
+        <maturity>0</maturity>
+        <provides url="intranet-attendance-management" version="4.1.0.0.0"/>
+        <requires url="intranet-core" version="4.0.0.0.0"/>
+        <requires url="sencha-core" version="4.0.0.0.0"/>
+        <callbacks>
+        </callbacks>
+        <parameters>
+            <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="AttendanceEndHour"  default="22" description="Start of the time drop-down. Default is &quot;18&quot;, but you can set it to &quot;24&quot; for 24h logging"/>
+            <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="AttendanceStartHour"  default="7" description="Start of the time drop-down. Default is &quot;9&quot;, but you can set it to &quot;0&quot; for a 24h logging."/>
+        </parameters>
+    </version>
+</package>
