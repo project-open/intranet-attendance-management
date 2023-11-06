@@ -53,6 +53,7 @@ create table im_attendance_intervals (
 				primary key
 				constraint im_attendance_intervals_attendance_fk
 				references acs_objects,
+				
 	attendance_user_id	integer 
 				constraint im_attendance_intervals_user_id_nn
 				not null 
@@ -64,6 +65,14 @@ create table im_attendance_intervals (
 	attendance_end		timestamptz
 				constraint im_attendance_intervals_attendance_end_nn
 				not null,
+				
+	attendance_status_id	integer
+				constraint im_attendance_intervals_status_fk
+				references im_categories,
+	attendance_type_id	integer
+				constraint im_attendance_intervals_type_fk
+				references im_categories,
+				
 	attendance_material_id	integer
 				constraint im_attendance_intervals_material_fk
 				references im_materials,
@@ -198,4 +207,90 @@ select im_priv_create('edit_attendances_all', 'Senior Managers');
 select im_priv_create('edit_attendances_all', 'Accounting');
 
 select im_priv_create('add_attendances', 'Employees');
+
+
+
+
+
+-- ------------------------------------------------------------
+-- Attendance Constructor/Destructor
+-- ------------------------------------------------------------
+
+create or replace function im_attendance_interval__new (
+	integer, varchar, timestamptz, integer, varchar, integer,
+	integer, timestamptz, timestamptz, integer, integer, varchar
+) returns integer as $$
+DECLARE
+	p_attendance_id		alias for $1;
+	p_object_type		alias for $2;
+	p_creation_date		alias for $3;
+	p_creation_user		alias for $4;
+	p_creation_ip		alias for $5;
+	p_context_id		alias for $6;
+
+	p_attendance_user_id    alias for $7;
+	p_attendance_start      alias for $8;
+	p_attendance_end        alias for $9;
+
+	p_attendance_status_id	alias for $10;
+	p_attendance_type_id	alias for $11;
+	p_attendance_note       alias for $12;
+
+	v_attendance_id	integer;
+BEGIN
+	v_attendance_id := acs_object__new (
+		p_attendance_id,
+		p_object_type,
+		p_creation_date,
+		p_creation_user,
+		p_creation_ip,
+		p_context_id
+	);
+	insert into im_attendance_intervals (
+		attendance_id, attendance_user_id, attendance_start, attendance_end,
+		attendance_status_id, attendance_type_id, attendance_note
+	) values (
+		v_attendance_id, p_attendance_user_id, p_attendance_start, p_attendance_end,
+		p_attendance_status_id, p_attendance_type_id, p_attendance_note
+	);
+	return v_attendance_id;
+end;$$ language 'plpgsql';
+
+
+create or replace function im_attendance_interval__delete (integer) 
+returns integer as $$
+DECLARE
+	v_attendance_id		alias for $1;
+	row				RECORD;
+BEGIN
+	-- Delete the im_attendance_intervals interval associated with the id
+	delete from 	im_attendance_intervals
+	where		attendance_id = v_attendance_id;
+
+	-- Delete all the priviledges
+	delete from 	acs_permissions
+	where		object_id = v_attendance_id;
+
+	PERFORM	acs_object__delete(v_attendance_id);
+
+	return 0;
+end;$$ language 'plpgsql';
+
+
+create or replace function im_attendance_interval__name (integer) 
+returns varchar as $$
+DECLARE
+	v_attendance_id	alias for $1;
+	v_name		varchar;
+BEGIN
+	select	im_category_from_id(coalesce(attendance_type_id, 92100)) ||
+		' of ' || im_name_from_user_id(attendance_user_id) ||
+		' from ' || to_char(attendance_start, 'YYYY-MM-DD HH24-MI-SS') ||
+		' to ' || to_char(attendance_end, 'YYYY-MM-DD HH24-MI-SS')
+	into	v_name
+	from	im_attendance_intervals
+	where	attendance_id = v_attendance_id;
+
+	return v_name;
+end;$$ language 'plpgsql';
 

@@ -12,9 +12,9 @@
 set current_user_id [ad_conn user_id]
 set data_list {}
 
-# Create a random ID for the interval_editor
-set interval_editor_rand [expr round(rand() * 100000000.0)]
-set interval_editor_id "interval_editor_$interval_editor_rand"
+# Create a random ID for the attendance_editor
+set attendance_editor_rand [expr round(rand() * 100000000.0)]
+set attendance_editor_id "attendance_editor_$attendance_editor_rand"
 
 # Start and end time for default combo box with time entry options
 set start_hour [parameter::get_from_package_key -package_key "intranet-attendance-management" -parameter "AttendanceStartHour" -default "7"]

@@ -1,4 +1,4 @@
-    <div id=@interval_editor_id@>
+    <div id=@attendance_editor_id@>
     <script type='text/javascript' <if @::__csp_nonce@ not nil>nonce="@::__csp_nonce;literal@"</if>>
 
 
@@ -20,31 +20,33 @@ Ext.require([
 Ext.define('AttendanceManagement.model.Attendance', {
     extend: 'Ext.data.Model',
     fields: [
-	'id',					// Same as attendance_id
+        'id',					// Same as attendance_id
 
-	// Fields stored on the REST Back-end
-	'attendance_id',				// Unique object ID 
-	'attendance_user_id',			// Who logged the attendance?
-	{name: 'attendance_start', convert: null},	// Start of time interval (PostgreSQL timestamp format)
-	'attendance_end',				// End od time interval (PostgreSQL timestamp format)
-	'attendance_note',				// Comment for the logged attendance
-	'attendance_activity_id',			// Type of activity (meeting, work, ... (customer definable))
-	'attendance_material_id',			// Type of service provided during attendance (rarely used)
+        // Fields stored on the REST Back-end
+        'attendance_id',				// Unique object ID 
+        'attendance_user_id',			// Who logged the attendance?
+        'attendance_status_id',			// 
+        'attendance_type_id',			// 
+        {name: 'attendance_start', convert: null},	// Start of time attendance (PostgreSQL timestamp format)
+        'attendance_end',				// End od time attendance (PostgreSQL timestamp format)
+        'attendance_note',				// Comment for the logged attendance
+        'attendance_activity_id',			// Type of activity (meeting, work, ... (customer definable))
+        'attendance_material_id',			// Type of service provided during attendance (rarely used)
 
-	// Add-on fields for editing, but not for storage.
-	// These fields are kept in sync using store events.
-	'attendance__date',	     	     	   	// Date part of start- and end time
-	'attendance__start_time',			// Time part of start date
-	'attendance__end_time'			// Time part of end date
+        // Add-on fields for editing, but not for storage.
+        // These fields are kept in sync using store events.
+        'attendance_date',	     	     	   	// Date part of start- and end time
+        'attendance_start_time',			// Time part of start date
+        'attendance_end_time'			// Time part of end date
     ],
     proxy: {
-	type:		'rest',
-	url:		'/intranet-rest/im_attendance_interval',
-	appendId:		true,			// Append the object_id: ../im_ticket/<object_id>
-	timeout:		300000,
-	extraParams: { format: 'json' },		// Tell the ]po[ REST to return JSON data.
-	reader: { type: 'json', root: 'data' },	// Tell the Proxy Reader to parse JSON
-	writer: { type: 'json' }			// Allow Sencha to write changes
+        type:		'rest',
+        url:		'/intranet-rest/im_attendance_interval',
+        appendId:		true,			// Append the object_id: ../im_ticket/<object_id>
+        timeout:		300000,
+        extraParams: { format: 'json' },		// Tell the ]po[ REST to return JSON data.
+        reader: { type: 'json', root: 'data' },	// Tell the Proxy Reader to parse JSON
+        writer: { type: 'json' }			// Allow Sencha to write changes
     }
 });
 
@@ -58,56 +60,53 @@ Ext.define('AttendanceManagement.store.AttendanceStore', {
     // autoSync:	    false,
     // remoteFilter:   true,
     // pageSize:	    1000,
-    // sorters: [{property: 'interval_start', direction: 'DESC' }],
+    // sorters: [{property: 'attendance_start', direction: 'DESC' }],
     proxy: {
-	type:       'rest',
-	url:        '/intranet-rest/im_attendance_interval',
-	appendId:   true,
-	extraParams: {
-	    format: 'json',
-	    user_id: 0,			// Needs to be overwritten by controller
-	    project_id: 0		// Needs to be overwritten by controller
-	},
-	reader: { type: 'json', root: 'data' }
+        type:       'rest',
+        url:        '/intranet-rest/im_attendance_interval',
+        appendId:   true,
+        extraParams: {
+            format: 'json',
+            user_id: 0,			// Needs to be overwritten by controller
+            project_id: 0		// Needs to be overwritten by controller
+        },
+        reader: { type: 'json', root: 'data' }
     },
 
     listeners: {
-	// ToDo: Fraber 2023-11-06: Eliminate?
-	update: function(store, record, operation, modifiedFields) { 
-	    console.log('AttendanceStore: operation: ' + operation + ',  update: '+record + ', modified='+modifiedFields);
-	    if ("commit" == operation) { return; }
-	    // if (store.isLoading()) { return; }
-	},
+        // ToDo: Fraber 2023-11-06: Eliminate?
+        update: function(store, record, operation, modifiedFields) { 
+            console.log('AttendanceStore: operation: ' + operation + ',  update: '+record + ', modified='+modifiedFields);
+            if ("commit" == operation) { return; }
+            // if (store.isLoading()) { return; }
+        },
 
-	// Extract the editable fields attendance_date, start_time and end_time
-	// from the data returned by the ]po[ REST interface.
-	load: function(store, records, successful, eOpts) {
-	    if (null == records) { return; }
-	    console.log('AttendanceStore: load: ');
+        // Extract the editable fields attendance_date, start_time and end_time
+        // from the data returned by the ]po[ REST interface.
+        load: function(store, records, successful, eOpts) {
+            if (null == records) { return; }
+            console.log('AttendanceStore: load: ');
 
-	    var regexp = /(\d\d:\d\d)/;
-	    for (var i = 0; i < records.length; i++) {
-		var rec = records[i];
+            var regexp = /(\d\d:\d\d)/;
+            for (var i = 0; i < records.length; i++) {
+                var rec = records[i];		
+                var start = rec.get('attendance_start');
+                var end = rec.get('attendance_end');
 
-		alert('AttendanceManagement.store.AttendanceStore: not implemented yet');
-		
-		var start = rec.get('interval_start');
-		var end = rec.get('interval_end');
+                // Update the data WITHOUT using rec.set(...)
+                rec.data['attendance_date'] = start.substring(0,10);
+                var regArr = regexp.exec(start);
+                rec.data['attendance_start_time'] = regArr[1];
+                var regArr = regexp.exec(end);
+                rec.data['attendance_end_time'] = regArr[1];
 
-		// Update the data WITHOUT using rec.set(...)
-		rec.data['interval_date'] = start.substring(0,10);
-		var regArr = regexp.exec(start);
-		rec.data['interval_start_time'] = regArr[1];
-		var regArr = regexp.exec(end);
-		rec.data['interval_end_time'] = regArr[1];
+                store.afterEdit(rec, ['attendance_date', 'attendance_start_time', 'attendance_end_time']);
+            }
 
-		store.afterEdit(rec, ['interval_date', 'interval_start_time', 'interval_end_time']);
-	    }
-
-	    var isLoading = store.isLoading();
-	    store.loading = true;
-	    store.loading = isLoading;
-	}
+            var isLoading = store.isLoading();
+            store.loading = true;
+            store.loading = isLoading;
+        }
     }
 });
 
@@ -126,27 +125,27 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
     },
     tbar: [{
         icon: '/intranet/images/navbar_default/clock_go.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-timesheet2-interval.Start_logging "Start logging"] %>',
+        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Start_logging "Start logging"] %>',
         id: 'buttonStartLogging',
         disabled: false
     }, {
         icon: '/intranet/images/navbar_default/clock_stop.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-timesheet2-interval.Stop_logging "Stop logging and save"] %>',
+        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Stop_logging "Stop logging and save"] %>',
         id: 'buttonStopLogging',
         disabled: false
     }, {
         icon: '/intranet/images/navbar_default/clock_delete.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-timesheet2-interval.Cancel_logging "Cancel logging"] %>',
+        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Cancel_logging "Cancel logging"] %>',
         id: 'buttonCancelLogging',
         disabled: true
     }, {
         icon: '/intranet/images/navbar_default/add.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-timesheet2-interval.Manual_logging "Manual logging"] %>',
+        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Manual_logging "Manual logging"] %>',
         id: 'buttonManualLogging',
         disabled: false
     }, {
         icon: '/intranet/images/navbar_default/delete.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-timesheet2-interval.Delete_logging "Delete entry"] %>',
+        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Delete_logging "Delete entry"] %>',
         id: 'buttonDeleteLogging',
         disabled: false
     }]
@@ -179,7 +178,7 @@ Ext.define('AttendanceManagement.controller.AttendanceManagementController', {
     init: function() {
         var me = this;
         if (me.debug) { console.log('AttendanceManagementController: init'); }
-	
+        
         this.control({
             '#buttonStartLogging': { click: this.onButtonStartLogging },
             '#buttonStopLogging': { click: this.onButtonStopLogging },
@@ -216,10 +215,10 @@ Ext.define('AttendanceManagement.controller.AttendanceManagementController', {
         console.log('AttendanceManagementController.onGridBeforeEdit');
         console.log(context.record);
 
-        var endTime = context.record.get('interval_end_time');
+        var endTime = context.record.get('attendance_end_time');
         if (typeof endTime === 'undefined' || "" == endTime) {
             endTime = /\d\d:\d\d/.exec(""+new Date())[0];
-            context.record.set('interval_end_time', endTime);
+            context.record.set('attendance_end_time', endTime);
         }
         // Return true to indicate to the editor that it's OK to edit
         return true;
@@ -230,40 +229,40 @@ Ext.define('AttendanceManagement.controller.AttendanceManagementController', {
         console.log('AttendanceManagementController.onGridEdit');
         var rec = context.record;
         
-        var interval_date = rec.get('interval_date');
-        var interval_start = rec.get('interval_start');
-        var interval_start_time = rec.get('interval_start_time');
-        var interval_end = rec.get('interval_end');
-        var interval_end_time = rec.get('interval_end_time');
-        if ("" == interval_start_time) { interval_start_time = null; }
-        if ("" == interval_end_time) { interval_end_time = null; }
+        var attendance_date = rec.get('attendance_date');
+        var attendance_start = rec.get('attendance_start');
+        var attendance_start_time = rec.get('attendance_start_time');
+        var attendance_end = rec.get('attendance_end');
+        var attendance_end_time = rec.get('attendance_end_time');
+        if ("" == attendance_start_time) { attendance_start_time = null; }
+        if ("" == attendance_end_time) { attendance_end_time = null; }
 
         // start == end => Delete the entry
-        if (interval_start_time != null && interval_end_time != null) {
-            if (interval_start_time == interval_end_time) {
+        if (attendance_start_time != null && attendance_end_time != null) {
+            if (attendance_start_time == attendance_end_time) {
                 rec.destroy();
                 return;
             }
         }
 
-        if (interval_date != null) {
-            // The interval_date has been overwritten by the editor with a Date
-            var value = new Date(interval_date);
-            rec.set('interval_date', Ext.Date.format(value, 'Y-m-d'));
+        if (attendance_date != null) {
+            // The attendance_date has been overwritten by the editor with a Date
+            var value = new Date(attendance_date);
+            rec.set('attendance_date', Ext.Date.format(value, 'Y-m-d'));
         }
 
-        if (interval_date != null && interval_start_time != null) {
-            var value = new Date(interval_date);
-            value.setHours(interval_start_time.substring(0,2));
-            value.setMinutes(interval_start_time.substring(3,5));
-            rec.set('interval_start', Ext.Date.format(value, 'Y-m-d H:i:s'));
+        if (attendance_date != null && attendance_start_time != null) {
+            var value = new Date(attendance_date);
+            value.setHours(attendance_start_time.substring(0,2));
+            value.setMinutes(attendance_start_time.substring(3,5));
+            rec.set('attendance_start', Ext.Date.format(value, 'Y-m-d H:i:s'));
         }
 
-        if (interval_date != null && interval_end_time != null) {
-            var value = new Date(interval_date);
-            value.setHours(interval_end_time.substring(0,2));
-            value.setMinutes(interval_end_time.substring(3,5));
-            rec.set('interval_end', Ext.Date.format(value, 'Y-m-d H:i:s'));
+        if (attendance_date != null && attendance_end_time != null) {
+            var value = new Date(attendance_date);
+            value.setHours(attendance_end_time.substring(0,2));
+            value.setMinutes(attendance_end_time.substring(3,5));
+            rec.set('attendance_end', Ext.Date.format(value, 'Y-m-d H:i:s'));
         }
 
         rec.save();
@@ -316,11 +315,14 @@ Ext.define('AttendanceManagement.controller.AttendanceManagementController', {
 
         var attendance = new Ext.create('AttendanceManagement.model.Attendance', {
             attendance_user_id: @current_user_id@,
+            attendance_type_id: 92100, // Attendance
+            attendance_status_id: 92020, // Active
             attendance_date: this.loggingStartDate,
-            attendance_start_time: /\d\d:\d\d/.exec(""+new Date())[0]
+            attendance_start_time: /\d\d:\d\d/.exec(""+new Date())[0],
+            attendance_note: 'asdf'
         });
-	
-        // Remember the new interval, add to store and start editing
+        
+        // Remember the new attendance, add to store and start editing
         this.loggingAttendance = attendance;
         this.attendanceStore.add(attendance);
         //var rowIndex = this.attendanceStore.count() -1;
@@ -348,7 +350,7 @@ Ext.define('AttendanceManagement.controller.AttendanceManagementController', {
         buttonManualLogging.enable();
 
         // Complete the attendance created when starting to log
-        this.loggingAttendance.set('interval_end_time', /\d\d:\d\d/.exec(""+new Date())[0]);
+        this.loggingAttendance.set('attendance_end_time', /\d\d:\d\d/.exec(""+new Date())[0]);
 
         // Not necesary anymore because the store is set to autosync?
         this.loggingAttendance.save();
@@ -467,7 +469,7 @@ Ext.define('AttendanceManagement.controller.AttendanceManagementController', {
 
 
 
-function launchTimesheetIntervalLogging(){
+function launchTimesheetAttendanceLogging(){
 
     // -----------------------------------------------------------------------
     // Stores
@@ -495,12 +497,12 @@ function launchTimesheetIntervalLogging(){
         listeners: {
             edit: function(editor, context, eOpts) {
 
-		// Check that the endTime is later than startTime
-		var startTime = context.record.get('interval_start_time');
-		var endTime = context.record.get('interval_end_time');
-		if (startTime > endTime) {
-		    return false;                     // Just return false - no error message
-		}
+                // Check that the endTime is later than startTime
+                var startTime = context.record.get('attendance_start_time');
+                var endTime = context.record.get('attendance_end_time');
+                if (startTime > endTime) {
+                    return false;                     // Just return false - no error message
+                }
 
                 context.record.save();
             }
@@ -517,40 +519,40 @@ function launchTimesheetIntervalLogging(){
         plugins: [rowEditing],
         columns: [
             {
-		text: "Date",
-		xtype: 'datecolumn',
-		dataIndex: 'interval_date', 
-		renderer: Ext.util.Format.dateRenderer('Y-m-d'),
-		editor: {
+                text: "Date",
+                xtype: 'datecolumn',
+                dataIndex: 'attendance_date', 
+                renderer: Ext.util.Format.dateRenderer('Y-m-d'),
+                editor: {
                     xtype: 'datefield',
                     allowBlank: true,
-		    startDay: @week_start_day@
-		}
+                    startDay: @week_start_day@
+                }
             }, {
-		text: "Start Time",
-		xtype: 'templatecolumn',
-		tpl: '{interval_start_time}',
-		dataIndex: 'interval_start_time',
-		editor: {
+                text: "Start Time",
+                xtype: 'templatecolumn',
+                tpl: '{attendance_start_time}',
+                dataIndex: 'attendance_start_time',
+                editor: {
                     xtype: 'combobox',
                     triggerAction: 'all',
                     selectOnTab: true,
                     store: timeEntryStore
-		}
+                }
             }, {
-		text: "End Time", 
-		dataIndex: 'interval_end_time',
-		editor: {
+                text: "End Time", 
+                dataIndex: 'attendance_end_time',
+                editor: {
                     xtype: 'combobox',
                     triggerAction: 'all',
                     selectOnTab: true,
                     store: timeEntryStore
-		}
+                }
             }, {
-		text: "Note", flex: 1, dataIndex: 'note',
-		editor: { allowBlank: true }
+                text: "Note", flex: 1, dataIndex: 'attendance_note',
+                editor: { allowBlank: true }
             }
-	],
+        ],
         columnLines: true,
         enableLocking: true,
         collapsible: false,
@@ -571,7 +573,7 @@ function launchTimesheetIntervalLogging(){
     var height = screenSize.height - 280;
     
     var attendanceButtonPanel = Ext.create('AttendanceManagement.view.AttendanceButtonPanel', {
-        renderTo: '@interval_editor_id@',
+        renderTo: '@attendance_editor_id@',
         width: width,
         height: height,
         resizable: true,					// Add handles to the panel, so the user can change size
@@ -584,11 +586,11 @@ function launchTimesheetIntervalLogging(){
     // Main controller
     // 
     var attendanceController = Ext.create('AttendanceManagement.controller.AttendanceManagementController', {
-	'attendanceStore': attendanceStore,
-	'attendanceButtonPanel': attendanceButtonPanel,
-	'attendanceController': attendanceController,
-	'attendanceGrid': attendanceGrid,
-	'attendanceGridRowEditing': rowEditing
+        'attendanceStore': attendanceStore,
+        'attendanceButtonPanel': attendanceButtonPanel,
+        'attendanceController': attendanceController,
+        'attendanceGrid': attendanceGrid,
+        'attendanceGridRowEditing': rowEditing
     });
     attendanceController.init(this).onLaunch(this);
 
@@ -617,7 +619,7 @@ Ext.onReady(function() {
         listeners: {
             load: function() {
                 if ("boolean" == typeof this.loadedP) { return; }  // application was launched before?
-                launchTimesheetIntervalLogging();                  // Launch the actual application.
+                launchTimesheetAttendanceLogging();                  // Launch the actual application.
                 this.loadedP = true;                               // Mark the application as launched
             }
         }
