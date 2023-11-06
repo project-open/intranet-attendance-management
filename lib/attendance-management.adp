@@ -386,7 +386,7 @@ Ext.define('AttendanceManagement.controller.AttendanceManagementController', {
 
     onButtonDeleteLogging: function() {
         console.log('AttendanceManagementController.ButtonDeleteLogging');
-        var records = attendanceGrid.getSelectionModel().getSelection();
+        var records = this.attendanceGrid.getSelectionModel().getSelection();
         // Not logging already - enable the "start" button
         if (1 == records.length) {                  // Exactly one record enabled
             var record = records[0];

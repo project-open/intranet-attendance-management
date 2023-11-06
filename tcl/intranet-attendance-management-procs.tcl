@@ -82,3 +82,22 @@ ad_proc -public im_attendance_interval_permissions {user_id attendance_id view_v
 	set admin 1
     }
 }
+
+
+
+
+
+# ----------------------------------------------------------------------
+# Nuke an attendance
+# ---------------------------------------------------------------------
+
+ad_proc -public im_attendance_interval_nuke {
+    {-current_user_id 0}
+    attendance_interval_id
+} {
+    Permanently deletes the Attendance Interval from the database.
+} {
+    db_dml nuke_context_id "update acs_objects set context_id = null where context_id = :attendance_interval_id"
+    db_string nuke "select im_attendance_interval__delete(:attendance_interval_id)"
+}
+
