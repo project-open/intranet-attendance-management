@@ -12,109 +12,43 @@ Ext.require([
     'AttendanceManagement.model.Attendance'
 ]);
 
+// Expose TCL variables as JavaScript variables
+var week_start_day = @week_start_day@;
+var start_hour = @start_hour@;
+var end_hour = @end_hour@;
+
 
 function launchTimesheetAttendanceLogging(){
-    // -----------------------------------------------------------------------
     // Stores
     var attendanceStore = Ext.StoreManager.get('attendanceStore');
 
-    // -----------------------------------------------------------------------
-    // Store for time entries
-    var timeEntryStore = [];
-    for (var i = @start_hour@; i < @end_hour@; i++) {
-        var ii = ""+i;
-        if (ii.length == 1) { ii = "0"+i; }
-        for (var m = 0; m < 60; m = m + 30 ) {
-            var mm = ""+m;
-            if (mm.length == 1) { mm = "0"+m; }
-            timeEntryStore.push(ii + ':' + mm);
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Row editor for attendance grid
-    // Veto inconcistent entries 
-    // 
+    // Row editor for attendance grid, vetos inconcistent entries 
     var rowEditing = Ext.create('Ext.grid.plugin.RowEditing', {
         clicksToMoveEditor: 2,
         listeners: {
             edit: function(editor, context, eOpts) {
-
                 // Check that the endTime is later than startTime
                 var startTime = context.record.get('attendance_start_time');
                 var endTime = context.record.get('attendance_end_time');
                 if (startTime > endTime) {
                     return false;                     // Just return false - no error message
                 }
-
                 context.record.save();
             }
         }
     });
 
-    // -----------------------------------------------------------------------
     // The actual grid for attendance entries
-    //    
-    var attendanceGrid = Ext.create('Ext.grid.Panel', {
+    var attendanceGrid = Ext.create('AttendanceManagement.view.AttendanceGridPanel', {
         store: attendanceStore,
-        layout: 'fit',
-        region: 'center',
         plugins: [rowEditing],
-        columns: [
-            {
-                text: "Date",
-                xtype: 'datecolumn',
-                dataIndex: 'attendance_date', 
-                renderer: Ext.util.Format.dateRenderer('Y-m-d'),
-                editor: {
-                    xtype: 'datefield',
-                    allowBlank: true,
-                    startDay: @week_start_day@
-                }
-            }, {
-                text: "Start Time",
-                xtype: 'templatecolumn',
-                tpl: '{attendance_start_time}',
-                dataIndex: 'attendance_start_time',
-                editor: {
-                    xtype: 'combobox',
-                    triggerAction: 'all',
-                    selectOnTab: true,
-                    store: timeEntryStore
-                }
-            }, {
-                text: "End Time", 
-                dataIndex: 'attendance_end_time',
-                editor: {
-                    xtype: 'combobox',
-                    triggerAction: 'all',
-                    selectOnTab: true,
-                    store: timeEntryStore
-                }
-            }, {
-                text: "Note", flex: 1, dataIndex: 'attendance_note',
-                editor: { allowBlank: true }
-            }
-        ],
-        columnLines: true,
-        enableLocking: true,
-        collapsible: false,
-        title: 'Expander Rows in a Collapsible Grid with lockable columns',
-        header: false,
-        emptyText: 'No data yet',
-        iconCls: 'icon-grid',
-        margin: '0 0 20 0'
     });
 
-
-    // -----------------------------------------------------------------------
     // Main panel
-    // 
     var screenSize = Ext.getBody().getViewSize();    // Size calculation based on specific ]po[ layout
     var sideBarSize = Ext.get('sidebar').getSize();
     var width = screenSize.width - sideBarSize.width - 95;
-    var height = screenSize.height - 280;
-    
+    var height = screenSize.height - 280;    
     var attendanceButtonPanel = Ext.create('AttendanceManagement.view.AttendanceButtonPanel', {
         renderTo: '@attendance_editor_id@',
         width: width,
@@ -125,9 +59,7 @@ function launchTimesheetAttendanceLogging(){
         ]
     });
 
-    // -----------------------------------------------------------------------
     // Main controller
-    // 
     var attendanceController = Ext.create('AttendanceManagement.controller.AttendanceController', {
         'attendanceStore': attendanceStore,
         'attendanceButtonPanel': attendanceButtonPanel,
@@ -139,7 +71,6 @@ function launchTimesheetAttendanceLogging(){
     attendanceController.init(this).onLaunch(this);
 
     
-    // -----------------------------------------------------------------------
     // Handle collapsable side menu
     var sideBarTab = Ext.get('sideBarTab');
     sideBarTab.on('click', attendanceController.onSideBarResize, attendanceController);
@@ -152,7 +83,7 @@ function launchTimesheetAttendanceLogging(){
 //
 Ext.onReady(function() {
     Ext.QuickTips.init();
-    
+
     var attendanceStore = Ext.create('AttendanceManagement.store.AttendanceStore');
     
     // "Launch" only after "store coodinator" has loaded all stores
