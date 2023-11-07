@@ -27,21 +27,3 @@
         </parameters>
     </version>
 </package>
-
-
-
-<!-- 
-ToDo:
-
-
-
-
-Bugs:
-- Write out error message when end_time < start_time
-- Handle error message if start=end, and object
-  destroy() fails
-
-
-
--->
-
