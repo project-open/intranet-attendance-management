@@ -11,10 +11,14 @@ Ext.define('AttendanceManagement.store.AttendanceStore', {
     model: 	    'AttendanceManagement.model.Attendance',
     storeId:	    'attendanceStore',
     // autoDestroy:    true,
-    // autoLoad:	    false,
-    // autoSync:	    false,
-    // remoteFilter:   true,
-    // pageSize:	    1000,
+    autoLoad:	    false,
+    // autoSync:	    true,
+    remoteFilter:   false,
+    remoteSort:	    false,
+    pageSize:	    10000,
+    // sortOnLoad:	    true,
+    // sortRoot:	    'attendance_start',
+    
     sorters: [
 	{property: 'attendance_start', direction: 'ASC'}
     ],

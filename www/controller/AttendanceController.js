@@ -163,13 +163,16 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         // Start logging
         this.loggingStartDate = new Date();
+        var startTime = /\d\d:\d\d/.exec(""+this.loggingStartDate)[0];
+        var startDateIso = this.loggingStartDate.toISOString().replace("T", " ");
 
         var attendance = new Ext.create('AttendanceManagement.model.Attendance', {
             attendance_user_id: this.current_user_id,
             attendance_type_id: 92100, // Attendance
             attendance_status_id: 92020, // Active
             attendance_date: this.loggingStartDate,
-            attendance_start_time: /\d\d:\d\d/.exec(""+new Date())[0],
+            attendance_start_time: startTime,
+            attendance_start: startDateIso,
             attendance_note: 'asdf'
         });
         

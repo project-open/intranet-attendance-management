@@ -26,14 +26,19 @@ Known Bugs
 - Write out error message when end_time < start_time
 - Handle error message if start=end, and object
   destroy() fails
-
+- Creating a new entry, it's created at the top, not at
+  the bottom of the list. -> Add attendance_start with date.
 
 ToDo
 ====
 
+- Allow uncompleted entry (no end date) to be saved to disk
+- Create state engine and integrate Start Break and End Break
+- Show new entry always at the bottom of the list
+- Only allow one item to be "open" (no end time)
+
 Neues Portlet Zeiterfassung:
-- Auf der Homepage zeigen
-- Ohne Bezug zu Projekt
+- Add column with attendance type
 - Spalte "Gehen" frei lassen, wenn nur kommen eingetragen wurde
 - Buttons:
 	- Kommen:
@@ -82,4 +87,31 @@ Report Pausenzeiten:
 		- Rot wenn Business-Regeln verletzt (oben)
 		  mit Kommentar warum
 		- 
+
+
+
+Done
+====
+
+
+Neues Portlet Zeiterfassung:
+- Auf der Homepage zeigen
+- Ohne Bezug zu Projekt
+- Spalte "Gehen" frei lassen, wenn nur kommen eingetragen wurde
+- Buttons:
+	- Kommen:
+		- Neuer Eintrag mit aktueller Zeit
+		- ohne gehen
+		- Typ: Anwesenheit
+	- Anfang Pause:
+		- Wie "Kommen" nur Type: Pause
+	- Gehen:
+		- Letzter Eintrag muss Anwesenheit gewesen sein, mit "Gehen" leer,
+		  sonst ignorieren
+	- Ende Pause:
+		- Ähnlich wie "Gehen"
+- "Linke Seite" bleibt leer / weg
+
+- Done: Format for GridPanel date column is different from renderer
+
 

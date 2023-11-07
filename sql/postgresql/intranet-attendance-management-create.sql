@@ -63,8 +63,8 @@ create table im_attendance_intervals (
 				constraint im_attendance_intervals_attendance_start_nn
 				not null,
 	attendance_end		timestamptz
-				constraint im_attendance_intervals_attendance_end_nn
-				not null,
+				constraint im_attendance_intervals_attendance_end_nn,
+				-- allow to be null while editing
 				
 	attendance_status_id	integer
 				constraint im_attendance_intervals_status_fk
