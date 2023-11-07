@@ -23,30 +23,30 @@ Ext.define('AttendanceManagement.model.Attendance', {
         'id',					// Same as attendance_id
 
         // Fields stored on the REST Back-end
-        'attendance_id',				// Unique object ID 
+        'attendance_id',			// Unique object ID 
         'attendance_user_id',			// Who logged the attendance?
         'attendance_status_id',			// 
         'attendance_type_id',			// 
-        {name: 'attendance_start', convert: null},	// Start of time attendance (PostgreSQL timestamp format)
-        'attendance_end',				// End od time attendance (PostgreSQL timestamp format)
-        'attendance_note',				// Comment for the logged attendance
-        'attendance_activity_id',			// Type of activity (meeting, work, ... (customer definable))
-        'attendance_material_id',			// Type of service provided during attendance (rarely used)
+        {name: 'attendance_start', convert: null}, // Start of time attendance (PostgreSQL timestamp format)
+        'attendance_end',			// End od time attendance (PostgreSQL timestamp format)
+        'attendance_note',			// Comment for the logged attendance
+        'attendance_activity_id',		// Type of activity (meeting, work, ... (customer definable))
+        'attendance_material_id',		// Type of service provided during attendance (rarely used)
 
         // Add-on fields for editing, but not for storage.
         // These fields are kept in sync using store events.
-        'attendance_date',	     	     	   	// Date part of start- and end time
-        'attendance_start_time',			// Time part of start date
+        'attendance_date',	     	     	// Date part of start- and end time
+        'attendance_start_time',		// Time part of start date
         'attendance_end_time'			// Time part of end date
     ],
     proxy: {
         type:		'rest',
         url:		'/intranet-rest/im_attendance_interval',
-        appendId:		true,			// Append the object_id: ../im_ticket/<object_id>
+        appendId:		true,		// Append the object_id: ../im_ticket/<object_id>
         timeout:		300000,
-        extraParams: { format: 'json' },		// Tell the ]po[ REST to return JSON data.
+        extraParams: { format: 'json' },	// Tell the ]po[ REST to return JSON data.
         reader: { type: 'json', root: 'data' },	// Tell the Proxy Reader to parse JSON
-        writer: { type: 'json' }			// Allow Sencha to write changes
+        writer: { type: 'json' }		// Allow Sencha to write changes
     }
 });
 
@@ -67,8 +67,8 @@ Ext.define('AttendanceManagement.store.AttendanceStore', {
         appendId:   true,
         extraParams: {
             format: 'json',
-            user_id: 0,			// Needs to be overwritten by controller
-            project_id: 0		// Needs to be overwritten by controller
+            user_id: 0,				// Needs to be overwritten by controller
+            project_id: 0			// Needs to be overwritten by controller
         },
         reader: { type: 'json', root: 'data' }
     },
