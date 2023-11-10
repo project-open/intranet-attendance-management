@@ -290,7 +290,7 @@ DECLARE
 	v_name		varchar;
 BEGIN
 	select	im_category_from_id(coalesce(attendance_type_id, 92100)) ||
-		'#' || attendance_id ||
+		' #' || attendance_id ||
 		' of ' || im_name_from_user_id(attendance_user_id) ||
 		' from ' || to_char(attendance_start, 'YYYY-MM-DD HH24-MI-SS') ||
 		coalesce(' to ' || to_char(attendance_end, 'YYYY-MM-DD HH24-MI-SS'), '')

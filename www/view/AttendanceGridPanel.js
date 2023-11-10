@@ -74,9 +74,9 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 store: timeEntryStore
             }
         }, {
-            text: "Name", flex: 1, dataIndex: 'object_name'
+            text: "Name", flex: 1, dataIndex: 'object_name', hidden: true
         }, {
-            text: "Att Start", flex: 1, dataIndex: 'attendance_start'
+            text: "Att Start", flex: 1, dataIndex: 'attendance_start', hidden: true
         }, {
             text: "Note", flex: 1, dataIndex: 'attendance_note',
             editor: { allowBlank: true }

@@ -118,6 +118,11 @@ Done
 	- Ende Pause:
 		- Ähnlich wie "Gehen"
 
+
+Timesheet Monthly Calendar:
+- Pro Tag zusätzlicher Eintrag: Anwesenheit
+
+
 ## Done Bugs
 - Format for GridPanel date column is different from renderer
 
