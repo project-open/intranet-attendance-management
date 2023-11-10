@@ -1,15 +1,18 @@
-    <div id=@attendance_editor_id@>
-    <script type='text/javascript' <if @::__csp_nonce@ not nil>nonce="@::__csp_nonce;literal@"</if>>
+<div id=@attendance_editor_id@>
+<script type='text/javascript' <if @::__csp_nonce@ not nil>nonce="@::__csp_nonce;literal@"</if>>
 
 Ext.Loader.setPath('PO', '/sencha-core');
 Ext.Loader.setPath('AttendanceManagement', '/intranet-attendance-management');
+Ext.Loader.setConfig({disableCaching: false});
 
 Ext.require([
     'Ext.data.*',
     'Ext.grid.*',
+    'PO.model.category.Category',
     'PO.store.CategoryStore',
     'PO.controller.StoreLoadCoordinator',
-    'AttendanceManagement.model.Attendance'
+    'AttendanceManagement.model.Attendance',
+    'AttendanceManagement.store.AttendanceStore'
 ]);
 
 // Expose TCL variables as JavaScript variables
@@ -85,10 +88,12 @@ Ext.onReady(function() {
     Ext.QuickTips.init();
 
     var attendanceStore = Ext.create('AttendanceManagement.store.AttendanceStore');
+    var attendanceTypeStore = Ext.create('AttendanceManagement.store.AttendanceTypeStore');
     
     // "Launch" only after "store coodinator" has loaded all stores
     var coordinator = Ext.create('PO.controller.StoreLoadCoordinator', {
         stores: [
+            'attendanceTypeStore',
             'attendanceStore'
         ],
         listeners: {
@@ -100,6 +105,8 @@ Ext.onReady(function() {
         }
     });
 
+    attendanceTypeStore.load();
+    
     // Load stores that need parameters
     attendanceStore.getProxy().extraParams = { user_id: @current_user_id@, format: 'json' };
     attendanceStore.load({

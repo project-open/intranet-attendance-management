@@ -10,14 +10,9 @@ Ext.define('AttendanceManagement.store.AttendanceStore', {
     extend:         'Ext.data.Store',
     model: 	    'AttendanceManagement.model.Attendance',
     storeId:	    'attendanceStore',
-    // autoDestroy:    true,
-    autoLoad:	    false,
-    // autoSync:	    true,
-    remoteFilter:   false,
-    remoteSort:	    false,
-    pageSize:	    10000,
-    // sortOnLoad:	    true,
-    // sortRoot:	    'attendance_start',
+    autoLoad:	    false, // Load manually per week
+    autoSync:	    true, // immediately write changes to backend
+    pageSize:	    10000, // just load everything
     
     sorters: [
 	{property: 'attendance_start', direction: 'ASC'}
@@ -58,8 +53,10 @@ Ext.define('AttendanceManagement.store.AttendanceStore', {
                 rec.data['attendance_date'] = start.substring(0,10);
                 var regArr = regexp.exec(start);
                 rec.data['attendance_start_time'] = regArr[1];
-                var regArr = regexp.exec(end);
-                rec.data['attendance_end_time'] = regArr[1];
+		if ("" != end) {
+                    var regArr = regexp.exec(end);
+                    rec.data['attendance_end_time'] = regArr[1];
+		}
 
                 store.afterEdit(rec, ['attendance_date', 'attendance_start_time', 'attendance_end_time']);
             }

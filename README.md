@@ -28,18 +28,23 @@ Known Bugs
   destroy() fails
 - Creating a new entry, it's created at the top, not at
   the bottom of the list. -> Add attendance_start with date.
+- Sort order:
+  There is an issue with the GMT+1 time zone,
+  so just cutting off the TZ in a string is wrong
+
 
 ToDo
 ====
 
+## Editor
 - Allow uncompleted entry (no end date) to be saved to disk
-- Create state engine and integrate Start Break and End Break
-- Show new entry always at the bottom of the list
-- Only allow one item to be "open" (no end time)
-
-Neues Portlet Zeiterfassung:
-- Add column with attendance type
-- Spalte "Gehen" frei lassen, wenn nur kommen eingetragen wurde
+- Create state engine
+	- integrate Start Break and End Break
+	- With open end, only allow to close or to start the
+	  opposite type of attendance
+	- Only allow one item to be "open" (no end time)
+- Create <- and -> Buttons to move between weeks
+- Show new entries always at the bottom of the list
 - Buttons:
 	- Kommen:
 		- Neuer Eintrag mit aktueller Zeit
@@ -53,7 +58,8 @@ Neues Portlet Zeiterfassung:
 		  sonst ignorieren
 	- Ende Pause:
 		- Ähnlich wie "Gehen"
-- "Linke Seite" bleibt leer / weg
+
+
 - Link zu Monatszeiterfassung
 - Anzeige Gleitzeitkonto
 - Anzeige Urlaubskonto
@@ -94,10 +100,11 @@ Done
 ====
 
 
-Neues Portlet Zeiterfassung:
-- Auf der Homepage zeigen
-- Ohne Bezug zu Projekt
-- Spalte "Gehen" frei lassen, wenn nur kommen eingetragen wurde
+## Editor portlet
+- At the homepage
+- Without reference to projects / without left tree
+- Column end time can be left empty
+- Add column with attendance type
 - Buttons:
 	- Kommen:
 		- Neuer Eintrag mit aktueller Zeit
@@ -110,8 +117,47 @@ Neues Portlet Zeiterfassung:
 		  sonst ignorieren
 	- Ende Pause:
 		- Ähnlich wie "Gehen"
-- "Linke Seite" bleibt leer / weg
 
-- Done: Format for GridPanel date column is different from renderer
+## Done Bugs
+- Format for GridPanel date column is different from renderer
 
 
+
+
+
+Button Actions
+==============
+
+- Start Work:
+	- scrolls to current week, 
+	- stops an ongoing attendance (work or break)
+	  by adding end time of now()
+	- starts a new work
+	- adds the new entry to the end of the store
+	- syncs with the database
+
+- Start Break:
+  	- Equivalent to Start Work
+
+- Stop:
+	- scrolls to current week, 
+	- stops an ongoing attendance (work or break)
+	  by adding end time of now()
+	- syncs with the database
+
+- Delete:
+	- is only enabled if the current selection model
+	  has a row selected
+	- deletes all type of entries
+	- syncs with the database
+
+- Next/Prev Week:
+	- Just loads the store for the selected week
+
+
+
+
+- Constraints:
+	- There should in total be at most 1 open attendance
+	- A week different from "current" should not have
+	  ongoing attendances

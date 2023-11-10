@@ -11,7 +11,10 @@
 Ext.define('AttendanceManagement.model.Attendance', {
     extend: 'Ext.data.Model',
     fields: [
-        'id',					// Same as attendance_id
+        'id',					// Same as attendance_id, but needed for Sencha magic
+	'object_name',
+	'creation_user',
+	'creation_date',	
 
         // Fields stored on the REST Back-end
         'attendance_id',			// Unique object ID 

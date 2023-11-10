@@ -33,12 +33,16 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         
         this.control({
             '#buttonStartLogging': { click: this.onButtonStartLogging },
+            '#buttonStartBreak': { click: this.onButtonStartBreak },
             '#buttonStopLogging': { click: this.onButtonStopLogging },
-            '#buttonCancelLogging': { click: this.onButtonCancelLogging },
-            '#buttonManualLogging': { click: this.onButtonManualLogging },
             '#buttonDeleteLogging': { click: this.onButtonDeleteLogging },
+
+            '#buttonPreviousWeek': { click: this.onButtonPreviousWeek },
+            '#buttonNextWeek': { click: this.onButtonNextWeek },
+	    
             scope: me.attendanceGrid
         });
+
 
         // Listen to a click into the empty space below the grid entries in order to start creating a new entry
         me.attendanceGrid.on('containerclick', this.onGridContainerClick, me);
@@ -148,59 +152,48 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     onButtonStartLogging: function() {
         console.log('AttendanceController.ButtonStartLogging');
 
+        // ToDo: Check that there is no other line currently open with an empty end-date
+        
         var buttonStartLogging = Ext.getCmp('buttonStartLogging');
         var buttonStopLogging = Ext.getCmp('buttonStopLogging');
         var buttonCancelLogging = Ext.getCmp('buttonCancelLogging');
-        var buttonManualLogging = Ext.getCmp('buttonManualLogging');
         var buttonDeleteLogging = Ext.getCmp('buttonDeleteLogging');
         buttonStartLogging.disable();
         buttonStopLogging.enable();
-        buttonCancelLogging.enable();
-        buttonManualLogging.disable();
         buttonDeleteLogging.disable();
-
+        
         this.attendanceGridRowEditing.cancelEdit();
 
         // Start logging
         this.loggingStartDate = new Date();
         var startTime = /\d\d:\d\d/.exec(""+this.loggingStartDate)[0];
-        var startDateIso = this.loggingStartDate.toISOString().replace("T", " ");
+        var startDateIso = this.loggingStartDate.toISOString().substring(0,10);
 
+        // The Attendance object is a 1:1 reflection of what is in the DB,
+        // so all attributes are strings.
         var attendance = new Ext.create('AttendanceManagement.model.Attendance', {
-            attendance_user_id: this.current_user_id,
-            attendance_type_id: 92100, // Attendance
-            attendance_status_id: 92020, // Active
-            attendance_date: this.loggingStartDate,
+            attendance_user_id: ""+this.current_user_id,
+            attendance_type_id: ""+92100, // Attendance
+            attendance_status_id: ""+92020, // Active
+            attendance_date: startDateIso,
             attendance_start_time: startTime,
             attendance_start: startDateIso,
-            attendance_note: 'asdf'
+            attendance_note: ""
         });
         
         // Remember the new attendance, add to store and start editing
         this.loggingAttendance = attendance;
         this.attendanceStore.add(attendance);
-        //var rowIndex = this.attendanceStore.count() -1;
-        // this.attendanceGridRowEditing.startEdit(0, 0);
-    },
-
-    /**
-     * Start logging the time, for entirely manual entries.
-     */
-    onButtonManualLogging: function() {
-        console.log('AttendanceController.ButtonManualLogging');
-        this.onButtonStartLogging();
-        this.attendanceGridRowEditing.startEdit(this.loggingAttendance, 0);
+        this.attendanceStore.sync();
     },
 
     onButtonStopLogging: function() {
         console.log('AttendanceController.ButtonStopLogging');
         var buttonStartLogging = Ext.getCmp('buttonStartLogging');
         var buttonStopLogging = Ext.getCmp('buttonStopLogging');
-        var buttonCancelLogging = Ext.getCmp('buttonCancelLogging');
         var buttonManualLogging = Ext.getCmp('buttonManualLogging');
         buttonStartLogging.enable();
         buttonStopLogging.disable();
-        buttonCancelLogging.disable();
         buttonManualLogging.enable();
 
         // Complete the attendance created when starting to log
@@ -218,26 +211,40 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         this.attendanceGridRowEditing.startEdit(rowIndex, 3);
     },
 
-    onButtonCancelLogging: function() {
-        console.log('AttendanceController.ButtonCancelLogging');
-        var buttonStartLogging = Ext.getCmp('buttonStartLogging');
-        var buttonStopLogging = Ext.getCmp('buttonStopLogging');
-        var buttonCancelLogging = Ext.getCmp('buttonCancelLogging');
-        var buttonManualLogging = Ext.getCmp('buttonManualLogging');
+    /**
+     * Used to stop the current logging 
+     */  
+    abortLogging: function() {
+        console.log('AttendanceController.abortLogging');
 
-        buttonStartLogging.enable();
-        buttonStopLogging.disable();
-        buttonCancelLogging.disable();
-        buttonManualLogging.enable();
-
-        // Delete the started line
+        // Delete the started line in the editor
         this.attendanceGridRowEditing.cancelEdit();
-        this.attendanceStore.remove(this.loggingAttendance);
-
-        // Stop logging
-        this.loggingStartDate = null;
     },
 
+    /**
+     * Executed before starting to log hours
+     * to select the current week.
+     */
+    selectCurrentWeek: function() {
+        console.log('AttendanceController.selectCurrentWeek');
+
+    },
+    
+    onButtonPreviousWeek: function() {
+        console.log('AttendanceController.ButtonPreviousWeek');
+
+        // complete the current logging interval
+        this.abortLogging();
+    },
+
+    onButtonNextWeek: function() {
+        console.log('AttendanceController.ButtonNextWeek');
+
+        // complete the current logging interval
+        this.abortLogging();
+    },
+
+    
     onButtonDeleteLogging: function() {
         console.log('AttendanceController.ButtonDeleteLogging');
         var records = this.attendanceGrid.getSelectionModel().getSelection();

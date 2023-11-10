@@ -62,16 +62,21 @@ create table im_attendance_intervals (
 	attendance_start	timestamptz
 				constraint im_attendance_intervals_attendance_start_nn
 				not null,
-	attendance_end		timestamptz
-				constraint im_attendance_intervals_attendance_end_nn,
-				-- allow to be null while editing
+	attendance_end		timestamptz,
+				-- may be NULL to indicate that logging in ongoing
 				
 	attendance_status_id	integer
+				constraint im_attendance_intervals_status_nn
+				not null
 				constraint im_attendance_intervals_status_fk
-				references im_categories,
+				references im_categories
+				default 92020, -- Active
 	attendance_type_id	integer
+				constraint im_attendance_intervals_type_nn
+				not null
 				constraint im_attendance_intervals_type_fk
-				references im_categories,
+				references im_categories
+				default 92100, -- Attendance
 				
 	attendance_material_id	integer
 				constraint im_attendance_intervals_material_fk
@@ -85,7 +90,7 @@ create table im_attendance_intervals (
 -- Unique constraint to avoid that you can add two identical rows
 alter table im_attendance_intervals
 add constraint im_attendance_intervals_unique
-unique (attendance_user_id, attendance_start, attendance_end);
+unique (attendance_user_id, attendance_start);
 
 create index im_attendance_intervals_user_id_idx on im_attendance_intervals(attendance_user_id);
 create index im_attendance_intervals_attendance_start_idx on im_attendance_intervals(attendance_start);
@@ -152,7 +157,8 @@ where category_type = 'Intranet Attendance Status';
 -- Attendance Type
 --
 -- 92100-92199  Intranet Attendance Type (100)
-SELECT im_category_new(92100, 'Attendance', 'Intranet Attendance Type');
+SELECT im_category_new(92100, 'Work', 'Intranet Attendance Type');
+SELECT im_category_new(92110, 'Break', 'Intranet Attendance Type');
 
 create or replace view im_attendance_type as
 select category_id as attendance_type_id, category as attendance_type
@@ -284,9 +290,10 @@ DECLARE
 	v_name		varchar;
 BEGIN
 	select	im_category_from_id(coalesce(attendance_type_id, 92100)) ||
+		'#' || attendance_id ||
 		' of ' || im_name_from_user_id(attendance_user_id) ||
 		' from ' || to_char(attendance_start, 'YYYY-MM-DD HH24-MI-SS') ||
-		' to ' || to_char(attendance_end, 'YYYY-MM-DD HH24-MI-SS')
+		coalesce(' to ' || to_char(attendance_end, 'YYYY-MM-DD HH24-MI-SS'), '')
 	into	v_name
 	from	im_attendance_intervals
 	where	attendance_id = v_attendance_id;
