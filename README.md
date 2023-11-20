@@ -18,11 +18,61 @@ situations, but differences should be visible for HR
 managers.
 
 
+Editor
+======
+- Link zu Monatszeiterfassung
+- Anzeige Gleitzeitkonto
+- Anzeige Urlaubskonto
 
 
-Known Bugs
-==========
+## Button Actions
 
+- Start Work:
+	- Ignorieren, wenn der letzte Eintrag ein leeres Feld "Gehen" hatte.
+	- scrolls to current week, 
+	- stops an ongoing attendance (work or break)
+	  by adding end time of now()
+	- starts a new work
+	- adds the new entry to the end of the store
+	- syncs with the database
+	- Show new entries always at the bottom of the list
+
+- Start Break:
+  	- Equivalent to Start Work, just with type "Break"
+
+- Stop:
+	- scrolls to current week, 
+	- stops an ongoing attendance (work or break)
+	  by adding end time of now()
+	- syncs with the database
+	- "Gehen": Letzter Eintrag muss Anwesenheit gewesen sein,
+	  mit "Gehen" leer, sonst ignorieren
+
+- Delete:
+	- Is only enabled if a row is selected
+	- Deletes all type of entries
+	- Syncs with the database immediately
+	- Moves the "focus" (selection model) to the following
+	  entry, or stays at the end of the list.
+	  This is to allow to delete successive
+	  entries by pressing Delete multiple times
+
+- Next/Prev Week:
+	- Just loads the store for the selected week
+	- Vorschlag: Wochenweise anzeigen, mit
+	  <- Woche -> Selector für Zeit (plus Calendar
+	  Select for week?)
+
+
+
+- Constraints:
+	- There should in total be at most 1 open attendance
+	- A week different from "current" should not have
+	  ongoing attendances
+
+### Bugs
+
+- Doesn't save time of new entry
 - Write out error message when end_time < start_time
 - Handle error message if start=end, and object
   destroy() fails
@@ -33,43 +83,11 @@ Known Bugs
   so just cutting off the TZ in a string is wrong
 
 
-ToDo
-====
-
-## Editor
-- Allow uncompleted entry (no end date) to be saved to disk
-- Create state engine
-	- integrate Start Break and End Break
-	- With open end, only allow to close or to start the
-	  opposite type of attendance
-	- Only allow one item to be "open" (no end time)
-- Create <- and -> Buttons to move between weeks
-- Show new entries always at the bottom of the list
-- Buttons:
-	- Kommen:
-		- Neuer Eintrag mit aktueller Zeit
-		- ohne gehen
-		- Typ: Anwesenheit
-		- Ignorieren, wenn der letzte Eintrag ein leeres Feld "Gehen" hatte.
-	- Anfang Pause:
-		- Wie "Kommen" nur Type: Pause
-	- Gehen:
-		- Letzter Eintrag muss Anwesenheit gewesen sein, mit "Gehen" leer,
-		  sonst ignorieren
-	- Ende Pause:
-		- Ähnlich wie "Gehen"
 
 
-- Link zu Monatszeiterfassung
-- Anzeige Gleitzeitkonto
-- Anzeige Urlaubskonto
-- Vorschlag: Wochenweise anzeigen, mit <- Woche -> Selector für Zeit
-  (plus Calendar Select für Woche?)
-
-
-Timesheet Monthly Calendar:
-- Pro Tag zusätzlicher Eintrag: Anwesenheit
-	- Farbe rot/grün in Abhängigkeit von 8h 
+Timesheet Monthly Calendar
+==========================
+- Farbe rot/grün in Abhängigkeit von 8h 
 - Vergleich Anwesenheit vs. Soll Anwesenheit
 	- Monatlich mit Berechnung der Soll-Anwesenheit
 - Soll Anwesenheit = 8h/Tag * Verfügbarkeit
@@ -104,6 +122,7 @@ Done
 - At the homepage
 - Without reference to projects / without left tree
 - Column end time can be left empty
+- Allow uncompleted entry (no end date) to be saved to disk
 - Add column with attendance type
 - Buttons:
 	- Kommen:
@@ -129,40 +148,3 @@ Timesheet Monthly Calendar:
 
 
 
-
-Button Actions
-==============
-
-- Start Work:
-	- scrolls to current week, 
-	- stops an ongoing attendance (work or break)
-	  by adding end time of now()
-	- starts a new work
-	- adds the new entry to the end of the store
-	- syncs with the database
-
-- Start Break:
-  	- Equivalent to Start Work
-
-- Stop:
-	- scrolls to current week, 
-	- stops an ongoing attendance (work or break)
-	  by adding end time of now()
-	- syncs with the database
-
-- Delete:
-	- is only enabled if the current selection model
-	  has a row selected
-	- deletes all type of entries
-	- syncs with the database
-
-- Next/Prev Week:
-	- Just loads the store for the selected week
-
-
-
-
-- Constraints:
-	- There should in total be at most 1 open attendance
-	- A week different from "current" should not have
-	  ongoing attendances
