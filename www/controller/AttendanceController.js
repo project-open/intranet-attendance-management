@@ -32,10 +32,10 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         if (me.debug) { console.log('AttendanceController: init'); }
         
         this.control({
-            '#buttonStartLogging': { click: this.onButtonStartLogging },
+            '#buttonStartWork': { click: this.onButtonStartWork },
             '#buttonStartBreak': { click: this.onButtonStartBreak },
-            '#buttonStopLogging': { click: this.onButtonStopLogging },
-            '#buttonDeleteLogging': { click: this.onButtonDeleteLogging },
+            '#buttonStop': { click: this.onButtonStop },
+            '#buttonDelete': { click: this.onButtonDelete },
 
             '#buttonPreviousWeek': { click: this.onButtonPreviousWeek },
             '#buttonNextWeek': { click: this.onButtonNextWeek },
@@ -60,11 +60,59 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         return this;
     },
+
+
+    /* *****************************************************************************************
+       Common/Auxillary functions
+    ***************************************************************************************** */
+
+    /**
+     * Used to stop the current logging 
+     */  
+    abortWork: function() {
+        console.log('AttendanceController.abortWork');
+
+        // Delete the started line in the editor
+        this.attendanceGridRowEditing.cancelEdit();
+    },
+
+
+    /**
+     * Set the enabled/disabled status of all buttons
+     * Stop is enabled, if one item is "open"
+     * StartWork is enabled if no item is open
+     * StartBreak is enabled if no item is open
+     */  
+    enableDisableButtons: function() {
+        console.log('AttendanceController.enableDisableButtons');
+
+        var selection = this.attendanceGrid.getSelectionModel().getSelection();
+	var selectionLen = selection.length;
+
+        var buttonStartWork = Ext.getCmp('buttonStartWork');
+        var buttonStartBreak = Ext.getCmp('buttonStartBreak');
+	var buttonDelete = Ext.getCmp('buttonDelete');
+	var buttonStop = Ext.getCmp('buttonStop');
+
+	// Delete is enabled if one item is selected, disabled otherwise.
+        buttonDelete.setDisabled(1 != selectionLen);
+
+        // buttonStop.setDisabled(1 != selectionLen);
+
+        // buttonStartWork.disable();
+        // buttonStartWork.enable();
+    },
+
     
-    /*
+    /* *****************************************************************************************
+       GUI Events: Grid and key events
+    ***************************************************************************************** */
+
+    /**
      * The user has double-clicked on the row editor in order to
      * manually fill in the values. This procedure automatically
      * fills in the end_time.
+     * ToDo: Remove? No need to click into the empty space?
      */
     onGridBeforeEdit: function(editor, context, eOpts) {
         console.log('AttendanceController.onGridBeforeEdit');
@@ -79,7 +127,9 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         return true;
     },
 
-    // 
+    /**
+     * ToDo: Add comment, what is this for?
+     */
     onGridEdit: function(editor, context) {
         console.log('AttendanceController.onGridEdit');
         var rec = context.record;
@@ -122,7 +172,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         rec.save();
         rec.commit();
-
+	
+	this.enableDisableButtons();
     },
 
     // Esc (Escape) button pressed somewhere in the application window
@@ -132,36 +183,51 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         console.log('AttendanceController.onWindowKeyDown: code='+keyCode+', ctrl='+keyCtrl);
         
         // cancel hour logging with Esc key
-        if (27 == keyCode) { this.onButtonCancelLogging(); }
-        if (46 == keyCode) { this.onButtonDeleteLogging(); }
+        if (27 == keyCode) { this.onButtonCancelWork(); }
+        if (46 == keyCode) { this.onButtonDelete(); }
+
+	this.enableDisableButtons();
     },
 
+    /**
+     * Handle various key actions
+     */
+    onCellKeyDown: function(table, htmlTd, cellIndex, record, htmlTr, rowIndex, e, eOpts) {
+        console.log('AttendanceController.onCellKeyDown');
+        var keyCode = e.getKey();
+        var keyCtrl = e.ctrlKey;
+
+	this.enableDisableButtons();
+
+        console.log('AttendanceController.onCellKeyDown: code='+keyCode+', ctrl='+keyCtrl);
+    },
+    
     // Click into the empty space below the grid entries in order to start creating a new entry
     onGridContainerClick: function() {
-        console.log('AttendanceController.GridContainerClick');
-        var buttonStartLogging = Ext.getCmp('buttonStartLogging');
-        var disabled = buttonStartLogging.disabled;
+        console.log('AttendanceController.onGridContainerClick');
+        var buttonStartWork = Ext.getCmp('buttonStartWork');
+        var disabled = buttonStartWork.disabled;
         if (!disabled) {
-            this.onButtonStartLogging();
+            this.onButtonStartWork();
         }
+
+	this.enableDisableButtons();
     },
 
+
+
+    /* *****************************************************************************************
+       Button events
+    ***************************************************************************************** */
+    
     /*
      * Start logging the time.
      */
-    onButtonStartLogging: function() {
-        console.log('AttendanceController.ButtonStartLogging');
+    onButtonStartWork: function() {
+        console.log('AttendanceController.onButtonStartWork');
 
         // ToDo: Check that there is no other line currently open with an empty end-date
-        
-        var buttonStartLogging = Ext.getCmp('buttonStartLogging');
-        var buttonStopLogging = Ext.getCmp('buttonStopLogging');
-        var buttonCancelLogging = Ext.getCmp('buttonCancelLogging');
-        var buttonDeleteLogging = Ext.getCmp('buttonDeleteLogging');
-        buttonStartLogging.disable();
-        buttonStopLogging.enable();
-        buttonDeleteLogging.disable();
-        
+                
         this.attendanceGridRowEditing.cancelEdit();
 
         // Start logging
@@ -185,16 +251,12 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         this.loggingAttendance = attendance;
         this.attendanceStore.add(attendance);
         this.attendanceStore.sync();
+
+	this.enableDisableButtons();
     },
 
-    onButtonStopLogging: function() {
-        console.log('AttendanceController.ButtonStopLogging');
-        var buttonStartLogging = Ext.getCmp('buttonStartLogging');
-        var buttonStopLogging = Ext.getCmp('buttonStopLogging');
-        var buttonManualLogging = Ext.getCmp('buttonManualLogging');
-        buttonStartLogging.enable();
-        buttonStopLogging.disable();
-        buttonManualLogging.enable();
+    onButtonStop: function() {
+        console.log('AttendanceController.onButtonStop');
 
         // Complete the attendance created when starting to log
         this.loggingAttendance.set('attendance_end_time', /\d\d:\d\d/.exec(""+new Date())[0]);
@@ -209,17 +271,37 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Continue editing
         var rowIndex = this.attendanceStore.count() -1;
         this.attendanceGridRowEditing.startEdit(rowIndex, 3);
+
+	this.enableDisableButtons();
+    },
+
+    
+    onButtonDelete: function() {
+        console.log('AttendanceController.onButtonDelete');
+        var records = this.attendanceGrid.getSelectionModel().getSelection();
+        // Not logging already - enable the "start" button
+        if (1 == records.length) {                  // Exactly one record enabled
+            var record = records[0];
+            this.attendanceStore.remove(record);
+            record.destroy();
+        }
+
+        // Stop logging
+        this.loggingStartDate = null;
+
+	this.enableDisableButtons();
     },
 
     /**
-     * Used to stop the current logging 
-     */  
-    abortLogging: function() {
-        console.log('AttendanceController.abortLogging');
+     * Clicking around in the grid part of the screen,
+     * Enable or disable the "Delete" button
+     */
+    onGridSelectionChange: function(view, records) {
+        if (this.debug) { console.log('AttendanceController.onGridSelectionChange'); }
 
-        // Delete the started line in the editor
-        this.attendanceGridRowEditing.cancelEdit();
+	this.enableDisableButtons();
     },
+
 
     /**
      * Executed before starting to log hours
@@ -231,56 +313,25 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     },
     
     onButtonPreviousWeek: function() {
-        console.log('AttendanceController.ButtonPreviousWeek');
+        console.log('AttendanceController.onButtonPreviousWeek');
 
         // complete the current logging interval
-        this.abortLogging();
+        this.abortWork();
     },
 
     onButtonNextWeek: function() {
-        console.log('AttendanceController.ButtonNextWeek');
+        console.log('AttendanceController.onButtonNextWeek');
 
         // complete the current logging interval
-        this.abortLogging();
+        this.abortWork();
     },
+    
 
     
-    onButtonDeleteLogging: function() {
-        console.log('AttendanceController.ButtonDeleteLogging');
-        var records = this.attendanceGrid.getSelectionModel().getSelection();
-        // Not logging already - enable the "start" button
-        if (1 == records.length) {                  // Exactly one record enabled
-            var record = records[0];
-            this.attendanceStore.remove(record);
-            record.destroy();
-        }
-
-        // Stop logging
-        this.loggingStartDate = null;
-    },
-
-    /**
-     * Clicking around in the grid part of the screen,
-     * Enable or disable the "Delete" button
-     */
-    onGridSelectionChange: function(view, records) {
-        if (this.debug) { console.log('AttendanceController.onGridSelectionChange'); }
-        var buttonDeleteLogging = Ext.getCmp('buttonDeleteLogging');
-        buttonDeleteLogging.setDisabled(1 != records.length);
-    },
-
-
-    /**
-     * Handle various key actions
-     */
-    onCellKeyDown: function(table, htmlTd, cellIndex, record, htmlTr, rowIndex, e, eOpts) {
-        console.log('AttendanceController.onCellKeyDown');
-        var keyCode = e.getKey();
-        var keyCtrl = e.ctrlKey;
-        console.log('AttendanceController.onCellKeyDown: code='+keyCode+', ctrl='+keyCtrl);
-    },
-
-
+    /* *****************************************************************************************
+       Resizing
+    ***************************************************************************************** */
+    
     /**
      * The windows as a whole was resized
      */

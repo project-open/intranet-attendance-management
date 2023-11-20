@@ -64,11 +64,18 @@ Editor
 	  Select for week?)
 
 
-
 - Constraints:
 	- There should in total be at most 1 open attendance
 	- A week different from "current" should not have
 	  ongoing attendances
+
+- Button enable/disabled state:
+	- Delete is enabled if one item is selected,
+	  disabled otherwise.
+	- Stop is enabled, if one item is "open"
+	- StartWork is enabled if no item is open
+	- StartBreak is enabled if no item is open
+
 
 ### Bugs
 
