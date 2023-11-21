@@ -110,14 +110,33 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Count entries with end time before start time
         var endBeforeStartCount = 0;
 
+	// Count breaks that are too short
+	var breaksTooShort = 0;
 
         this.attendanceStore.each(function(item) {
-            var end = item.get('attendance_end');
-            if ("" == end) openItemsCount++;
-            var start = item.get('attendance_start');
-            var startDate = new Date(start);
-            var endDate = new Date(end);
-            if (endDate.getTime() < startDate.getTime()) endBeforeStartCount++;
+            var endIso = item.get('attendance_end');
+            var startIso = item.get('attendance_start');
+            var type_id = item.get('attendance_type_id');
+
+            if ("" == endIso) {
+		openItemsCount++;
+	    } else {
+		var startDate = new Date(startIso);
+		var endDate = new Date(endIso);
+		if (endDate.getTime() < startDate.getTime()) endBeforeStartCount++;
+
+                var durationMs = endDate.getTime() - startDate.getTime();
+		var durationMinutes = Math.round(10.0 * durationMs / 1000.0 / 60.0 ) / 10.0;
+
+		switch (type_id) {
+		case "92100": {}	    // Work
+		case "92110": {		    // Break
+		    if (durationMinutes < 15) breaksTooShort++;
+		}
+		default: {}
+		}
+		    
+	    }
         });
 
         var message = "";
@@ -125,17 +144,30 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Is there more then one ongoing attendance?
         // There should be never more than one...
         if (openItemsCount > 1) {
-            message = message + '<br>Found more than one attendance entry without end-date.'
+            message = message + '<li>Found ' + openItemsCount + ' attendance entríes without end-time.' +
+		'<br>There should be at most one of them.'
         }
 
         // End time before start time?
         if (endBeforeStartCount > 0) {
-            message = message + '<br>Found entries with end time before start time.'
+            message = message + '<li>Found entries with end time before start time.'
+        }
+
+        // breaks
+        if (breaksTooShort > 0) {
+            message = message + '<li>Found '+breaksTooShort+' breaks shorter than 15min.'
         }
 
         if ("" != message) {
-            message = message + '<br>Please edit manually to resolve the issue.'
-            Ext.Msg.alert('Inconsistent attendance data', message);
+            message = "<ul>" + message + "</ul>" + '<br>Please edit manually to resolve the issue.'
+	    var title = 'Inconsistent attendance data';
+	    var msgBox = Ext.create('Ext.window.MessageBox', {  });
+	    msgBox.show({
+                title: title,
+                msg: message,
+                minWidth: 500,
+                minHeight: 150,
+	    });
         }
     },
 
