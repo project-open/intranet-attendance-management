@@ -340,7 +340,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     onButtonStartWork: function() {
         console.log('AttendanceController.onButtonStartWork');
 
-	this.createNewAttendance(92100); // Work attendance
+        this.createNewAttendance(92100); // Work attendance
     },
 
     /*
@@ -349,7 +349,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     onButtonStartBreak: function() {
         console.log('AttendanceController.onButtonStartBreak');
 
-	this.createNewAttendance(92110); // Break
+        this.createNewAttendance(92110); // Break
     },
 
     /**
@@ -384,11 +384,11 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Not logging already - enable the "start" button
         if (1 == records.length) {                  // Exactly one record enabled
 
-	    // Select the next row
-	    selModel.selectPrevious(false);
-	    // selModel.selectNext(false);
+            // Select the next row
+            selModel.selectPrevious(false);
+            // selModel.selectNext(false);
 
-	    var record = records[0];
+            var record = records[0];
             this.attendanceStore.remove(record);
             record.destroy();
         }
