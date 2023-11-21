@@ -35,10 +35,10 @@ managers.
   	- Equivalent to Start Work, just with type "Break"
 
 - Stop:
-	- scrolls to current week, 
-	- stops an ongoing attendance (work or break)
+	- Scrolls to current week, 
+	- Stops an ongoing attendance (work or break) today
 	  by adding end time of now()
-	- syncs with the database
+	- Syncs with the database
 	- "Gehen": Letzter Eintrag muss Anwesenheit gewesen sein,
 	  mit "Gehen" leer, sonst ignorieren
 

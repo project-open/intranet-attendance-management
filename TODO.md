@@ -2,14 +2,23 @@ ToDo
 ====
 
 
-## Editor Portlet
+Editor Portlet
+==============
+
+- Implement "<- current week ->"
 - Link zu Monatszeiterfassung
 - Anzeige Gleitzeitkonto
 - Anzeige Urlaubskonto
+- Localization to other languages (German)
+- Add parameters for min and max durations of intervals/breaks
+- Check consistency: Last entry every day should have been Work
+- Consistency checker: There should be no open entries in the past.
+- Consistency checker: Check for multiple open issues only today.
 
-### Bugs
+Bugs
 
-- Doesn't save time of new entry
+- ButtonStop on next day sets date of next day,
+  leading to interval > 12h
 - Write out error message when end_time < start_time
 - Handle error message if start=end, and object
   destroy() fails
@@ -19,6 +28,8 @@ ToDo
   There is an issue with the GMT+1 time zone,
   so just cutting off the TZ in a string is wrong
 - Manually deleting the end-time of an entry doesn't save.
+- Adding a new break tries to add two items
+- Deleting an item issues two DELETE server operations
 
 
 
@@ -31,6 +42,7 @@ Timesheet Monthly Calendar
 - Soll Anwesenheit = 8h/Tag * Verfügbarkeit
 - Klick auf Anwesenheits-Link führt zu Widget, 
   mit der richtigen Woche "aufgeklappt"
+
 
 
 Report Pausenzeiten
@@ -58,7 +70,8 @@ Done
 ====
 
 
-## Editor portlet
+Editor portlet:
+
 - At the homepage
 - Without reference to projects / without left tree
 - Column end time can be left empty
@@ -76,12 +89,12 @@ Done
 		  sonst ignorieren
 	- Ende Pause:
 		- Ähnlich wie "Gehen"
+- Bug: Format for GridPanel date column is different from renderer
+- Bug: Creating a new item doesn't save time
+
 
 
 Timesheet Monthly Calendar:
+
 - Pro Tag zusätzlicher Eintrag: Anwesenheit
-
-
-## Done Bugs
-- Format for GridPanel date column is different from renderer
 
