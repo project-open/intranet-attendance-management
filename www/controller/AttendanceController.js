@@ -113,6 +113,9 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 	// Count breaks that are too short
 	var breaksTooShort = 0;
 
+	// Itervals of more than a day
+	var intervalTooLong = 0;
+	
         this.attendanceStore.each(function(item) {
             var endIso = item.get('attendance_end');
             var startIso = item.get('attendance_start');
@@ -128,10 +131,13 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
                 var durationMs = endDate.getTime() - startDate.getTime();
 		var durationMinutes = Math.round(10.0 * durationMs / 1000.0 / 60.0 ) / 10.0;
 
+		if (durationMinutes > 12.0 * 60.0) intervalTooLong++
+		
 		switch (type_id) {
-		case "92100": {}	    // Work
-		case "92110": {		    // Break
+		case "92100": { break; }	    // Work
+		case "92110": {	        	    // Break
 		    if (durationMinutes < 15) breaksTooShort++;
+		    break;
 		}
 		default: {}
 		}
@@ -140,33 +146,45 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         });
 
         var message = "";
-        
+	var issueCount = 0;
+	
         // Is there more then one ongoing attendance?
         // There should be never more than one...
         if (openItemsCount > 1) {
+	    issueCount = issueCount + openItemsCount-1;
             message = message + '<li>Found ' + openItemsCount + ' attendance entríes without end-time.' +
 		'<br>There should be at most one of them.'
         }
 
         // End time before start time?
         if (endBeforeStartCount > 0) {
+	    issueCount = issueCount + endBeforeStartCount;
             message = message + '<li>Found entries with end time before start time.'
         }
 
-        // breaks
+        // Breaks shorter than 15min
         if (breaksTooShort > 0) {
-            message = message + '<li>Found '+breaksTooShort+' breaks shorter than 15min.'
+	    issueCount = issueCount + breaksTooShort;
+            message = message + '<li>Found '+breaksTooShort+' breaks shorter than 15 min.'
+        }
+
+        // Interval Too long
+        if (intervalTooLong > 0) {
+	    issueCount = issueCount + intervalTooLong;
+            message = message + '<li>Found ' + intervalTooLong + ' items with more than 12 hours.'
         }
 
         if ("" != message) {
-            message = "<ul>" + message + "</ul>" + '<br>Please edit manually to resolve the issue.'
+            message = "<ul>" + message + "</ul>" + '<br>Please edit manually to resolve the ' + issueCount + ' issue(s).'
 	    var title = 'Inconsistent attendance data';
-	    var msgBox = Ext.create('Ext.window.MessageBox', {  });
+	    var msgBox = Ext.create('Ext.window.MessageBox', {});
 	    msgBox.show({
                 title: title,
                 msg: message,
                 minWidth: 500,
                 minHeight: 150,
+                buttonText: { yes: "OK" },
+                icon: Ext.Msg.INFO
 	    });
         }
     },
@@ -179,7 +197,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * be robust and deal gracefully with inconsistent states.
      * Returns null if there is no open item.
      */  
-    findFirstOpenAttendanceEntry: function() {
+    findFirstOpenAttendanceEntryToday: function() {
         console.log('AttendanceController.getOpenAttendanceEntriesCount');
 
         var firstOpenItem = null;
@@ -410,7 +428,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         this.attendanceGridRowEditing.cancelEdit();
 
         // Search for the first open item in the store this week
-        var item = this.findFirstOpenAttendanceEntry();
+        var item = this.findFirstOpenAttendanceEntryToday();
         if (item) {
             // Complete the attendance and set end time and attendance_end
             var now = new Date();
