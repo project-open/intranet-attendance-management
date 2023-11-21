@@ -18,14 +18,8 @@ situations, but differences should be visible for HR
 managers.
 
 
-Editor
-======
-- Link zu Monatszeiterfassung
-- Anzeige Gleitzeitkonto
-- Anzeige Urlaubskonto
 
-
-## Button Actions
+# Button Actions
 
 - Start Work:
 	- Ignorieren, wenn der letzte Eintrag ein leeres Feld "Gehen" hatte.
@@ -63,8 +57,7 @@ Editor
 	  <- Woche -> Selector für Zeit (plus Calendar
 	  Select for week?)
 
-
-- Constraints:
+- Button Constraints:
 	- There should in total be at most 1 open attendance
 	- A week different from "current" should not have
 	  ongoing attendances
@@ -76,6 +69,14 @@ Editor
 	- StartWork is enabled if no item is open
 	- StartBreak is enabled if no item is open
 
+ToDo
+====
+
+
+## Editor
+- Link zu Monatszeiterfassung
+- Anzeige Gleitzeitkonto
+- Anzeige Urlaubskonto
 
 ### Bugs
 
@@ -88,12 +89,13 @@ Editor
 - Sort order:
   There is an issue with the GMT+1 time zone,
   so just cutting off the TZ in a string is wrong
-
+- Manually deleting the end-time of an entry doesn't save.
 
 
 
 Timesheet Monthly Calendar
 ==========================
+
 - Farbe rot/grün in Abhängigkeit von 8h 
 - Vergleich Anwesenheit vs. Soll Anwesenheit
 	- Monatlich mit Berechnung der Soll-Anwesenheit
@@ -102,7 +104,9 @@ Timesheet Monthly Calendar
   mit der richtigen Woche "aufgeklappt"
 
 
-Report Pausenzeiten:
+Report Pausenzeiten
+===================
+
 - Filter:
 	- User
 	- Abteilung
@@ -151,7 +155,4 @@ Timesheet Monthly Calendar:
 
 ## Done Bugs
 - Format for GridPanel date column is different from renderer
-
-
-
 
