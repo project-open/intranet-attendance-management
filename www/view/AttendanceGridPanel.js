@@ -31,16 +31,16 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
         {
             text: "Type",
             dataIndex: 'attendance_type_id',
-	    renderer: function(value){
-	        var model = attendanceTypeStore.getById(value);
+            renderer: function(value){
+                var model = attendanceTypeStore.getById(value);
                 var result = model.get('category');
                 return result;
             },
-	    editor: {
+            editor: {
                 xtype:                  'combo',
-	        store:                  attendanceTypeStore,
+                store:                  attendanceTypeStore,
                 displayField:           'category',
-		valueField:             'category_id',
+                valueField:             'category_id',
             }
         }, {
             text: "Date",
@@ -51,7 +51,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 xtype: 'datefield',
                 allowBlank: true,
                 startDay: week_start_day,
-		format: 'Y-m-d'
+                format: 'Y-m-d'
             }
         }, {
             text: "Start Time",
@@ -72,6 +72,21 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 triggerAction: 'all',
                 selectOnTab: true,
                 store: timeEntryStore
+            }
+        }, {
+            text: "Duration",
+            width: 70,
+            editor: false,
+            renderer: function(dunno, cell, model, pos) {
+                var startIso = model.get('attendance_start');
+                var endIso = model.get('attendance_end');
+		if ("" == startIso || "" == endIso) return "";
+		
+                var startDate = new Date(startIso);
+                var endDate = new Date(endIso);
+                var diffMilliSeconds = endDate.getTime() - startDate.getTime();
+		var diffHours = Math.round(10.0 * diffMilliSeconds / 1000.0 / 60 / 60) / 10.0;
+                return ""+diffHours+"h";
             }
         }, {
             text: "Name", flex: 1, dataIndex: 'object_name', hidden: true
