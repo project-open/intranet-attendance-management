@@ -36,7 +36,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
             '#buttonPreviousWeek': { click: this.onButtonPreviousWeek },
             '#buttonNextWeek': { click: this.onButtonNextWeek },
-	    
+            
             scope: me.attendanceGrid
         });
 
@@ -55,8 +55,10 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // For some reaons this doesn't work on the level of the AttendancePanel, so we go for the global "window"
         Ext.EventManager.on(window, 'keydown', this.onWindowKeyDown, me);
 
-	// Setup default buttons
-	this.enableDisableButtons();
+        // Setup default buttons
+        this.enableDisableButtons();
+
+	this.checkConsistency();
 	
         return this;
     },
@@ -86,18 +88,100 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     getOpenAttendanceEntriesCount: function() {
         console.log('AttendanceController.getOpenAttendanceEntriesCount');
 
-	var count = 0;
-	this.attendanceStore.each(function(item) {
+        var count = 0;
+        this.attendanceStore.each(function(item) {
 
-	    var end = item.get('attendance_end');
-	    if ("" == end) { count++; }
-	});
+            var end = item.get('attendance_end');
+            if ("" == end) { count++; }
+        });
 
-	return count;
+        return count;
     },
 
 
 
+    
+    /**
+     * Check for consistency of the weeek and issue error message(s).
+     */  
+    checkConsistency: function() {
+        console.log('AttendanceController.checkConsistency');
+
+        var openItemsCount = 0;
+        this.attendanceStore.each(function(item) {
+            var end = item.get('attendance_end');
+            if ("" == end) openItemsCount++;
+        });
+
+	// Is there more then one ongoing attendance?
+	// There should be never more than one...
+	if (openItemsCount > 1) {
+	    Ext.Msg.alert(
+		'Inconsistent attendance data',
+		'Found more than one attendance entry without end-date.'+'<br>'+
+		    'Please edit manually to resolve the issue.'
+	    );
+	}
+    },
+
+    
+    /**
+     * Find the first "open" (no end time) item in the store from today.
+     *
+     * There should really be exactly one open item, but try to 
+     * be robust and deal gracefully with inconsistent states.
+     * Returns null if there is no open item.
+     */  
+    findFirstOpenAttendanceEntry: function() {
+        console.log('AttendanceController.getOpenAttendanceEntriesCount');
+
+        var firstOpenItem = null;
+        this.attendanceStore.each(function(item) {
+            var end = item.get('attendance_end');
+            if ("" == end) {                            // don't overwrite if already found
+        	if (null == firstOpenItem) firstOpenItem = item;
+            }
+        });
+
+        return firstOpenItem;
+    },
+
+
+    /*
+     * Start logging an attendance
+     */
+    createNewAttendance: function(attendance_type_id) {
+        console.log('AttendanceController.createNewAttendance');
+
+        // ToDo: Check that there is no other line currently open with an empty end-date
+                
+        this.attendanceGridRowEditing.cancelEdit();
+
+        // Start logging
+        var now = new Date();
+        var startTime = /\d\d:\d\d/.exec(""+now)[0];
+        var startDateIso = now.toISOString().substring(0,10);
+
+        // The Attendance object is a 1:1 reflection of what is in the DB,
+        // so all attributes are strings.
+        var attendance = new Ext.create('AttendanceManagement.model.Attendance', {
+            attendance_user_id: ""+this.current_user_id,
+            attendance_type_id: ""+attendance_type_id, // Attendance
+            attendance_status_id: ""+92020, // Active
+            attendance_date: startDateIso,
+            attendance_start_time: startTime,
+            attendance_start: startDateIso+' '+startTime, // no time zone -> current TZ
+            attendance_note: ""
+        });
+        
+        // Remember the new attendance, add to store and start editing
+        this.attendanceStore.add(attendance);
+        this.attendanceStore.sync();
+
+        this.enableDisableButtons();
+    },
+    
+    
     /**
      * Set the enabled/disabled status of all buttons
      */  
@@ -106,26 +190,26 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         var buttonStartWork = Ext.getCmp('buttonStartWork');
         var buttonStartBreak = Ext.getCmp('buttonStartBreak');
-	var buttonDelete = Ext.getCmp('buttonDelete');
-	var buttonStop = Ext.getCmp('buttonStop');
+        var buttonDelete = Ext.getCmp('buttonDelete');
+        var buttonStop = Ext.getCmp('buttonStop');
 
         // buttonStartWork.disable();
         // buttonStartWork.enable();
-	
+        
         var selection = this.attendanceGrid.getSelectionModel().getSelection();
-	var selectionLen = selection.length;
+        var selectionLen = selection.length;
 
-	var openItemsCount = this.getOpenAttendanceEntriesCount();
+        var openItemsCount = this.getOpenAttendanceEntriesCount();
 
-	// Delete is enabled if one item is selected, disabled otherwise.
+        // Delete is enabled if one item is selected, disabled otherwise.
         buttonDelete.setDisabled(1 != selectionLen);
-	
-	// Stop is enabled, if at least one item is "open"
-	// Stop will handle the case of more than item being open.
+        
+        // Stop is enabled, if at least one item is "open"
+        // Stop will handle the case of more than item being open.
         buttonStop.setDisabled(0 == openItemsCount);
 
-	// StartWork is enabled if no item is open
-	// StartBreak is enabled if no item is open
+        // StartWork is enabled if no item is open
+        // StartBreak is enabled if no item is open
         buttonStartWork.setDisabled(0 != openItemsCount);
         buttonStartBreak.setDisabled(0 != openItemsCount);
     },
@@ -199,8 +283,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         rec.save();
         rec.commit();
-	
-	this.enableDisableButtons();
+        
+        this.enableDisableButtons();
     },
 
     // Esc (Escape) button pressed somewhere in the application window
@@ -209,14 +293,14 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         var keyCtrl = e.ctrlKey;
         console.log('AttendanceController.onWindowKeyDown: code='+keyCode+', ctrl='+keyCtrl);
         
-	// Delete key has same function as Delete Button
-	if (46 == keyCode) { this.onButtonDelete(); }
+        // Delete key has same function as Delete Button
+        if (46 == keyCode) { this.onButtonDelete(); }
 
         // ToDo: Not clear how to handle "cancel" ESC key.
-	// Cancel current logging? -> Delete last entry
+        // Cancel current logging? -> Delete last entry
         // if (27 == keyCode) { this.onButtonCancelWork(); }
 
-	// Status engine handled in the CancelWork and Delete functions
+        // Status engine handled in the CancelWork and Delete functions
     },
 
     /**
@@ -227,7 +311,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         var keyCode = e.getKey();
         var keyCtrl = e.ctrlKey;
 
-	this.enableDisableButtons();
+        this.enableDisableButtons();
 
         console.log('AttendanceController.onCellKeyDown: code='+keyCode+', ctrl='+keyCtrl);
     },
@@ -241,7 +325,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             this.onButtonStartWork();
         }
 
-	this.enableDisableButtons();
+        this.enableDisableButtons();
     },
 
 
@@ -251,37 +335,21 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     ***************************************************************************************** */
     
     /*
-     * Start logging the time.
+     * Start logging working time
      */
     onButtonStartWork: function() {
         console.log('AttendanceController.onButtonStartWork');
 
-        // ToDo: Check that there is no other line currently open with an empty end-date
-                
-        this.attendanceGridRowEditing.cancelEdit();
+	this.createNewAttendance(92100); // Work attendance
+    },
 
-        // Start logging
-        var now = new Date();
-        var startTime = /\d\d:\d\d/.exec(""+now)[0];
-        var startDateIso = now.toISOString().substring(0,10);
+    /*
+     * Start a break
+     */
+    onButtonStartBreak: function() {
+        console.log('AttendanceController.onButtonStartBreak');
 
-        // The Attendance object is a 1:1 reflection of what is in the DB,
-        // so all attributes are strings.
-        var attendance = new Ext.create('AttendanceManagement.model.Attendance', {
-            attendance_user_id: ""+this.current_user_id,
-            attendance_type_id: ""+92100, // Attendance
-            attendance_status_id: ""+92020, // Active
-            attendance_date: startDateIso,
-            attendance_start_time: startTime,
-            attendance_start: startDateIso,
-            attendance_note: ""
-        });
-        
-        // Remember the new attendance, add to store and start editing
-        this.attendanceStore.add(attendance);
-        this.attendanceStore.sync();
-
-	this.enableDisableButtons();
+	this.createNewAttendance(92110); // Break
     },
 
     /**
@@ -291,32 +359,41 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     onButtonStop: function() {
         console.log('AttendanceController.onButtonStop');
 
-        // Complete the attendance created when starting to log
-        // this.loggingAttendance.set('attendance_end_time', /\d\d:\d\d/.exec(""+new Date())[0]);
-        // this.loggingAttendance.save();
-
-        // Not necesary anymore because the store is set to autosync?
+        // Make sure no editing is in course
         this.attendanceGridRowEditing.cancelEdit();
 
-        // Continue editing
-        var rowIndex = this.attendanceStore.count() -1;
-        this.attendanceGridRowEditing.startEdit(rowIndex, 3);
-
-	this.enableDisableButtons();
+        // Search for the first open item in the store this week
+        var item = this.findFirstOpenAttendanceEntry();
+        if (item) {
+            // Complete the attendance and set end time and attendance_end
+            var now = new Date();
+            item.set('attendance_end_time', /\d\d:\d\d/.exec(""+now)[0]);
+            item.set('attendance_end', Ext.Date.format(now, 'Y-m-d H:i:s'));
+            item.save();
+        }
+        
+        this.enableDisableButtons();
     },
 
     
     onButtonDelete: function() {
         console.log('AttendanceController.onButtonDelete');
-        var records = this.attendanceGrid.getSelectionModel().getSelection();
+        var selModel = this.attendanceGrid.getSelectionModel();
+        var records = selModel.getSelection();
+
         // Not logging already - enable the "start" button
         if (1 == records.length) {                  // Exactly one record enabled
-            var record = records[0];
+
+	    // Select the next row
+	    selModel.selectPrevious(false);
+	    // selModel.selectNext(false);
+
+	    var record = records[0];
             this.attendanceStore.remove(record);
             record.destroy();
         }
 
-	this.enableDisableButtons();
+        this.enableDisableButtons();
     },
 
     /**
@@ -326,7 +403,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     onGridSelectionChange: function(view, records) {
         if (this.debug) { console.log('AttendanceController.onGridSelectionChange'); }
 
-	this.enableDisableButtons();
+        this.enableDisableButtons();
     },
 
 
