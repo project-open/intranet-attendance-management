@@ -58,8 +58,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Setup default buttons
         this.enableDisableButtons();
 
-	this.checkConsistency();
-	
+        this.checkConsistency();
+        
         return this;
     },
 
@@ -98,30 +98,45 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         return count;
     },
 
-
-
-    
     /**
      * Check for consistency of the weeek and issue error message(s).
      */  
     checkConsistency: function() {
         console.log('AttendanceController.checkConsistency');
 
+        // Count the entries with no end time
         var openItemsCount = 0;
+
+        // Count entries with end time before start time
+        var endBeforeStartCount = 0;
+
+
         this.attendanceStore.each(function(item) {
             var end = item.get('attendance_end');
             if ("" == end) openItemsCount++;
+            var start = item.get('attendance_start');
+            var startDate = new Date(start);
+            var endDate = new Date(end);
+            if (endDate.getTime() < startDate.getTime()) endBeforeStartCount++;
         });
 
-	// Is there more then one ongoing attendance?
-	// There should be never more than one...
-	if (openItemsCount > 1) {
-	    Ext.Msg.alert(
-		'Inconsistent attendance data',
-		'Found more than one attendance entry without end-date.'+'<br>'+
-		    'Please edit manually to resolve the issue.'
-	    );
-	}
+        var message = "";
+        
+        // Is there more then one ongoing attendance?
+        // There should be never more than one...
+        if (openItemsCount > 1) {
+            message = message + '<br>Found more than one attendance entry without end-date.'
+        }
+
+        // End time before start time?
+        if (endBeforeStartCount > 0) {
+            message = message + '<br>Found entries with end time before start time.'
+        }
+
+        if ("" != message) {
+            message = message + '<br>Please edit manually to resolve the issue.'
+            Ext.Msg.alert('Inconsistent attendance data', message);
+        }
     },
 
     
