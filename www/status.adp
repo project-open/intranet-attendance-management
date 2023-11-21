@@ -1,6 +1,6 @@
 <master>
 
-<h2>README.md</h2>
+<h2>TODO.md</h2>
 <pre>
 <%= [im_exec cat /web/cedis/packages/intranet-attendance-management/TODO.md] %>
 </pre>
