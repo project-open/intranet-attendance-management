@@ -115,7 +115,7 @@ Ext.onReady(function() {
     attendanceTypeStore.load();
     
     // Load stores that need parameters
-    attendanceStore.getProxy().extraParams = { user_id: @current_user_id@, format: 'json' };
+    attendanceStore.getProxy().extraParams = { attendance_user_id: @current_user_id@, format: 'json' };
     attendanceStore.load({
         callback: function() {
             console.log('AttendanceStore: callback: loaded');
