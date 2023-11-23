@@ -110,82 +110,82 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Count entries with end time before start time
         var endBeforeStartCount = 0;
 
-	// Count breaks that are too short
-	var breaksTooShort = 0;
+        // Count breaks that are too short
+        var breaksTooShort = 0;
 
-	// Itervals of more than a day
-	var intervalTooLong = 0;
-	
+        // Itervals of more than a day
+        var intervalTooLong = 0;
+        
         this.attendanceStore.each(function(item) {
             var endIso = item.get('attendance_end');
             var startIso = item.get('attendance_start');
             var type_id = item.get('attendance_type_id');
 
             if ("" == endIso) {
-		openItemsCount++;
-	    } else {
-		var startDate = new Date(startIso);
-		var endDate = new Date(endIso);
-		if (endDate.getTime() < startDate.getTime()) endBeforeStartCount++;
+                openItemsCount++;
+            } else {
+                var startDate = new Date(startIso);
+                var endDate = new Date(endIso);
+                if (endDate.getTime() < startDate.getTime()) endBeforeStartCount++;
 
                 var durationMs = endDate.getTime() - startDate.getTime();
-		var durationMinutes = Math.round(10.0 * durationMs / 1000.0 / 60.0 ) / 10.0;
+                var durationMinutes = Math.round(10.0 * durationMs / 1000.0 / 60.0 ) / 10.0;
 
-		if (durationMinutes > 12.0 * 60.0) intervalTooLong++
-		
-		switch (type_id) {
-		case "92100": { break; }	    // Work
-		case "92110": {	        	    // Break
-		    if (durationMinutes < 15) breaksTooShort++;
-		    break;
-		}
-		default: {}
-		}
-		    
-	    }
+                if (durationMinutes > 12.0 * 60.0) intervalTooLong++
+                
+                switch (type_id) {
+                case "92100": { break; }	    // Work
+                case "92110": {	        	    // Break
+                    if (durationMinutes < 15) breaksTooShort++;
+                    break;
+                }
+                default: {}
+                }
+                    
+            }
         });
 
         var message = "";
-	var issueCount = 0;
-	
+        var issueCount = 0;
+        
         // Is there more then one ongoing attendance?
         // There should be never more than one...
         if (openItemsCount > 1) {
-	    issueCount = issueCount + openItemsCount-1;
+            issueCount = issueCount + openItemsCount-1;
             message = message + '<li>Found ' + openItemsCount + ' attendance entríes without end-time.' +
-		'<br>There should be at most one of them.'
+                '<br>There should be at most one of them.'
         }
 
         // End time before start time?
         if (endBeforeStartCount > 0) {
-	    issueCount = issueCount + endBeforeStartCount;
+            issueCount = issueCount + endBeforeStartCount;
             message = message + '<li>Found entries with end time before start time.'
         }
 
         // Breaks shorter than 15min
         if (breaksTooShort > 0) {
-	    issueCount = issueCount + breaksTooShort;
+            issueCount = issueCount + breaksTooShort;
             message = message + '<li>Found '+breaksTooShort+' breaks shorter than 15 min.'
         }
 
         // Interval Too long
         if (intervalTooLong > 0) {
-	    issueCount = issueCount + intervalTooLong;
+            issueCount = issueCount + intervalTooLong;
             message = message + '<li>Found ' + intervalTooLong + ' items with more than 12 hours.'
         }
 
         if ("" != message) {
             message = "<ul>" + message + "</ul>" + '<br>Please edit manually to resolve the ' + issueCount + ' issue(s).'
-	    var title = 'Inconsistent attendance data';
-	    var msgBox = Ext.create('Ext.window.MessageBox', {});
-	    msgBox.show({
+            var title = 'Inconsistent attendance data';
+            var msgBox = Ext.create('Ext.window.MessageBox', {});
+            msgBox.show({
                 title: title,
                 msg: message,
                 minWidth: 500,
                 minHeight: 150,
                 buttonText: { yes: "OK" },
                 icon: Ext.Msg.INFO
-	    });
+            });
         }
     },
 
@@ -204,7 +204,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         this.attendanceStore.each(function(item) {
             var end = item.get('attendance_end');
             if ("" == end) {                            // don't overwrite if already found
-        	if (null == firstOpenItem) firstOpenItem = item;
+                if (null == firstOpenItem) firstOpenItem = item;
             }
         });
 
@@ -216,7 +216,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * Start logging an attendance
      */
     createNewAttendance: function(attendance_type_id) {
-        console.log('AttendanceController.createNewAttendance');
+        console.log('AttendanceController.createNewAttendance: '+attendance_type_id);
 
         // ToDo: Check that there is no other line currently open with an empty end-date
                 
@@ -239,9 +239,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             attendance_note: ""
         });
         
-        // Remember the new attendance, add to store and start editing
-        this.attendanceStore.add(attendance);
-        this.attendanceStore.sync();
+        // Add to end of the store and sync
+        var addResult = this.attendanceStore.add(attendance);
 
         this.enableDisableButtons();
     },
