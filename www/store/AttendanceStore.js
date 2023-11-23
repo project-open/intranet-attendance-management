@@ -15,18 +15,19 @@ Ext.define('AttendanceManagement.store.AttendanceStore', {
     pageSize:	    10000, // just load everything
     
     sorters: [
-	{property: 'attendance_start', direction: 'ASC'}
+        {property: 'attendance_start', direction: 'ASC'}
     ],
     proxy: {
         type:       'rest',
         url:        '/intranet-rest/im_attendance_interval',
         appendId:   true,
         extraParams: {
-            format: 'json',
-            user_id: 0,				// Needs to be overwritten by controller
-            project_id: 0			// Needs to be overwritten by controller
+            format: 'json'
         },
-        reader: { type: 'json', root: 'data' }
+        reader: { 
+	    type: 'json', 
+	    root: 'data' 
+	}
     },
 
     listeners: {
@@ -45,7 +46,7 @@ Ext.define('AttendanceManagement.store.AttendanceStore', {
 
             var regexp = /(\d\d:\d\d)/;
             for (var i = 0; i < records.length; i++) {
-                var rec = records[i];		
+                var rec = records[i];
                 var start = rec.get('attendance_start');
                 var end = rec.get('attendance_end');
 
@@ -53,15 +54,15 @@ Ext.define('AttendanceManagement.store.AttendanceStore', {
                 rec.data['attendance_date'] = start.substring(0,10);
                 var regArr = regexp.exec(start);
                 rec.data['attendance_start_time'] = regArr[1];
-		if ("" != end) {
+                if ("" != end) {
                     var regArr = regexp.exec(end);
                     rec.data['attendance_end_time'] = regArr[1];
-		}
+                }
 
                 store.afterEdit(rec, ['attendance_date', 'attendance_start_time', 'attendance_end_time']);
             }
 
-	    // Not sure about this.
+            // Not sure about this.
             var isLoading = store.isLoading();
             store.loading = true;
             store.loading = isLoading;
