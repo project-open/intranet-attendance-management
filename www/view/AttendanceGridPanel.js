@@ -29,6 +29,10 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
     region: 'center',
     columns: [
         {
+            text: "ID", flex: 1, width: 30, dataIndex: 'id', hidden: true
+        }, {
+            text: "Attendance ID", flex: 1, width: 30, dataIndex: 'attendance_id', hidden: true
+        }, {
             text: "Type",
             dataIndex: 'attendance_type_id',
             renderer: function(value){
@@ -80,12 +84,12 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
             renderer: function(dunno, cell, model, pos) {
                 var startIso = model.get('attendance_start');
                 var endIso = model.get('attendance_end');
-		if ("" == startIso || "" == endIso) return "";
-		
+                if ("" == startIso || "" == endIso) return "";
+                
                 var startDate = new Date(startIso);
                 var endDate = new Date(endIso);
                 var diffMilliSeconds = endDate.getTime() - startDate.getTime();
-		var diffHours = Math.round(10.0 * diffMilliSeconds / 1000.0 / 60.0 / 60.0) / 10.0;
+                var diffHours = Math.round(10.0 * diffMilliSeconds / 1000.0 / 60.0 / 60.0) / 10.0;
                 return ""+diffHours+"h";
             }
         }, {
