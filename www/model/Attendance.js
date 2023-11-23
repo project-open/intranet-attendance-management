@@ -17,7 +17,8 @@ Ext.define('AttendanceManagement.model.Attendance', {
         appendId:   true,
 
         extraParams: {
-            format: 'json'
+            format: 'json',
+            attendance_user_id: 0               // Show only for current user, set by controller
         },
         reader: { 
 	    type: 'json', 
