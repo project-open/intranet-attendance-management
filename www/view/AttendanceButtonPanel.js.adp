@@ -19,7 +19,7 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
         bodyPadding: 0
     },
     tbar: [{
-	xtype: 'tbspacer', width: 0
+        xtype: 'tbspacer', width: 0
     }, {
         icon: '/intranet/images/navbar_default/clock_go.png',
         tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Start_work "Start&nbsp;work"] %>',
@@ -31,7 +31,7 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
         id: 'buttonStartBreak',
         disabled: false
     }, {
-	xtype: 'tbspacer', width: 0
+        xtype: 'tbspacer', width: 0
     }, {
         icon: '/intranet/images/navbar_default/stop.png',
         tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Stop "Stop&nbsp;logging"] %>',
@@ -43,7 +43,7 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
         id: 'buttonDelete',
         disabled: false
     }, {
-	xtype: 'tbspacer', width: 20
+        xtype: 'tbspacer', width: 20
     }, {
         icon: '/intranet/images/navbar_default/arrow_left.png',
         tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Previous_week "Previous&nbsp;week"] %>',
@@ -51,14 +51,14 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
         disabled: false
     }, {
         xtype: 'label',
-	text: 'current week',
-	id: 'labelWeek'
+        text: 'current week',
+        id: 'labelWeek'
     }, {
         icon: '/intranet/images/navbar_default/arrow_right.png',
         tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Next_week "Next&nbsp;week"] %>',
         id: 'buttonNextWeek',
         disabled: false
     }, {
-	xtype: 'tbspacer', width: 20
+        xtype: 'tbspacer', width: 20
     }]
 });
