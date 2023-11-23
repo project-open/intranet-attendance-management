@@ -32,18 +32,6 @@ Ext.define('AttendanceManagement.model.Attendance', {
         'attendance_date',	     	     	// Date part of start- and end time
         'attendance_start_time',		// Time part of start date
         'attendance_end_time'			// Time part of end date
-    ],
-
-    // Not sure this is actually used.
-    // The proxy of the store is more important.
-    proxy: {
-        type:		'rest',
-        url:		'/intranet-rest/im_attendance_interval',
-        appendId:	true,			// Append the object_id: ../im_ticket/<object_id>
-        timeout:	300000,
-        extraParams: { format: 'json' },	// Tell the ]po[ REST to return JSON data.
-        reader: { type: 'json', root: 'data' },	// Tell the Proxy Reader to parse JSON
-        writer: { type: 'json' }		// Allow Sencha to write changes
-    }
+    ]
 });
 
