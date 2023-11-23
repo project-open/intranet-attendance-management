@@ -17,27 +17,10 @@ Ext.define('AttendanceManagement.store.AttendanceStore', {
     sorters: [
         {property: 'attendance_start', direction: 'ASC'}
     ],
-    proxy: {
-        type:       'rest',
-        url:        '/intranet-rest/im_attendance_interval',
-        appendId:   true,
-        extraParams: {
-            format: 'json'
-        },
-        reader: { 
-	    type: 'json', 
-	    root: 'data' 
-	}
-    },
+
+    // Moved proxy to model/Attendance.js, because of erros in buildUrl()
 
     listeners: {
-        // ToDo: Fraber 2023-11-06: Eliminate?
-        update: function(store, record, operation, modifiedFields) { 
-            console.log('AttendanceStore: operation: ' + operation + ',  update: '+record + ', modified='+modifiedFields);
-            if ("commit" == operation) { return; }
-            // if (store.isLoading()) { return; }
-        },
-
         // Extract the editable fields attendance_date, start_time and end_time
         // from the data returned by the ]po[ REST interface.
         load: function(store, records, successful, eOpts) {

@@ -10,11 +10,24 @@
  */
 Ext.define('AttendanceManagement.model.Attendance', {
     extend: 'Ext.data.Model',
+
+    proxy: {
+        type:       'rest',
+        url:        '/intranet-rest/im_attendance_interval',
+        appendId:   true,
+
+        extraParams: {
+            format: 'json'
+        },
+        reader: { 
+	    type: 'json', 
+	    root: 'data' 
+	}
+    },
+
     fields: [
         'id',					// Same as attendance_id, but needed for Sencha magic
 	'object_name',
-	'creation_user',
-	'creation_date',	
 
         // Fields stored on the REST Back-end
         'attendance_id',			// Unique object ID 
