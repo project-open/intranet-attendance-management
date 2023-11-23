@@ -5,31 +5,31 @@ ToDo
 Editor Portlet
 ==============
 
+Features
+
 - Implement "<- current week ->"
 - Link zu Monatszeiterfassung
 - Anzeige Gleitzeitkonto
 - Anzeige Urlaubskonto
-- Localization to other languages (German)
-- Add parameters for min and max durations of intervals/breaks
 - Check consistency: Last entry every day should have been Work
 - Consistency checker: There should be no open entries in the past.
 - Consistency checker: Check for multiple open issues only today.
+- Localization to German (and other languages)
+
+Optional Features
+
+- Add parameters for min and max durations of intervals/breaks
+
 
 Bugs
 
-- ButtonStop on next day sets date of next day,
-  leading to interval > 12h
+- "Stopping" an entry in the past leads to >24h entries
 - Write out error message when end_time < start_time
 - Handle error message if start=end, and object
   destroy() fails
-- Creating a new entry, it's created at the top, not at
-  the bottom of the list. -> Add attendance_start with date.
-- Sort order:
-  There is an issue with the GMT+1 time zone,
-  so just cutting off the TZ in a string is wrong
 - Manually deleting the end-time of an entry doesn't save.
-- Adding a new break tries to add two items
-- Deleting an item issues two DELETE server operations
+
+
 
 
 
@@ -91,6 +91,16 @@ Editor portlet:
 		- Ähnlich wie "Gehen"
 - Bug: Format for GridPanel date column is different from renderer
 - Bug: Creating a new item doesn't save time
+- Bug: Shows attendances from any user
+- Bug:Adding a new break tries to add two items
+- Bug:Deleting an item issues two DELETE server operations
+- Bug: Sort order:
+  There is an issue with the GMT+1 time zone,
+  so just cutting off the TZ in a string is wrong
+- Bug: Creating a new entry, it's created at the top, not at
+  the bottom of the list. -> Add attendance_start with date.
+- Bug: ButtonStop on next day sets date of next day,
+  leading to interval > 12h
 
 
 
