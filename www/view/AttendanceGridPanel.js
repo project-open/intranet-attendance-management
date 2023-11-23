@@ -21,8 +21,6 @@ for (var i = start_hour; i < end_hour; i++) {
     }
 }
 
-var attendanceTypeStore = Ext.StoreManager.get('attendanceTypeStore');
-
 Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
     extend: 'Ext.grid.Panel',
     layout: 'fit',
@@ -31,18 +29,19 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
         {
             text: "ID", flex: 1, width: 30, dataIndex: 'id', hidden: true
         }, {
-            text: "Attendance ID", flex: 1, width: 30, dataIndex: 'attendance_id', hidden: true
+            text: "User", flex: 1, width: 30, dataIndex: 'attendance_user_id', hidden: false
         }, {
             text: "Type",
             dataIndex: 'attendance_type_id',
             renderer: function(value){
+		var attendanceTypeStore = Ext.StoreManager.get('attendanceTypeStore');
                 var model = attendanceTypeStore.getById(value);
                 var result = model.get('category');
                 return result;
             },
             editor: {
                 xtype:                  'combo',
-                store:                  attendanceTypeStore,
+                store:                  'attendanceTypeStore',
                 displayField:           'category',
                 valueField:             'category_id',
             }
