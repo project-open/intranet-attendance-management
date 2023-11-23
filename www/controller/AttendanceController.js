@@ -349,6 +349,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         rec.commit();
         
         this.enableDisableButtons();
+        this.checkConsistency();
     },
 
     // Esc (Escape) button pressed somewhere in the application window
@@ -390,6 +391,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         }
 
         this.enableDisableButtons();
+        this.checkConsistency();
     },
 
 
@@ -405,6 +407,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         console.log('AttendanceController.onButtonStartWork');
 
         this.createNewAttendance(92100); // Work attendance
+        this.checkConsistency();
     },
 
     /*
@@ -414,6 +417,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         console.log('AttendanceController.onButtonStartBreak');
 
         this.createNewAttendance(92110); // Break
+        this.checkConsistency();
     },
 
     /**
@@ -431,12 +435,17 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         if (item) {
             // Complete the attendance and set end time and attendance_end
             var now = new Date();
-            item.set('attendance_end_time', /\d\d:\d\d/.exec(""+now)[0]);
-            item.set('attendance_end', Ext.Date.format(now, 'Y-m-d H:i:s'));
+            var nowTimeISO = /\d\d:\d\d/.exec(""+now)[0];
+            var startDateISO = item.get('attendance_date');
+
+            // Create attendance_end with date from start (<12h...)
+            item.set('attendance_end_time', nowTimeISO);
+            item.set('attendance_end', startDateISO + ' ' + nowTimeISO);
             item.save();
         }
         
         this.enableDisableButtons();
+        this.checkConsistency();
     },
 
     
@@ -458,6 +467,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         }
 
         this.enableDisableButtons();
+        this.checkConsistency();
     },
 
     /**

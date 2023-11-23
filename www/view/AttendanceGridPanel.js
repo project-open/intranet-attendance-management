@@ -27,9 +27,9 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
     region: 'center',
     columns: [
         {
-            text: "ID", flex: 1, width: 30, dataIndex: 'id', hidden: true
+            text: "ID", width: 60, dataIndex: 'id', hidden: true
         }, {
-            text: "User", flex: 1, width: 30, dataIndex: 'attendance_user_id', hidden: false
+            text: "User ID", width: 60, dataIndex: 'attendance_user_id', hidden: true
         }, {
             text: "Type",
             dataIndex: 'attendance_type_id',
@@ -94,7 +94,9 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
         }, {
             text: "Name", flex: 1, dataIndex: 'object_name', hidden: true
         }, {
-            text: "Att Start", flex: 1, dataIndex: 'attendance_start', hidden: true
+            text: "Attendance Start ISO", width: 150, dataIndex: 'attendance_start', hidden: true
+        }, {
+            text: "Attendance End ISO", width: 150, dataIndex: 'attendance_end', hidden: true
         }, {
             text: "Note", flex: 1, dataIndex: 'attendance_note',
             editor: { allowBlank: true }
