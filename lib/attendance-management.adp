@@ -3,7 +3,7 @@
 
 Ext.Loader.setPath('PO', '/sencha-core');
 Ext.Loader.setPath('AttendanceManagement', '/intranet-attendance-management');
-// Ext.Loader.setConfig({disableCaching: false});
+Ext.Loader.setConfig({disableCaching: false});
 
 Ext.require([
     'Ext.data.*',
@@ -69,7 +69,7 @@ function launchTimesheetAttendanceLogging(){
         'attendanceController': attendanceController,
         'attendanceGrid': attendanceGrid,
         'attendanceGridRowEditing': rowEditing,
-	'current_user_id': @current_user_id@
+        'current_user_id': @current_user_id@
     });
     attendanceController.init(this).onLaunch(this);
 
