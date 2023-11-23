@@ -12,8 +12,15 @@ Ext.require([
     'PO.store.CategoryStore',
     'PO.controller.StoreLoadCoordinator',
     'AttendanceManagement.model.Attendance',
-    'AttendanceManagement.store.AttendanceStore'
+    'AttendanceManagement.store.AttendanceStore',
+    'AttendanceManagement.store.AttendanceTypeStore',
+    'AttendanceManagement.controller.AttendanceController',
+    'AttendanceManagement.view.AttendanceButtonPanel',
+    'AttendanceManagement.view.AttendanceGridPanel'
 ]);
+
+/*
+*/
 
 // Expose TCL variables as JavaScript variables
 var week_start_day = @week_start_day@;
