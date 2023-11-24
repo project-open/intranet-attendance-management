@@ -15,6 +15,8 @@ Features
 
 Optional Features
 
+- Clarify: What happens when editing a date, so that the
+  attendance moves to a different week?
 - Add parameters for min and max durations of intervals/breaks
 - Consistency checker: Last entry every day should have been Work
 - Consistency checker: There should be no open entries in the past.
