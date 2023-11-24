@@ -94,6 +94,8 @@ function launchTimesheetAttendanceLogging(){
 Ext.onReady(function() {
     Ext.QuickTips.init();
 
+    // -----------------------------------------------------------------------
+    // Define stores and add to "coordinator" 
     var attendanceStore = Ext.create('AttendanceManagement.store.AttendanceStore');
     var attendanceTypeStore = Ext.create('AttendanceManagement.store.AttendanceTypeStore');
     
@@ -101,27 +103,23 @@ Ext.onReady(function() {
     var coordinator = Ext.create('PO.controller.StoreLoadCoordinator', {
         stores: [
             'attendanceTypeStore',
-            'attendanceStore'
+            // 'attendanceStore'
         ],
         listeners: {
             load: function() {
                 if ("boolean" == typeof this.loadedP) { return; }  // application was launched before?
-                launchTimesheetAttendanceLogging();                  // Launch the actual application.
+                launchTimesheetAttendanceLogging();                // Launch the actual application.
                 this.loadedP = true;                               // Mark the application as launched
             }
         }
     });
 
+    // -----------------------------------------------------------------------
+    // Load stores (with custom args)
+
+    // This should only be "Work" and "Break"...
     attendanceTypeStore.load();
     
-    // Load stores that need parameters
-    attendanceStore.getProxy().extraParams = { attendance_user_id: @current_user_id@, format: 'json' };
-    attendanceStore.load({
-        callback: function() {
-            console.log('AttendanceStore: callback: loaded');
-        }
-    });
-
 });
 </script>
 </div>

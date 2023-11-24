@@ -51,11 +51,9 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // For some reaons this doesn't work on the level of the AttendancePanel, so we go for the global "window"
         Ext.EventManager.on(window, 'keydown', this.onWindowKeyDown, me);
 
-        // Setup default buttons
-        this.enableDisableButtons();
+	// Load the data for the current week
+	this.loadAttendanceStore();
 
-        this.checkConsistency();
-        
         return this;
     },
 
@@ -63,6 +61,49 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     /* *****************************************************************************************
        Common/Auxillary functions
     ***************************************************************************************** */
+
+    /**
+     * Get the date of the Monday of the current week
+     */  
+    getMonday: function (d) {
+	d = new Date(d);
+	var day = d.getDay(),
+	diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+	return new Date(d.setDate(diff));
+    },
+
+    /**
+     * Load the store for a given week
+     */  
+    loadAttendanceStore: function(weekDate) {
+	var me = this;
+	if (!weekDate) weekDate = new Date();
+        console.log('AttendanceController.loadAttendanceStore: '+weekDate.toIsoString());
+
+	var monday = this.getMonday(weekDate);
+	var sunday = new Date(monday.getTime() + 1000.0 * 3600 * 24 * 7);
+
+        // We need to select attendances of the current user in the current week
+        var startWeek = "'" + monday.toISOString().substring(0,10) + "'";
+
+        var endWeek = "'2023-12-23'";
+        var query = "attendance_start between " + startWeek + " and " + endWeek;
+        this.attendanceStore.getProxy().extraParams = { 
+            attendance_user_id: this.current_user_id,
+            format: 'json',
+            query: query
+        };
+        this.attendanceStore.load({
+            callback: function() {
+                console.log('AttendanceStore: callback: loaded');
+
+                // Setup default buttons
+                me.enableDisableButtons();
+                me.checkConsistency();
+            }
+        });
+
+    },
 
     /**
      * Used to stop the current logging 
