@@ -34,7 +34,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
             text: "Type",
             dataIndex: 'attendance_type_id',
             renderer: function(value){
-		var attendanceTypeStore = Ext.StoreManager.get('attendanceTypeStore');
+                var attendanceTypeStore = Ext.StoreManager.get('attendanceTypeStore');
                 var model = attendanceTypeStore.getById(value);
                 var result = model.get('category');
                 return result;
@@ -47,9 +47,13 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
             }
         }, {
             text: "Date",
-            xtype: 'datecolumn',
             dataIndex: 'attendance_date', 
-            renderer: Ext.util.Format.dateRenderer('Y-m-d'),
+            renderer: function(v) {
+		// Debugging: attendance_date gets overwritte by a Date!
+                var t = typeof(v);
+                if (t == "string") return v;
+                return t;
+            },
             editor: {
                 xtype: 'datefield',
                 allowBlank: true,
