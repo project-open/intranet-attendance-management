@@ -33,9 +33,9 @@ Ext.define('AttendanceManagement.model.Attendance', {
         // Fields stored on the REST Back-end
         'attendance_id',			// Unique object ID 
         'attendance_user_id',			// Who logged the attendance?
-        'attendance_status_id',			// 
-        'attendance_type_id',			// 
-        {name: 'attendance_start', convert: null}, // Start of time attendance (PostgreSQL timestamp format)
+        'attendance_status_id',			// Status is always "active"
+        'attendance_type_id',			// Type is Work or Break
+        'attendance_start',			// Start of time attendance (PostgreSQL timestamp format)
         'attendance_end',			// End od time attendance (PostgreSQL timestamp format)
         'attendance_note',			// Comment for the logged attendance
         'attendance_activity_id',		// Type of activity (meeting, work, ... (customer definable))
@@ -43,7 +43,7 @@ Ext.define('AttendanceManagement.model.Attendance', {
 
         // Add-on fields only for editing, but not for storage.
         // These fields are kept in sync with the previous ones using store events.
-        'attendance_date',	     	     	// Date part of start- and end time
+        'attendance_date',			// Date part of start- and end time
         'attendance_start_time',		// Time part of start date
         'attendance_end_time'			// Time part of end date
     ]
