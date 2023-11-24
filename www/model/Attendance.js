@@ -18,17 +18,18 @@ Ext.define('AttendanceManagement.model.Attendance', {
 
         extraParams: {
             format: 'json',
-            attendance_user_id: 0               // Show only for current user, set by controller
+            query: null,                         // attendance_date betweeen '<start>' and '<end>'
+            attendance_user_id: 0,               // Show only for current user, set by controller
         },
         reader: { 
-	    type: 'json', 
-	    root: 'data' 
-	}
+            type: 'json', 
+            root: 'data' 
+        }
     },
 
     fields: [
         'id',					// Same as attendance_id, but needed for Sencha magic
-	'object_name',
+        'object_name',
 
         // Fields stored on the REST Back-end
         'attendance_id',			// Unique object ID 
