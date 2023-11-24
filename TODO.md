@@ -11,22 +11,17 @@ Features
 - Link zu Monatszeiterfassung
 - Anzeige Gleitzeitkonto
 - Anzeige Urlaubskonto
-- Check consistency: Last entry every day should have been Work
-- Consistency checker: There should be no open entries in the past.
-- Consistency checker: Check for multiple open issues only today.
 - Localization to German (and other languages)
 
 Optional Features
 
 - Add parameters for min and max durations of intervals/breaks
-
+- Consistency checker: Last entry every day should have been Work
+- Consistency checker: There should be no open entries in the past.
+- Consistency checker: Check for multiple open issues only today.
 
 Bugs
 
-- "Stopping" an entry in the past leads to >24h entries
-- Write out error message when end_time < start_time
-- Handle error message if start=end, and object
-  destroy() fails
 - Manually deleting the end-time of an entry doesn't save.
 
 
@@ -101,6 +96,9 @@ Editor portlet:
   the bottom of the list. -> Add attendance_start with date.
 - Bug: ButtonStop on next day sets date of next day,
   leading to interval > 12h
+- Bug: "Stopping" an entry in the past leads to >24h entries
+- Bug: Write out error message when end_time < start_time
+- Bug: Handle error message if start=end, and object destroy() fails
 
 
 
