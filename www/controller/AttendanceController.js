@@ -33,13 +33,10 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             '#buttonStartBreak': { click: this.onButtonStartBreak },
             '#buttonStop': { click: this.onButtonStop },
             '#buttonDelete': { click: this.onButtonDelete },
-
             '#buttonPreviousWeek': { click: this.onButtonPreviousWeek },
             '#buttonNextWeek': { click: this.onButtonNextWeek },
-            
             scope: me.attendanceGrid
         });
-
 
         // Listen to a click into the empty space below the grid entries in order to start creating a new entry
         me.attendanceGrid.on('containerclick', this.onGridContainerClick, me);
@@ -49,7 +46,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         // Listen to the Grid Editor that allows to specify start- and end time
         me.attendanceGrid.on('edit', this.onGridEdit, me);
-        me.attendanceGrid.on('beforeedit', this.onGridBeforeEdit, me);
 
         // Catch a global key strokes. This is used to abort entry with Esc.
         // For some reaons this doesn't work on the level of the AttendancePanel, so we go for the global "window"
@@ -284,26 +280,10 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     ***************************************************************************************** */
 
     /**
-     * The user has double-clicked on the row editor in order to
-     * manually fill in the values. This procedure automatically
-     * fills in the end_time.
-     * ToDo: Remove? No need to click into the empty space?
-     */
-    onGridBeforeEdit: function(editor, context, eOpts) {
-        console.log('AttendanceController.onGridBeforeEdit');
-        console.log(context.record);
-
-        var endTime = context.record.get('attendance_end_time');
-        if (typeof endTime === 'undefined' || "" == endTime) {
-            endTime = /\d\d:\d\d/.exec(""+new Date())[0];
-            context.record.set('attendance_end_time', endTime);
-        }
-        // Return true to indicate to the editor that it's OK to edit
-        return true;
-    },
-
-    /**
-     * ToDo: Add comment, what is this for?
+     * The user has edited some entry.
+     * We now have to set attendance_start and attendance_end
+     * (the actual fields stored in the DB) based on date, 
+     * start_time and end_time.
      */
     onGridEdit: function(editor, context) {
         console.log('AttendanceController.onGridEdit');
@@ -317,36 +297,28 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         if ("" == attendance_start_time) { attendance_start_time = null; }
         if ("" == attendance_end_time) { attendance_end_time = null; }
 
-        // start == end => Delete the entry
-        if (attendance_start_time != null && attendance_end_time != null) {
-            if (attendance_start_time == attendance_end_time) {
-                rec.destroy();
-                return;
+        // Datefield in column converts attendance_date to Date.
+        if (typeof(attendance_date) == 'object') {
+            attendance_date = attendance_date.toISOString().substring(0,10);
+            rec.set('attendance_date', attendance_date);
+        }
+
+        // Calculate attendance_start and attendance_end based on time values
+        if (attendance_date != null) {
+            if (attendance_start_time != null) {
+                rec.set('attendance_start', attendance_date + ' ' + attendance_start_time);
+            } else {
+                rec.set('attendance_start', "");
+            }
+            
+            if (attendance_end_time != null) {
+                rec.set('attendance_end', attendance_date + ' ' + attendance_end_time);
+            } else {
+                rec.set('attendance_end', "");
             }
         }
 
-        if (attendance_date != null) {
-            // The attendance_date has been overwritten by the editor with a Date
-            var value = new Date(attendance_date);
-            rec.set('attendance_date', Ext.Date.format(value, 'Y-m-d'));
-        }
-
-        if (attendance_date != null && attendance_start_time != null) {
-            var value = new Date(attendance_date);
-            value.setHours(attendance_start_time.substring(0,2));
-            value.setMinutes(attendance_start_time.substring(3,5));
-            rec.set('attendance_start', Ext.Date.format(value, 'Y-m-d H:i:s'));
-        }
-
-        if (attendance_date != null && attendance_end_time != null) {
-            var value = new Date(attendance_date);
-            value.setHours(attendance_end_time.substring(0,2));
-            value.setMinutes(attendance_end_time.substring(3,5));
-            rec.set('attendance_end', Ext.Date.format(value, 'Y-m-d H:i:s'));
-        }
-
         rec.save();
-        rec.commit();
         
         this.enableDisableButtons();
         this.checkConsistency();
