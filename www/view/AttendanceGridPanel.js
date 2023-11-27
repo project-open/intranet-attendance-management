@@ -46,10 +46,20 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 valueField:             'category_id',
             }
         }, {
+            text: "Weekday",
+	    hidden: true,
+            dataIndex: 'attendance_date', 
+            renderer: function(v) {
+                const DAY_NAME_OF_WEEK_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                var dayOfWeek = new Date(v).getDay();
+                if (dayOfWeek) return DAY_NAME_OF_WEEK_SHORT[dayOfWeek];
+                return "Err"
+            },
+            editor: false
+        }, {
             text: "Date",
             dataIndex: 'attendance_date', 
             renderer: function(v) {
-		// Debugging: attendance_date gets overwritte by a Date!
                 var t = typeof(v);
                 if (t == "string") return v;
                 return t;
