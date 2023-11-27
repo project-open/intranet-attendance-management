@@ -55,15 +55,11 @@ function launchTimesheetAttendanceLogging(){
     });
 
     // Main panel
-    var screenSize = Ext.getBody().getViewSize();    // Size calculation based on specific ]po[ layout
-    var sideBarSize = Ext.get('sidebar').getSize();
-    var width = screenSize.width - sideBarSize.width - 95;
-    var height = screenSize.height - 280;    
     var attendanceButtonPanel = Ext.create('AttendanceManagement.view.AttendanceButtonPanel', {
         renderTo: '@attendance_editor_id@',
-        width: width,
-        height: height,
-        resizable: true,					// Add handles to the panel, so the user can change size
+        width: @portlet_width@,
+        height: @portlet_height@,
+        resizable: false,			// Add handles to the panel, so the user can change size
         items: [
             attendanceGrid
         ]
@@ -80,11 +76,6 @@ function launchTimesheetAttendanceLogging(){
     });
     attendanceController.init(this).onLaunch(this);
 
-    
-    // Handle collapsable side menu
-    var sideBarTab = Ext.get('sideBarTab');
-    sideBarTab.on('click', attendanceController.onSideBarResize, attendanceController);
-    Ext.EventManager.onWindowResize(attendanceController.onWindowsResize, attendanceController);    // Deal with resizing the main window
 };
 
 

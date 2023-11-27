@@ -11,6 +11,8 @@
 
 set current_user_id [ad_conn user_id]
 set data_list {}
+if {[info exists height]} { set portlet_height $height } else { set portlet_height 400 }
+if {[info exists width]} { set portlet_width $width } else { set portlet_width 600 }
 
 # Create a random ID for the attendance_editor
 set attendance_editor_rand [expr round(rand() * 100000000.0)]
