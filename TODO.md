@@ -5,36 +5,32 @@ ToDo
 Editor Portlet
 ==============
 
-Features
+ToDo: Features
 
 - Link zu Monatszeiterfassung
 - Anzeige Gleitzeitkonto
 - Anzeige Urlaubskonto
-- Localization to German (and other languages)
+- Localization to German
 
-Optional Features
+ToDo: Optional Features
 
 - Clarify: What happens when editing a date, so that the
   attendance moves to a different week?
-- Add parameters for min and max durations of intervals/breaks
-- Consistency checker: Last entry every day should have been Work
-- Consistency checker: There should be no open entries in the past.
-- Consistency checker: Check for multiple open issues only today.
-
-Bugs
-
-- Manually deleting the end-time of an entry doesn't save.
-
-
+- Add parameters for min and max durations of intervals/breaks?
+- Consistency checker: Last entry every day should have been Work?
+- Consistency checker: There should be no open entries in the past?
+- Consistency checker: Check for multiple open issues only today?
 
 
 
 Timesheet Monthly Calendar
 ==========================
 
+ToDo: Features
+
 - Farbe rot/grün in Abhängigkeit von 8h 
 - Vergleich Anwesenheit vs. Soll Anwesenheit
-	- Monatlich mit Berechnung der Soll-Anwesenheit
+  - Monatlich mit Berechnung der Soll-Anwesenheit
 - Soll Anwesenheit = 8h/Tag * Verfügbarkeit
 - Klick auf Anwesenheits-Link führt zu Widget, 
   mit der richtigen Woche "aufgeklappt"
@@ -43,6 +39,8 @@ Timesheet Monthly Calendar
 
 Report Pausenzeiten
 ===================
+
+ToDo: Features
 
 - Filter:
 	- User
@@ -108,6 +106,7 @@ Editor portlet:
   Alternative: We just disable the main buttons when not
   showing the current week. Entries in the last weeks
   can be modified manually.
+- Bug: Manually deleting the end-time of an entry doesn't save.
 
 
 Timesheet Monthly Calendar:
