@@ -22,7 +22,9 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     'attendanceController': null,
     'attendanceGrid': null,
     'attendanceGridRowEditing': null,
-    
+
+    'attendanceWeekDate': null,               // Monday 00:00:00 of the current week
+
     // Setup the various listeners so that everything gets concentrated here on this controller.
     init: function() {
         var me = this;
@@ -51,8 +53,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // For some reaons this doesn't work on the level of the AttendancePanel, so we go for the global "window"
         Ext.EventManager.on(window, 'keydown', this.onWindowKeyDown, me);
 
-	// Load the data for the current week
-	this.loadAttendanceStore();
+        // Load the data for the current week
+        this.loadCurrentWeekAttendanceStore();
 
         return this;
     },
@@ -63,56 +65,80 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     ***************************************************************************************** */
 
     /**
-     * Get the date of the Monday of the current week
+     * Return Monday 00:00:00 of the current week
      */  
     getMonday: function (d) {
-	d = new Date(d);
-	var day = d.getDay(),
-	diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
-	return new Date(d.setDate(diff));
+        d = new Date(d);
+        var day = d.getDay(),
+        diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+
+        var result = new Date(d.setDate(diff));
+        result.setHours(0);
+        result.setMinutes(0);
+        result.setSeconds(0);
+
+        return result;
+    },
+
+
+    /**
+     * Set the current week and load attendance store
+     */
+    loadCurrentWeekAttendanceStore: function() {
+        var me = this;
+        console.log('AttendanceController.loadCurrentWeekAttendanceStore: ');
+
+        var todayDate = new Date();
+        var mondayDate = me.getMonday(todayDate);
+        me.loadAttendanceStore(mondayDate);
     },
 
     /**
      * Load the store for a given week
-     */  
-    loadAttendanceStore: function(weekDate) {
-	var me = this;
-	if (!weekDate) weekDate = new Date();
-        console.log('AttendanceController.loadAttendanceStore: '+weekDate.toIsoString());
+     */
+    loadAttendanceStore: function(date) {
+        var me = this;
+        console.log('AttendanceController.loadAttendanceStore: '+date.toISOString());
 
-	var monday = this.getMonday(weekDate);
-	var sunday = new Date(monday.getTime() + 1000.0 * 3600 * 24 * 7);
+        // Get Monday and Sunday of the current week
+        var mondayDate = me.getMonday(date);
+        var sundayDate = new Date(mondayDate.getTime() + 1000.0 * 3600 * 24 * 7 - 1000.0 * 1);
 
-        // We need to select attendances of the current user in the current week
-        var startWeek = "'" + monday.toISOString().substring(0,10) + "'";
+        // Store the new Monday into the Controller
+        me.attendanceWeekDate = mondayDate;
 
-        var endWeek = "'2023-12-23'";
-        var query = "attendance_start between " + startWeek + " and " + endWeek;
-        this.attendanceStore.getProxy().extraParams = { 
-            attendance_user_id: this.current_user_id,
+        var startISO = Ext.Date.format(me.attendanceWeekDate, 'Y-m-d');
+        var endISO = Ext.Date.format(sundayDate, 'Y-m-d');
+        var query = "attendance_start between '" + startISO + "' and '" + endISO + "'";
+        me.attendanceStore.getProxy().extraParams = { 
+            attendance_user_id: me.current_user_id,
             format: 'json',
             query: query
         };
-        this.attendanceStore.load({
+        me.attendanceStore.load({
             callback: function() {
                 console.log('AttendanceStore: callback: loaded');
 
-                // Setup default buttons
+                // Setup default buttons once store has been loaded
                 me.enableDisableButtons();
                 me.checkConsistency();
             }
         });
 
+        // Set the date into the label
+        var labelWeek = Ext.getCmp('labelWeek');
+        labelWeek.setText(startISO + ' - ' + endISO);
     },
 
     /**
      * Used to stop the current logging 
      */  
     abortWork: function() {
+        var me = this;
         console.log('AttendanceController.abortWork');
 
         // Delete the started line in the editor
-        this.attendanceGridRowEditing.cancelEdit();
+        me.attendanceGridRowEditing.cancelEdit();
     },
 
 
@@ -123,10 +149,11 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * is really just a convenience function.
      */  
     getOpenAttendanceEntriesCount: function() {
+        var me = this;
         console.log('AttendanceController.getOpenAttendanceEntriesCount');
 
         var count = 0;
-        this.attendanceStore.each(function(item) {
+        me.attendanceStore.each(function(item) {
 
             var end = item.get('attendance_end');
             if ("" == end) { count++; }
@@ -139,6 +166,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * Check for consistency of the weeek and issue error message(s).
      */  
     checkConsistency: function() {
+        var me = this;
         console.log('AttendanceController.checkConsistency');
 
         // Count the entries with no end time
@@ -153,7 +181,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Itervals of more than a day
         var intervalTooLong = 0;
         
-        this.attendanceStore.each(function(item) {
+        me.attendanceStore.each(function(item) {
             var endIso = item.get('attendance_end');
             var startIso = item.get('attendance_start');
             var type_id = item.get('attendance_type_id');
@@ -171,8 +199,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
                 if (durationMinutes > 12.0 * 60.0) intervalTooLong++
                 
                 switch (type_id) {
-                case "92100": { break; }	    // Work
-                case "92110": {	        	    // Break
+                case "92100": { break; }            // Work
+                case "92110": {                            // Break
                     if (durationMinutes < 15) breaksTooShort++;
                     break;
                 }
@@ -235,10 +263,11 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * Returns null if there is no open item.
      */  
     findFirstOpenAttendanceEntryToday: function() {
+        var me = this;
         console.log('AttendanceController.getOpenAttendanceEntriesCount');
 
         var firstOpenItem = null;
-        this.attendanceStore.each(function(item) {
+        me.attendanceStore.each(function(item) {
             var end = item.get('attendance_end');
             if ("" == end) {                            // don't overwrite if already found
                 if (null == firstOpenItem) firstOpenItem = item;
@@ -253,11 +282,12 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * Start logging an attendance
      */
     createNewAttendance: function(attendance_type_id) {
+        var me = this;
         console.log('AttendanceController.createNewAttendance: '+attendance_type_id);
 
         // ToDo: Check that there is no other line currently open with an empty end-date
                 
-        this.attendanceGridRowEditing.cancelEdit();
+        me.attendanceGridRowEditing.cancelEdit();
 
         // Start logging
         var now = new Date();
@@ -267,7 +297,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // The Attendance object is a 1:1 reflection of what is in the DB,
         // so all attributes are strings.
         var attendance = new Ext.create('AttendanceManagement.model.Attendance', {
-            attendance_user_id: ""+this.current_user_id,
+            attendance_user_id: ""+me.current_user_id,
             attendance_type_id: ""+attendance_type_id, // Attendance
             attendance_status_id: ""+92020, // Active
             attendance_date: startDateIso,
@@ -277,9 +307,9 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         });
         
         // Add to end of the store and sync
-        var addResult = this.attendanceStore.add(attendance);
+        var addResult = me.attendanceStore.add(attendance);
 
-        this.enableDisableButtons();
+        me.enableDisableButtons();
     },
     
     
@@ -287,6 +317,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * Set the enabled/disabled status of all buttons
      */  
     enableDisableButtons: function() {
+        var me = this;
         console.log('AttendanceController.enableDisableButtons');
 
         var buttonStartWork = Ext.getCmp('buttonStartWork');
@@ -294,13 +325,25 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         var buttonDelete = Ext.getCmp('buttonDelete');
         var buttonStop = Ext.getCmp('buttonStop');
 
-        // buttonStartWork.disable();
-        // buttonStartWork.enable();
+        // Check if we are showing the current week.
+        // Otherwise just disable all buttons.
+        var currentWeekMonday = me.getMonday(new Date());
+        var currentWeekISO = Ext.Date.format(currentWeekMonday, 'Y-m-d')
+        var controllerWeekISO = Ext.Date.format(me.attendanceWeekDate, 'Y-m-d')
+        if (currentWeekISO != controllerWeekISO) {
+            buttonStartWork.disable();
+            buttonStartBreak.disable()
+            buttonDelete.disable();
+            buttonStop.disable();
+            return;
+        }
         
-        var selection = this.attendanceGrid.getSelectionModel().getSelection();
+        // Get the number of selected entries
+        var selection = me.attendanceGrid.getSelectionModel().getSelection();
         var selectionLen = selection.length;
 
-        var openItemsCount = this.getOpenAttendanceEntriesCount();
+        // Get the number of entries without end date
+        var openItemsCount = me.getOpenAttendanceEntriesCount();
 
         // Delete is enabled if one item is selected, disabled otherwise.
         buttonDelete.setDisabled(1 != selectionLen);
@@ -327,6 +370,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * start_time and end_time.
      */
     onGridEdit: function(editor, context) {
+        var me = this;
         console.log('AttendanceController.onGridEdit');
         var rec = context.record;
         
@@ -361,22 +405,23 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         rec.save();
         
-        this.enableDisableButtons();
-        this.checkConsistency();
+        me.enableDisableButtons();
+        me.checkConsistency();
     },
 
     // Esc (Escape) button pressed somewhere in the application window
     onWindowKeyDown: function(e) {
+        var me = this;
         var keyCode = e.getKey();
         var keyCtrl = e.ctrlKey;
         console.log('AttendanceController.onWindowKeyDown: code='+keyCode+', ctrl='+keyCtrl);
         
         // Delete key has same function as Delete Button
-        if (46 == keyCode) { this.onButtonDelete(); }
+        if (46 == keyCode) { me.onButtonDelete(); }
 
         // ToDo: Not clear how to handle "cancel" ESC key.
         // Cancel current logging? -> Delete last entry
-        // if (27 == keyCode) { this.onButtonCancelWork(); }
+        // if (27 == keyCode) { me.onButtonCancelWork(); }
 
         // Status engine handled in the CancelWork and Delete functions
     },
@@ -385,26 +430,28 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * Handle various key actions
      */
     onCellKeyDown: function(table, htmlTd, cellIndex, record, htmlTr, rowIndex, e, eOpts) {
+        var me = this;
         console.log('AttendanceController.onCellKeyDown');
         var keyCode = e.getKey();
         var keyCtrl = e.ctrlKey;
 
-        this.enableDisableButtons();
+        me.enableDisableButtons();
 
         console.log('AttendanceController.onCellKeyDown: code='+keyCode+', ctrl='+keyCtrl);
     },
     
     // Click into the empty space below the grid entries in order to start creating a new entry
     onGridContainerClick: function() {
+        var me = this;
         console.log('AttendanceController.onGridContainerClick');
         var buttonStartWork = Ext.getCmp('buttonStartWork');
         var disabled = buttonStartWork.disabled;
         if (!disabled) {
-            this.onButtonStartWork();
+            me.onButtonStartWork();
         }
 
-        this.enableDisableButtons();
-        this.checkConsistency();
+        me.enableDisableButtons();
+        me.checkConsistency();
     },
 
 
@@ -417,20 +464,26 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * Start logging working time
      */
     onButtonStartWork: function() {
+        var me = this;
         console.log('AttendanceController.onButtonStartWork');
 
-        this.createNewAttendance(92100); // Work attendance
-        this.checkConsistency();
+        me.selectCurrentWeek();
+
+        me.createNewAttendance(92100); // Work attendance
+        me.checkConsistency();
     },
 
     /*
      * Start a break
      */
     onButtonStartBreak: function() {
+        var me = this;
         console.log('AttendanceController.onButtonStartBreak');
 
-        this.createNewAttendance(92110); // Break
-        this.checkConsistency();
+        me.selectCurrentWeek();
+
+        me.createNewAttendance(92110); // Break
+        me.checkConsistency();
     },
 
     /**
@@ -438,13 +491,16 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * We also have to deal with zero or multiple "open" entries.
      */
     onButtonStop: function() {
+        var me = this;
         console.log('AttendanceController.onButtonStop');
 
+        me.selectCurrentWeek();
+
         // Make sure no editing is in course
-        this.attendanceGridRowEditing.cancelEdit();
+        me.attendanceGridRowEditing.cancelEdit();
 
         // Search for the first open item in the store this week
-        var item = this.findFirstOpenAttendanceEntryToday();
+        var item = me.findFirstOpenAttendanceEntryToday();
         if (item) {
             // Complete the attendance and set end time and attendance_end
             var now = new Date();
@@ -457,14 +513,18 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             item.save();
         }
         
-        this.enableDisableButtons();
-        this.checkConsistency();
+        me.enableDisableButtons();
+        me.checkConsistency();
     },
 
     
     onButtonDelete: function() {
+        var me = this;
         console.log('AttendanceController.onButtonDelete');
-        var selModel = this.attendanceGrid.getSelectionModel();
+
+        me.selectCurrentWeek();
+
+        var selModel = me.attendanceGrid.getSelectionModel();
         var records = selModel.getSelection();
 
         // Not logging already - enable the "start" button
@@ -475,12 +535,12 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             // selModel.selectNext(false);
 
             var record = records[0];
-            this.attendanceStore.remove(record);
+            me.attendanceStore.remove(record);
             record.destroy();
         }
 
-        this.enableDisableButtons();
-        this.checkConsistency();
+        me.enableDisableButtons();
+        me.checkConsistency();
     },
 
     /**
@@ -488,83 +548,46 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * Enable or disable the "Delete" button
      */
     onGridSelectionChange: function(view, records) {
-        if (this.debug) { console.log('AttendanceController.onGridSelectionChange'); }
+        var me = this;
+        if (me.debug) { console.log('AttendanceController.onGridSelectionChange'); }
 
-        this.enableDisableButtons();
+        me.enableDisableButtons();
     },
-
 
     /**
      * Executed before starting to log hours
      * to select the current week.
      */
     selectCurrentWeek: function() {
+        var me = this;
         console.log('AttendanceController.selectCurrentWeek');
 
+        var todayDate = new Date();
+        var thisWeekMondayDate = me.getMonday(todayDate);
+
+        if (Math.abs(me.attendanceWeekDate.getTime() - thisWeekMondayDate.getTime()) > 10000) {
+            console.log('AttendanceController.selectCurrentWeek: Different week');
+            this.loadCurrentWeekAttendanceStore();
+        }
     },
     
     onButtonPreviousWeek: function() {
+        var me = this;
         console.log('AttendanceController.onButtonPreviousWeek');
 
-        // complete the current logging interval
-        this.abortWork();
+        // Forward to next week
+        me.attendanceWeekDate = new Date(me.attendanceWeekDate.getTime() - 1000.0 * 3600 * 24 * 7);
+        me.loadAttendanceStore(me.attendanceWeekDate);
     },
 
     onButtonNextWeek: function() {
+        var me = this;
         console.log('AttendanceController.onButtonNextWeek');
 
-        // complete the current logging interval
-        this.abortWork();
-    },
-    
-
-    
-    /* *****************************************************************************************
-       Resizing
-    ***************************************************************************************** */
-    
-    /**
-     * The windows as a whole was resized
-     */
-    onWindowsResize: function(width, height) {
-        console.log('AttendanceController.onWindowResize');
-        var me = this;
-        var sideBar = Ext.get('sidebar');				// ]po[ left side bar component
-        var sideBarSize = sideBar.getSize();
-        me.onResize(sideBarSize.width);
-    },
-
-    /**
-     * The ]po[ left sideBar was resized
-     */
-    onSideBarResize: function(event, el, config) {
-        console.log('AttendanceController.onSideBarResize');
-        var me = this;
-        var sideBar = Ext.get('sidebar');				// ]po[ left side bar component
-        var sideBarSize = sideBar.getSize();
-
-        // We get the event _before_ the sideBar has changed it's size.
-        // So we actually need to the the oposite of the sidebar size:
-        if (sideBarSize.width > 100) {
-            sideBarSize.width = -5;
-        } else {
-            sideBarSize.width = 245;
-        }
-
-        me.onResize(sideBarSize.width);
-    },
-
-    /**
-     * Generic resizing function, called with the target width of the sideBar
-     */
-    onResize: function(sideBarWidth) {
-        console.log('AttendanceController.onResize: '+sideBarWidth);
-        var me = this;
-        var screenSize = Ext.getBody().getViewSize();
-        var height = me.attendanceButtonPanel.getSize().height;
-        var width = screenSize.width - sideBarWidth - 75;
-        me.attendanceButtonPanel.setSize(width, height);
-    }
+        // Forward to next week
+        me.attendanceWeekDate = new Date(me.attendanceWeekDate.getTime() + 1000.0 * 3600 * 24 * 7);
+        me.loadAttendanceStore(me.attendanceWeekDate);
+    }    
     
 });
 
