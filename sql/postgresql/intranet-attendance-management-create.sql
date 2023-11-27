@@ -109,7 +109,7 @@ SELECT im_component_plugin__new (
 	'/intranet/index',			-- page_url
 	null,					-- view_name
 	10,					-- sort_order
-	'im_attendance_management_portlet'
+	'im_attendance_management_portlet -width 600 -height 500'
 );
 
 SELECT acs_permission__grant_permission(
