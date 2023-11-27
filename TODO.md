@@ -7,7 +7,6 @@ Editor Portlet
 
 Features
 
-- Implement "<- current week ->"
 - Link zu Monatszeiterfassung
 - Anzeige Gleitzeitkonto
 - Anzeige Urlaubskonto
@@ -86,6 +85,8 @@ Editor portlet:
 		  sonst ignorieren
 	- Ende Pause:
 		- Ähnlich wie "Gehen"
+- Implement "<- current week ->"
+
 - Bug: Format for GridPanel date column is different from renderer
 - Bug: Creating a new item doesn't save time
 - Bug: Shows attendances from any user
@@ -101,7 +102,12 @@ Editor portlet:
 - Bug: "Stopping" an entry in the past leads to >24h entries
 - Bug: Write out error message when end_time < start_time
 - Bug: Handle error message if start=end, and object destroy() fails
-
+- Bug: selectCurrentWeek() needs to execute the addItem
+  in the after-load callback so that it gets loaded.
+  (or with a delay?)
+  Alternative: We just disable the main buttons when not
+  showing the current week. Entries in the last weeks
+  can be modified manually.
 
 
 Timesheet Monthly Calendar:
