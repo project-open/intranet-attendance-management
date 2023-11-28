@@ -12,20 +12,28 @@ ToDo: Features
 - Anzeige Urlaubskonto
 - Localization to German
 
+- Two digit precision on Duration
+
 ToDo: Optional Features
 
 - Clarify: What happens when editing a date, so that the
   attendance moves to a different week?
 - Add parameters for min and max durations of intervals/breaks?
-- Consistency checker: Last entry every day should have been Work?
+- Cancel: Consistency checker: Last entry every day should have been Work?
 - Consistency checker: There should be no open entries in the past?
-- Consistency checker: Check for multiple open issues only today?
+  => Handle in report (globally)
+  => User can check himself in the monthly calendar view
+- Done: Consistency checker: Check for multiple open issues only today?
 
 ToAsk:
 
 - (+) and (-) buttons in previous weeks?
 - (+) and (-) buttons in future weeks?
  
+
+Bugs:
+
+- Editing end-time leads to entry disappearing
 
 
 Timesheet Monthly Calendar
@@ -55,6 +63,7 @@ ToDo: Features
 	- Zeitraum
 - Anzeige:
 	- Pausenzeiten
+	- Anwesenheitszeiten
 	- Mindestens 15 pro Pause
 	- Ab 6h verpflichtend 30min Pause
 	- Ab 9h 45min Pause
@@ -63,7 +72,17 @@ ToDo: Features
 		- Gesamtzeit Pausen
 		- Rot wenn Business-Regeln verletzt (oben)
 		  mit Kommentar warum
-		- 
+	- Used to manually calculate working time per month
+
+
+
+Report Abgleich Anwesenheit vs. Projektstunden
+==============================================
+
+
+
+Other ToDos:
+- Reactivate User Base Data portlet in "My Account"
 
 
 
