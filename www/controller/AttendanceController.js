@@ -22,6 +22,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     'attendanceController': null,
     'attendanceGrid': null,
     'attendanceGridRowEditing': null,
+    'initial_date_ansi': null,                // ANSI date for initial load of store, from portlet params
 
     'attendanceWeekDate': null,               // Monday 00:00:00 of the current week
 
@@ -53,10 +54,15 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // For some reaons this doesn't work on the level of the AttendancePanel, so we go for the global "window"
         Ext.EventManager.on(window, 'keydown', this.onWindowKeyDown, me);
 
-        // Load the data for the current week
-        this.loadCurrentWeekAttendanceStore();
+        // Load the attendance store for the current/select week
+        // me.loadCurrentWeekAttendanceStore(me.initial_date_ansi);
+        var initialDate = new Date();
+        if (me.initial_date_ansi && "" != me.initial_date_ansi) {
+            initialDate = new Date(me.initial_date_ansi);
+        }
+        me.loadAttendanceStore(initialDate);
 
-        return this;
+        return me;
     },
 
 

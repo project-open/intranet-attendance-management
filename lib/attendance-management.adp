@@ -27,7 +27,6 @@ var week_start_day = @week_start_day@;
 var start_hour = @start_hour@;
 var end_hour = @end_hour@;
 
-
 function launchTimesheetAttendanceLogging(){
     // Stores
     var attendanceStore = Ext.StoreManager.get('attendanceStore');
@@ -72,7 +71,8 @@ function launchTimesheetAttendanceLogging(){
         'attendanceController': attendanceController,
         'attendanceGrid': attendanceGrid,
         'attendanceGridRowEditing': rowEditing,
-        'current_user_id': @current_user_id@
+        'current_user_id': @current_user_id@,
+	'initial_date_ansi': '@ansi_date@'
     });
     attendanceController.init(this).onLaunch(this);
 

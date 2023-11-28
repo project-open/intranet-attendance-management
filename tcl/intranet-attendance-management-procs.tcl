@@ -29,9 +29,17 @@ ad_proc -public im_attendance_management_portlet {
     if {![im_permission $current_user_id add_hours]} { return "" }
     im_sencha_extjs_load_libraries
 
+    # Check if calling page provided a "julian" parameter in the URL
+    set julian [im_opt_val julian]
+    set ansi_date ""
+    if {"" != $julian && 0 != $julian} {
+	set ansi_date [im_date_julian_to_ansi $julian]
+    }
+
     set params [list \
 		    [list height $height] \
 		    [list width $width] \
+		    [list ansi_date $ansi_date] \
     ]
 
     set result [ad_parse_template -params $params "/packages/intranet-attendance-management/lib/attendance-management"]

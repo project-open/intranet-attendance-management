@@ -21,6 +21,11 @@ ToDo: Optional Features
 - Consistency checker: There should be no open entries in the past?
 - Consistency checker: Check for multiple open issues only today?
 
+ToAsk:
+
+- (+) and (-) buttons in previous weeks?
+- (+) and (-) buttons in future weeks?
+ 
 
 
 Timesheet Monthly Calendar
@@ -28,12 +33,14 @@ Timesheet Monthly Calendar
 
 ToDo: Features
 
-- Farbe rot/grün in Abhängigkeit von 8h 
 - Vergleich Anwesenheit vs. Soll Anwesenheit
   - Monatlich mit Berechnung der Soll-Anwesenheit
-- Soll Anwesenheit = 8h/Tag * Verfügbarkeit
-- Klick auf Anwesenheits-Link führt zu Widget, 
-  mit der richtigen Woche "aufgeklappt"
+  - Calculate monthly required presence including
+    absences
+
+ToAsk:
+
+- Localization of Work, Break etc.
 
 
 
@@ -84,6 +91,8 @@ Editor portlet:
 	- Ende Pause:
 		- Ähnlich wie "Gehen"
 - Implement "<- current week ->"
+- Klick auf Anwesenheits-Link führt zu Widget, 
+  mit der richtigen Woche "aufgeklappt"
 
 - Bug: Format for GridPanel date column is different from renderer
 - Bug: Creating a new item doesn't save time
@@ -112,4 +121,6 @@ Editor portlet:
 Timesheet Monthly Calendar:
 
 - Pro Tag zusätzlicher Eintrag: Anwesenheit
+- Farbe rot/grün in Abhängigkeit von 8h 
+- Soll Anwesenheit = 8h/Tag * Verfügbarkeit
 
