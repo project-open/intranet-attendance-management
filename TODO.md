@@ -7,11 +7,7 @@ Editor Portlet
 
 ToDo: Features
 
-- Link zu Monatszeiterfassung
-- Anzeige Gleitzeitkonto
-- Anzeige Urlaubskonto
 - Localization to German
-
 - Two digit precision on Duration
 
 ToDo: Optional Features
@@ -112,6 +108,9 @@ Editor portlet:
 - Implement "<- current week ->"
 - Klick auf Anwesenheits-Link führt zu Widget, 
   mit der richtigen Woche "aufgeklappt"
+- Link zu Monatszeiterfassung
+- Anzeige Gleitzeitkonto
+- Anzeige Urlaubskonto
 
 - Bug: Format for GridPanel date column is different from renderer
 - Bug: Creating a new item doesn't save time
