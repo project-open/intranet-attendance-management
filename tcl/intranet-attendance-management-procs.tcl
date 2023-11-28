@@ -15,15 +15,17 @@ ad_library {
 
 
 ad_proc -public im_attendance_management_portlet {
-    { -height 600 }
+    { -height 500 }
     { -width 600 }
 } {
-    Returns a HTML code with a Sencha attendance entry portlet.
+    Returns a HTML code with a Sencha ExtJS portlet
+    to capture attendances.
 } {
     # Sencha check and permissions
     if {![im_sencha_extjs_installed_p]} { return "" }
     set current_user_id [ad_conn user_id]
 
+    # We are using add_hours privilege also for attendances.
     if {![im_permission $current_user_id add_hours]} { return "" }
     im_sencha_extjs_load_libraries
 
@@ -35,8 +37,6 @@ ad_proc -public im_attendance_management_portlet {
     set result [ad_parse_template -params $params "/packages/intranet-attendance-management/lib/attendance-management"]
     return [string trim $result]
 }
-
-
 
 
 # ---------------------------------------------------------------------
@@ -55,6 +55,8 @@ ad_proc -public im_attendance_interval_permissions {user_id attendance_id view_v
     upvar $admin_var admin
 
     set current_user_id $user_id
+    set admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+
     set view 0
     set read 0
     set write 0
@@ -75,7 +77,7 @@ ad_proc -public im_attendance_interval_permissions {user_id attendance_id view_v
     }
 
     # The owner and administrators can always read and write
-    if {$current_user_id == $user_id} {
+    if {$admin_p || $current_user_id == $attendance_user_id} {
 	set view 1
 	set read 1
 	set write 1
