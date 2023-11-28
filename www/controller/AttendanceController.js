@@ -582,7 +582,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         console.log('AttendanceController.onButtonPreviousWeek');
 
         // Forward to next week
-        me.attendanceWeekDate = new Date(me.attendanceWeekDate.getTime() - 1000.0 * 3600 * 24 * 7);
+        me.attendanceWeekDate = new Date(me.attendanceWeekDate.getTime() - 1000.0 * 3600 * 24 * (7-1));
         me.loadAttendanceStore(me.attendanceWeekDate);
     },
 
@@ -591,7 +591,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         console.log('AttendanceController.onButtonNextWeek');
 
         // Forward to next week
-        me.attendanceWeekDate = new Date(me.attendanceWeekDate.getTime() + 1000.0 * 3600 * 24 * 7);
+        me.attendanceWeekDate = new Date(me.attendanceWeekDate.getTime() + 1000.0 * 3600 * 24 * (7+1));
         me.loadAttendanceStore(me.attendanceWeekDate);
     }    
     
