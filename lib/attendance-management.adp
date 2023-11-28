@@ -27,6 +27,17 @@ var week_start_day = @week_start_day@;
 var start_hour = @start_hour@;
 var end_hour = @end_hour@;
 
+const DAY_NAME_OF_WEEK_SHORT = [
+    "<%= [_ intranet-timesheet2.Day_of_week_Sun] %>", 
+    "<%= [_ intranet-timesheet2.Day_of_week_Mon] %>", 
+    "<%= [_ intranet-timesheet2.Day_of_week_Tue] %>", 
+    "<%= [_ intranet-timesheet2.Day_of_week_Wed] %>", 
+    "<%= [_ intranet-timesheet2.Day_of_week_Thu] %>", 
+    "<%= [_ intranet-timesheet2.Day_of_week_Fri] %>", 
+    "<%= [_ intranet-timesheet2.Day_of_week_Sat] %>"
+];
+
+
 function launchTimesheetAttendanceLogging(){
     // Stores
     var attendanceStore = Ext.StoreManager.get('attendanceStore');

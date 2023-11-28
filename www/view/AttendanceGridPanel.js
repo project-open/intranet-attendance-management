@@ -47,10 +47,10 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
             }
         }, {
             text: "Weekday",
-	    hidden: true,
+	    hidden: false,
+	    width: 60,
             dataIndex: 'attendance_date', 
             renderer: function(v) {
-                const DAY_NAME_OF_WEEK_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
                 var dayOfWeek = new Date(v).getDay();
                 if (dayOfWeek) return DAY_NAME_OF_WEEK_SHORT[dayOfWeek];
                 return "Err"
