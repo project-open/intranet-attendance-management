@@ -87,8 +87,6 @@ ad_proc -public im_attendance_interval_permissions {user_id attendance_id view_v
 
 
 
-
-
 # ----------------------------------------------------------------------
 # Nuke an attendance
 # ---------------------------------------------------------------------
@@ -103,3 +101,34 @@ ad_proc -public im_attendance_interval_nuke {
     db_string nuke "select im_attendance_interval__delete(:attendance_interval_id)"
 }
 
+
+
+# ----------------------------------------------------------------------
+# Business Logic
+# ---------------------------------------------------------------------
+
+ad_proc -public im_attendance_daily_attendance_hours {
+    {-user_id 0}
+} {
+    Returns the number of hours a person should be present
+    at any work day.
+} {
+    if {0 == $user_id} { set user_id [ad_conn user_id] }
+    set default_hours_per_day [parameter::get_from_package_key -package_key "intranet-attendance-management" -parameter "DefaultAttendanceHoursPerDay" -default "8.0"]
+
+    if {![db_0or1row attendance_user_info "
+	select	*
+	from	im_employees e
+	where	employee_id = :user_id
+    "]} {
+	# User for some reason doesn't exit...
+	ns_log Error "im_attendance_daily_attendance_hours: user_id=$user_id doesn't exist"
+	return $default_hours_per_day
+    }
+
+    set hours_per_day $default_hours_per_day
+    if {$availability != ""} {
+	set hours_per_day [expr $default_hours_per_day * $availability]
+    }
+    return $hours_per_day
+}
