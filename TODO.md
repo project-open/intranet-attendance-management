@@ -8,7 +8,6 @@ Editor Portlet
 ToDo: Features
 
 - Localization to German
-- Two digit precision on Duration
 
 ToDo: Optional Features
 
@@ -111,6 +110,7 @@ Editor portlet:
 - Link zu Monatszeiterfassung
 - Anzeige Gleitzeitkonto
 - Anzeige Urlaubskonto
+- Two digit precision on Duration
 
 - Bug: Format for GridPanel date column is different from renderer
 - Bug: Creating a new item doesn't save time
