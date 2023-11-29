@@ -26,7 +26,10 @@ Ext.require([
 var week_start_day = @week_start_day@;
 var start_hour = @start_hour@;
 var end_hour = @end_hour@;
+// var user_locale = '@user_locale@';
+var user_locale = 'en-US';
 
+// A localized array of shortened days of the week
 const DAY_NAME_OF_WEEK_SHORT = [
     "<%= [_ intranet-timesheet2.Day_of_week_Sun] %>", 
     "<%= [_ intranet-timesheet2.Day_of_week_Mon] %>", 

@@ -10,6 +10,8 @@
 # ---------------------------------------------------------------------
 
 set current_user_id [ad_conn user_id]
+set user_locale [lang::user::locale]
+
 set data_list {}
 if {[info exists height]} { set portlet_height $height } else { set portlet_height 400 }
 if {[info exists width]} { set portlet_width $width } else { set portlet_width 600 }
