@@ -11,6 +11,7 @@ Ext.require([
     'PO.model.category.Category',
     'PO.store.CategoryStore',
     'PO.controller.StoreLoadCoordinator',
+    'PO.view.field.PODateField',
     'AttendanceManagement.model.Attendance',
     'AttendanceManagement.store.AttendanceStore',
     'AttendanceManagement.store.AttendanceTypeStore',

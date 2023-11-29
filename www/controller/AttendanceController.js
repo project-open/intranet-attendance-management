@@ -388,12 +388,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         if ("" == attendance_start_time) { attendance_start_time = null; }
         if ("" == attendance_end_time) { attendance_end_time = null; }
 
-        // Datefield in column converts attendance_date to Date.
-        if (typeof(attendance_date) == 'object') {
-            attendance_date = attendance_date.toISOString().substring(0,10);
-            rec.set('attendance_date', attendance_date);
-        }
-
         // Calculate attendance_start and attendance_end based on time values
         if (attendance_date != null) {
             if (attendance_start_time != null) {

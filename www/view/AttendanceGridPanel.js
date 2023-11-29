@@ -21,6 +21,7 @@ for (var i = start_hour; i < end_hour; i++) {
     }
 }
 
+
 Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
     extend: 'Ext.grid.Panel',
     layout: 'fit',
@@ -46,26 +47,26 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 valueField:             'category_id',
             }
         }, {
-            text: "Weekday",
-	    hidden: false,
-	    width: 60,
-            dataIndex: 'attendance_date', 
-            renderer: function(v) {
+            text: "DoW",
+            hidden: false,
+	    width: 50,
+	    // Don't put a dataIndex here, rowEditing editor will stop
+            renderer: function(v, html, model) {
+                var v = model.get('attendance_start');
                 var dayOfWeek = new Date(v).getDay();
                 if (dayOfWeek) return DAY_NAME_OF_WEEK_SHORT[dayOfWeek];
                 return "Err"
             },
-            editor: false
         }, {
             text: "Date",
             dataIndex: 'attendance_date', 
             renderer: function(v) {
                 var t = typeof(v);
-                if (t == "string") return v;
+                if (t == "string") { return v; }
                 return t;
             },
             editor: {
-                xtype: 'datefield',
+                xtype: 'podatefield',
                 allowBlank: true,
                 startDay: week_start_day,
                 format: 'Y-m-d'
@@ -101,11 +102,8 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 
                 var startDate = new Date(startIso);
                 var endDate = new Date(endIso);
-                var diffMilliSeconds = endDate.getTime() - startDate.getTime();
-                var diffHours = diffMilliSeconds / 1000.0 / 60.0 / 60.0;
-                var renderer = Ext.util.Format.numberRenderer('00000.00');
-                var diffFormatted = Ext.util.Format.number(diffHours, '0.00');
-                return ""+diffFormatted+"h";
+                var diffHours = Math.round(10.0 * (endDate.getTime() - startDate.getTime()) / 1000.0 / 60.0 / 60.0) / 10.0;
+                return ""+Ext.util.Format.number(diffHours, '0.00')+"h";
             }
         }, {
             text: "Name", flex: 1, dataIndex: 'object_name', hidden: true
