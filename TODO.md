@@ -14,11 +14,6 @@ ToDo: Optional Features
 - Clarify: What happens when editing a date, so that the
   attendance moves to a different week?
 - Add parameters for min and max durations of intervals/breaks?
-- Cancel: Consistency checker: Last entry every day should have been Work?
-- Consistency checker: There should be no open entries in the past?
-  => Handle in report (globally)
-  => User can check himself in the monthly calendar view
-- Done: Consistency checker: Check for multiple open issues only today?
 
 ToAsk:
 
@@ -27,8 +22,6 @@ ToAsk:
  
 
 Bugs:
-
-- Editing end-time leads to entry disappearing
 
 
 Timesheet Monthly Calendar
@@ -111,6 +104,11 @@ Editor portlet:
 - Anzeige Gleitzeitkonto
 - Anzeige Urlaubskonto
 - Two digit precision on Duration
+- Cancel: Consistency checker: Last entry every day should have been Work?
+- Consistency checker: There should be no open entries in the past?
+  => Handle in report (globally)
+  => User can check himself in the monthly calendar view
+- Done: Consistency checker: Check for multiple open issues only today?
 
 - Bug: Format for GridPanel date column is different from renderer
 - Bug: Creating a new item doesn't save time
@@ -134,6 +132,7 @@ Editor portlet:
   showing the current week. Entries in the last weeks
   can be modified manually.
 - Bug: Manually deleting the end-time of an entry doesn't save.
+- Editing end-time leads to entry disappearing
 
 
 Timesheet Monthly Calendar:

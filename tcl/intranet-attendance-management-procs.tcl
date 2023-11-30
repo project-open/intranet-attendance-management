@@ -10,9 +10,22 @@ ad_library {
 }
 
 # ----------------------------------------------------------------------
+# Constants
+# ----------------------------------------------------------------------
+
+ad_proc -public im_attendance_status_approved {} { return 92000 }
+ad_proc -public im_attendance_status_requested {} { return 92010 }
+ad_proc -public im_attendance_status_active {} { return 92020 }
+ad_proc -public im_attendance_status_closed {} { return 92090 }
+ad_proc -public im_attendance_status_deleted {} { return 92099 }
+
+ad_proc -public im_attendance_type_work {} { return 92100 }
+ad_proc -public im_attendance_type_break {} { return 92110 }
+
+
+# ----------------------------------------------------------------------
 # Portlets
 # ---------------------------------------------------------------------
-
 
 ad_proc -public im_attendance_management_portlet {
     { -height 500 }
