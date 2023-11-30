@@ -57,7 +57,7 @@ if {"t" ne $read_p } {
 #
 
 # Maxlevel is 3.
-if {$level_of_detail > 3} { set level_of_detail 3 }
+if {$level_of_detail > 4} { set level_of_detail 4 }
 
 # Default is user locale
 if {"" == $number_locale} { set number_locale [lang::user::locale] }
@@ -133,7 +133,8 @@ set this_url "[export_vars -base "/intranet-attendance-management/reports/attend
 #
 set levels [list \
     1 [lang::message::lookup "" intranet-attendance-management.Attendances_per_User "Attendances per User"] \
-    2 [lang::message::lookup "" intranet-attendance-management.All_Details "All Details"] \
+    2 [lang::message::lookup "" intranet-attendance-management.Attendances_per_User_Date "Attendances per User and Date"] \
+    3 [lang::message::lookup "" intranet-attendance-management.All_Details "All Details"] \
 ]
 
 
@@ -172,8 +173,8 @@ set report_sql "
 		to_char(a.attendance_start, 'HH24:MI') as attendance_start_time,
 		to_char(a.attendance_end, 'HH24:MI') as attendance_end_time,
 		im_name_from_user_id(a.attendance_user_id) as user_name,
-		CASE when a.attendance_type_id = [im_attendance_type_work] THEN attendance_end - attendance_start END as attendance_work,
-		CASE when a.attendance_type_id = [im_attendance_type_break] THEN attendance_end - attendance_start END as attendance_break
+		CASE when a.attendance_type_id = [im_attendance_type_work] THEN coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) END as attendance_work,
+		CASE when a.attendance_type_id = [im_attendance_type_break] THEN coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) END as attendance_break
 	from
 		im_attendance_intervals a,
 		im_employees e
@@ -182,7 +183,7 @@ set report_sql "
 		$where_clause
 	order by
 		user_name,
-		a.attendance_start
+		attendance_start
 "
 
 
@@ -193,7 +194,6 @@ set report_sql "
 # Global Header
 set header0 {
     "User"
-    "Dept"
     "Date"
     "Type"
     "Start"
@@ -205,66 +205,89 @@ set header0 {
 
 # The entries in this list include <a HREF=...> tags
 # in order to link the entries to the rest of the system (New!)
-#
 set report_def [list \
-    group_by attendance_user_id \
+		    group_by attendance_user_id \
 		    header {
-			"#colspan=1 <a href=$user_url$attendance_user_id target=_>$user_name</a>"
-			"#colspan=8 $user_department"
-			} \
-    content [list \
-	group_by attendance_id \
-		 header {
-		     ""
-		     ""
-		     "$attendance_start_date"
-		     "$attendance_type"
-		     "$attendance_start_time"
-		     "$attendance_end_time"
-		     "$attendance_work"
-		     "$attendance_break"
-		     "$attendance_note"
-		 } \
-	content {} \
-    ] \
-    footer {} \
-]
+			"#colspan=9 <a href=$user_url$attendance_user_id target=_>$user_name</a> ($user_department)"
+		    } \
+		    content [list \
+				 group_by attendance_start_date \
+				 header {
+				 } \
+				 content [list \
+					      group_by attendance_id \
+					      header {
+						  ""
+						  "$attendance_start_date"
+						  "$attendance_type"
+						  "$attendance_start_time"
+						  "$attendance_end_time"
+						  "$attendance_work_pretty wp"
+						  "$attendance_break_pretty bp"
+						  "$attendance_note"
+					      } \
+					      content {} \
+					      footer {} \
+				 ] \
+				 footer {
+				     ""
+				     "#colspan=2 <i>$attendance_start_date</i>"
+				     ""
+				     ""
+				     "<i>$attendance_date_work_pretty</i> dwp"
+				     "<i>$attendance_date_break_pretty</i> dbp"
+				     ""
+				 } \
+				] \
+		    footer {
+			"#colspan=5 <b><a href=$user_url$attendance_user_id target=_>$user_name</a></b>"
+			"<b>$attendance_user_work_pretty</b> uwp"
+			"<b>$attendance_user_break_pretty</b> ubp"
+			""
+		    } \
+		   ]
 
 
 # Global Footer Line
-set footer0 {}
+set footer0 {
+    "Total"
+    ""
+    ""
+    ""
+    ""
+    "$attendance_work_total_pretty"
+    "$attendance_break_total_pretty"
+    ""    
+}
 
 
 # ------------------------------------------------------------
 # Counters
 #
-
-#
-# Subtotal Counters (per user)
-#
-set user_attendance_work_counter [list \
-	pretty_name "Attendance Value" \
-	var attendance_value \
-	reset \$attendance_user_id \
-	expr "\$attendance_value+0" \
-]
-
-set user_attendance_work_total_counter [list \
-	pretty_name "Attendance Value Total" \
-	var attendance_value_total \
-	reset 0 \
-	expr "\$attendance_value+0" \
-]
+set user_attendance_date_work_counter   [list pretty_name "Attendance Work"        var attendance_date_work reset \$attendance_start_date  expr "\$attendance_work+0"]
+set user_attendance_user_work_counter   [list pretty_name "Attendance User Work"   var attendance_user_work reset \$attendance_user_id     expr "\$attendance_work+0"]
+set user_attendance_work_total_counter  [list pretty_name "Attendance Work Total"  var attendance_work_total reset 0                       expr "\$attendance_work+0"]
+set user_attendance_date_break_counter  [list pretty_name "Attendance Break"       var attendance_date_break reset \$attendance_start_date expr "\$attendance_break+0"]
+set user_attendance_user_break_counter  [list pretty_name "Attendance User Break"  var attendance_user_break reset \$attendance_user_id    expr "\$attendance_break+0"]
+set user_attendance_break_total_counter [list pretty_name "Attendance Break Total" var attendance_break_total reset 0                      expr "\$attendance_break+0"]
 
 
 set counters [list \
-	$user_attendance_work_counter \
+	$user_attendance_date_work_counter \
+	$user_attendance_user_work_counter \
 	$user_attendance_work_total_counter \
+	$user_attendance_date_break_counter \
+	$user_attendance_user_break_counter \
+	$user_attendance_break_total_counter \
 ]
 
 # Set the values to 0 as default (New!)
-set attendance_value 0
-set attendance_value_total 0
+set attendance_user_work 0
+set attendance_date_work 0
+set attendance_work_total 0
+set attendance_user_break 0
+set attendance_date_break 0
+set attendance_break_total 0
 
 # ------------------------------------------------------------
 # Start Formatting the HTML Page Contents
@@ -357,13 +380,32 @@ set class ""
 db_foreach sql $report_sql {
     set class $rowclass([expr {$counter % 2}])
 
-    set attendance_work_pretty [im_report_format_number $attendance_work $output_format $number_locale]
-    set attendance_break_pretty [im_report_format_number $attendance_break $output_format $number_locale]
     set attendance_type [im_category_from_id -translate_p 1 $attendance_type_id]
     set attendance_status [im_category_from_id -translate_p 1 $attendance_status_id]
 
     # Restrict the length of the attendance_note to 40 characters.
     set attendance_note_pretty [string_truncate -len 40 $attendance_note]
+
+    # Format work+break, also for counters
+    set attendance_work_pretty ""
+    if {"" ne $attendance_work} { set attendance_work_pretty [im_report_format_number [expr round(100.0 * $attendance_work) / 100.0] $output_format $number_locale] }
+
+    set attendance_break_pretty ""
+    if {"" ne $attendance_break} { set attendance_break_pretty [im_report_format_number [expr round(100.0 * $attendance_break ) / 100.0] $output_format $number_locale] }
+    
+    set attendance_date_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_date_work)   / 100.0] $output_format $number_locale]
+    set attendance_date_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_date_break)  / 100.0] $output_format $number_locale]
+
+    set attendance_user_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_user_work)   / 100.0] $output_format $number_locale]
+    set attendance_user_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_user_break)  / 100.0] $output_format $number_locale]
+
+    set attendance_work_total_pretty  [im_report_format_number [expr round(100.0 * $attendance_work_total)  / 100.0] $output_format $number_locale]
+    set attendance_break_total_pretty [im_report_format_number [expr round(100.0 * $attendance_break_total) / 100.0] $output_format $number_locale]
+
+    foreach var {attendance_user_work_pretty attendance_date_work_pretty attendance_work_total_pretty attendance_user_break_pretty attendance_date_break_pretty attendance_break_total_pretty} {
+	if {"0.00" eq [set $var]} { set $var "" }
+    }
+
 
     im_report_display_footer \
         -output_format $output_format \
