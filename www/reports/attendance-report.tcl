@@ -26,7 +26,7 @@ ad_page_contract {
     { report_user_id "" }
     { report_attendance_type_id "" }
     { report_attendance_status_id "" }
-    { level_of_detail:integer 2 }
+    { level_of_detail:integer 3 }
     { output_format "html" }
     { number_locale "" }
 }
@@ -423,7 +423,13 @@ db_foreach sql $report_sql {
     set attendance_work_pretty ""
     set attendance_break_pretty ""
     if {"" ne $attendance_work} { set attendance_work_pretty [im_report_format_number [expr round(100.0 * $attendance_work) / 100.0] $output_format $number_locale] }
-    if {"" ne $attendance_break} { set attendance_break_pretty [im_report_format_number [expr round(100.0 * $attendance_break ) / 100.0] $output_format $number_locale] }
+    if {"" ne $attendance_break} { 
+	set attendance_break_pretty [im_report_format_number [expr round(100.0 * $attendance_break ) / 100.0] $output_format $number_locale] 
+
+	# Business Logic: Show short breaks in red
+	if {$attendance_break < 0.15} { set attendance_break_pretty "<font color=red><b>$attendance_break_pretty</b></font>" }
+    }
+
     
     set attendance_date_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_date_work)   / 100.0] $output_format $number_locale]
     set attendance_user_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_user_work)   / 100.0] $output_format $number_locale]
@@ -432,6 +438,7 @@ db_foreach sql $report_sql {
     set attendance_date_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_date_break)  / 100.0] $output_format $number_locale]
     set attendance_user_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_user_break)  / 100.0] $output_format $number_locale]
     set attendance_break_total_pretty [im_report_format_number [expr round(100.0 * $attendance_break_total) / 100.0] $output_format $number_locale]
+
 
     foreach var {attendance_user_work_pretty attendance_date_work_pretty attendance_work_total_pretty} {
 	if {"0.00" eq [set $var]} { set $var "" }
