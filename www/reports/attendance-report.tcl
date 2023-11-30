@@ -143,6 +143,27 @@ set levels [list \
 
 
 # ------------------------------------------------------------
+# Timesheet Data
+#
+
+set timesheet_sql "
+	select	sum(h.hours) as hours,
+		h.user_id,
+		h.day::date as day_date
+	from	im_hours h
+	where	h.day >= :report_start_date and
+		h.day < :report_end_date
+	group by
+		h.user_id,
+		h.day::date
+"
+db_foreach timesheet_info $timesheet_sql {
+    set ts_key "$user_id-$day_date"
+    set ts_hash($ts_key) $hours
+}
+
+
+# ------------------------------------------------------------
 # Report SQL
 #
 
@@ -177,6 +198,7 @@ set report_sql "
 		to_char(a.attendance_start, 'HH24:MI') as attendance_start_time,
 		to_char(a.attendance_end, 'HH24:MI') as attendance_end_time,
 		im_name_from_user_id(a.attendance_user_id) as user_name,
+		-- (select sum(h.hours) from im_hours h where h.user_id = a.attendance_user_id and h.day::date = a.attendance_start::date) as ts_sum,
 		CASE when a.attendance_type_id = [im_attendance_type_work] THEN coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) END as attendance_work,
 		CASE when a.attendance_type_id = [im_attendance_type_break] THEN coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) END as attendance_break
 	from
@@ -206,6 +228,7 @@ set header0 {
     "End"
     "Work"
     "Break"
+    "Timesheet"
     "Note"
 }
 
@@ -230,6 +253,7 @@ set report_def [list \
 						  "$attendance_end_time"
 						  "$attendance_work_pretty"
 						  "$attendance_break_pretty"
+						  ""
 						  "$attendance_note"
 					      } \
 					      content {} \
@@ -242,6 +266,7 @@ set report_def [list \
 				     ""
 				     "<i>$attendance_date_work_pretty</i>"
 				     "<i>$attendance_date_break_pretty</i>"
+				     "$ts_hours_pretty"
 				     ""
 				 } \
 				] \
@@ -249,6 +274,7 @@ set report_def [list \
 			"#colspan=5 <b><a href=$user_url$attendance_user_id target=_>$user_name</a></b>"
 			"<b>$attendance_user_work_pretty</b>"
 			"<b>$attendance_user_break_pretty</b>"
+			""
 			""
 		    } \
 		   ]
@@ -263,6 +289,7 @@ set footer0 {
     ""
     "$attendance_work_total_pretty"
     "$attendance_break_total_pretty"
+    ""
     ""    
 }
 
@@ -295,6 +322,8 @@ set attendance_work_total 0
 set attendance_user_break 0
 set attendance_date_break 0
 set attendance_break_total 0
+
+set ts_hours 0
 
 # ------------------------------------------------------------
 # Start Formatting the HTML Page Contents
@@ -400,6 +429,15 @@ set class ""
 db_foreach sql $report_sql {
     set class $rowclass([expr {$counter % 2}])
 
+    # Mix-in the timesheet information
+    set ts_hours 0
+    set ts_hours_pretty ""
+    set ts_key "$attendance_user_id-$attendance_start_date"
+    if {[info exists ts_hash($ts_key)]} { 
+	set ts_hours $ts_hash($ts_key) 
+	set ts_hours_pretty [im_report_format_number [expr round(100.0 * $ts_hours) / 100.0] $output_format $number_locale]
+    }
+
     im_report_display_footer \
         -output_format $output_format \
         -group_def $report_def \
@@ -409,8 +447,9 @@ db_foreach sql $report_sql {
         -row_class $class \
         -cell_class $class
 
-    im_report_update_counters -counters $counters
 
+
+    im_report_update_counters -counters $counters
 
 
     set attendance_type [im_category_from_id -translate_p 1 $attendance_type_id]
