@@ -216,6 +216,36 @@ select im_priv_create('add_attendances', 'Employees');
 
 
 
+-----------------------------------------------------------
+-- Reporting menu
+-----------------------------------------------------------
+
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_menu			integer;
+	v_employees		integer;
+BEGIN
+	v_menu := im_menu__new (
+		null, 'im_menu', now(), null, null, null,		-- standard args for acs_object
+		'intranet-attendance-management',			-- package_name
+		'reporting-attendances',				-- label
+		'Attendances Report',					-- name
+		'/intranet-attendance-management/reports/attendance-report',	-- url
+		2500,							-- sort_order
+		(select menu_id from im_menus where label = 'reporting-other'),	-- parent_menu_id
+		null							-- p_visible_tcl
+	);
+
+	select group_id into v_employees from groups where group_name = 'Employees';
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, 'read');
+
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 
 -- ------------------------------------------------------------

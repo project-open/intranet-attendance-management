@@ -26,7 +26,7 @@ ad_page_contract {
     { report_user_id "" }
     { report_attendance_type_id "" }
     { report_attendance_status_id "" }
-    { level_of_detail:integer 3 }
+    { level_of_detail:integer 2 }
     { output_format "html" }
     { number_locale "" }
 }
@@ -57,7 +57,7 @@ if {"t" ne $read_p } {
 #
 
 # Maxlevel is 3.
-if {$level_of_detail > 4} { set level_of_detail 4 }
+if {$level_of_detail > 3} { set level_of_detail 3 }
 
 # Default is user locale
 if {"" == $number_locale} { set number_locale [lang::user::locale] }
@@ -96,6 +96,10 @@ select
 from dual
 "
 
+if {"" == $report_end_date} { 
+    set report_end_date "$end_year-$end_month-01"
+}
+
 
 
 # ------------------------------------------------------------
@@ -126,7 +130,7 @@ set date_format "YYYY-MM-DD"
 
 # Set URLs on how to get to other parts of the system for convenience.
 set user_url "/intranet/users/view?user_id="
-set this_url "[export_vars -base "/intranet-attendance-management/reports/attendance-report" {} ]?"
+set this_url "[export_vars -base "/intranet-attendance-management/reports/attendance-report" {report_start_date report_end_date level_of_detail} ]?"
 
 # Level of Details
 # Determines the LoD of the grouping to be displayed
@@ -179,7 +183,9 @@ set report_sql "
 		im_attendance_intervals a,
 		im_employees e
 	where
-		a.attendance_user_id = e.employee_id
+		a.attendance_user_id = e.employee_id and
+		a.attendance_start >= :report_start_date and
+		a.attendance_start < :report_end_date
 		$where_clause
 	order by
 		user_name,
@@ -222,8 +228,8 @@ set report_def [list \
 						  "$attendance_type"
 						  "$attendance_start_time"
 						  "$attendance_end_time"
-						  "$attendance_work_pretty wp"
-						  "$attendance_break_pretty bp"
+						  "$attendance_work_pretty"
+						  "$attendance_break_pretty"
 						  "$attendance_note"
 					      } \
 					      content {} \
@@ -234,15 +240,15 @@ set report_def [list \
 				     "#colspan=2 <i>$attendance_start_date</i>"
 				     ""
 				     ""
-				     "<i>$attendance_date_work_pretty</i> dwp"
-				     "<i>$attendance_date_break_pretty</i> dbp"
+				     "<i>$attendance_date_work_pretty</i>"
+				     "<i>$attendance_date_break_pretty</i>"
 				     ""
 				 } \
 				] \
 		    footer {
 			"#colspan=5 <b><a href=$user_url$attendance_user_id target=_>$user_name</a></b>"
-			"<b>$attendance_user_work_pretty</b> uwp"
-			"<b>$attendance_user_break_pretty</b> ubp"
+			"<b>$attendance_user_work_pretty</b>"
+			"<b>$attendance_user_break_pretty</b>"
 			""
 		    } \
 		   ]
@@ -267,10 +273,10 @@ set footer0 {
 set user_attendance_date_work_counter   [list pretty_name "Attendance Work"        var attendance_date_work reset \$attendance_start_date  expr "\$attendance_work+0"]
 set user_attendance_user_work_counter   [list pretty_name "Attendance User Work"   var attendance_user_work reset \$attendance_user_id     expr "\$attendance_work+0"]
 set user_attendance_work_total_counter  [list pretty_name "Attendance Work Total"  var attendance_work_total reset 0                       expr "\$attendance_work+0"]
+
 set user_attendance_date_break_counter  [list pretty_name "Attendance Break"       var attendance_date_break reset \$attendance_start_date expr "\$attendance_break+0"]
 set user_attendance_user_break_counter  [list pretty_name "Attendance User Break"  var attendance_user_break reset \$attendance_user_id    expr "\$attendance_break+0"]
 set user_attendance_break_total_counter [list pretty_name "Attendance Break Total" var attendance_break_total reset 0                      expr "\$attendance_break+0"]
-
 
 set counters [list \
 	$user_attendance_date_work_counter \
@@ -285,6 +291,7 @@ set counters [list \
 set attendance_user_work 0
 set attendance_date_work 0
 set attendance_work_total 0
+
 set attendance_user_break 0
 set attendance_date_break 0
 set attendance_break_total 0
@@ -313,6 +320,19 @@ switch $output_format {
 		  <td>Level of<br>Details</td>
 		  <td>
 		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
+		  </td>
+		</tr>
+
+		<tr>
+		  <td class=form-label>[lang::message::lookup "" intranet-core.Start_Date "Start Date"]</td>
+		  <td class=form-widget>
+		    <input type=textfield name=report_start_date value=$report_start_date>
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]</td>
+		  <td class=form-widget>
+		    <input type=textfield name=report_end_date value=$report_end_date>
 		  </td>
 		</tr>
 
@@ -380,33 +400,6 @@ set class ""
 db_foreach sql $report_sql {
     set class $rowclass([expr {$counter % 2}])
 
-    set attendance_type [im_category_from_id -translate_p 1 $attendance_type_id]
-    set attendance_status [im_category_from_id -translate_p 1 $attendance_status_id]
-
-    # Restrict the length of the attendance_note to 40 characters.
-    set attendance_note_pretty [string_truncate -len 40 $attendance_note]
-
-    # Format work+break, also for counters
-    set attendance_work_pretty ""
-    if {"" ne $attendance_work} { set attendance_work_pretty [im_report_format_number [expr round(100.0 * $attendance_work) / 100.0] $output_format $number_locale] }
-
-    set attendance_break_pretty ""
-    if {"" ne $attendance_break} { set attendance_break_pretty [im_report_format_number [expr round(100.0 * $attendance_break ) / 100.0] $output_format $number_locale] }
-    
-    set attendance_date_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_date_work)   / 100.0] $output_format $number_locale]
-    set attendance_date_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_date_break)  / 100.0] $output_format $number_locale]
-
-    set attendance_user_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_user_work)   / 100.0] $output_format $number_locale]
-    set attendance_user_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_user_break)  / 100.0] $output_format $number_locale]
-
-    set attendance_work_total_pretty  [im_report_format_number [expr round(100.0 * $attendance_work_total)  / 100.0] $output_format $number_locale]
-    set attendance_break_total_pretty [im_report_format_number [expr round(100.0 * $attendance_break_total) / 100.0] $output_format $number_locale]
-
-    foreach var {attendance_user_work_pretty attendance_date_work_pretty attendance_work_total_pretty attendance_user_break_pretty attendance_date_break_pretty attendance_break_total_pretty} {
-	if {"0.00" eq [set $var]} { set $var "" }
-    }
-
-
     im_report_display_footer \
         -output_format $output_format \
         -group_def $report_def \
@@ -417,6 +410,33 @@ db_foreach sql $report_sql {
         -cell_class $class
 
     im_report_update_counters -counters $counters
+
+
+
+    set attendance_type [im_category_from_id -translate_p 1 $attendance_type_id]
+    set attendance_status [im_category_from_id -translate_p 1 $attendance_status_id]
+
+    # Restrict the length of the attendance_note to 40 characters.
+    set attendance_note_pretty [string_truncate -len 40 $attendance_note]
+
+    # Format work+break, also for counters
+    set attendance_work_pretty ""
+    set attendance_break_pretty ""
+    if {"" ne $attendance_work} { set attendance_work_pretty [im_report_format_number [expr round(100.0 * $attendance_work) / 100.0] $output_format $number_locale] }
+    if {"" ne $attendance_break} { set attendance_break_pretty [im_report_format_number [expr round(100.0 * $attendance_break ) / 100.0] $output_format $number_locale] }
+    
+    set attendance_date_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_date_work)   / 100.0] $output_format $number_locale]
+    set attendance_user_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_user_work)   / 100.0] $output_format $number_locale]
+    set attendance_work_total_pretty  [im_report_format_number [expr round(100.0 * $attendance_work_total)  / 100.0] $output_format $number_locale]
+
+    set attendance_date_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_date_break)  / 100.0] $output_format $number_locale]
+    set attendance_user_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_user_break)  / 100.0] $output_format $number_locale]
+    set attendance_break_total_pretty [im_report_format_number [expr round(100.0 * $attendance_break_total) / 100.0] $output_format $number_locale]
+
+    foreach var {attendance_user_work_pretty attendance_date_work_pretty attendance_work_total_pretty} {
+	if {"0.00" eq [set $var]} { set $var "" }
+    }
+
 
     set last_value_list [im_report_render_header \
         -output_format $output_format \
