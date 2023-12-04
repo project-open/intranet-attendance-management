@@ -9,10 +9,6 @@ ToDo: Features
 
 - Localization to German
 
-- Drill-down per user:
-  - Open with filter per user + LoD++
-  - Try to integrate timesheet hours into "left dimension"
-
 
 ToDo: Optional Features
 
@@ -49,6 +45,12 @@ Report Pausenzeiten
 ===================
 
 ToDo: Features
+
+- Drill-down per user:
+  - Open with filter per user + LoD++
+  - Try to integrate timesheet hours into "left dimension"
+
+
 
 	- Mindestens 15 pro Pause
 	- Ab 6h verpflichtend 30min Pause
