@@ -331,6 +331,7 @@ set attendance_work_total_pretty 0
 set attendance_user_break 0
 set attendance_date_break 0
 set attendance_break_total 0
+set attendance_break_total_pretty 0
 
 set ts_hours 0
 
