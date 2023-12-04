@@ -52,8 +52,9 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
 	    width: 50,
 	    // Don't put a dataIndex here, rowEditing editor will stop
             renderer: function(v, html, model) {
-                var v = model.get('attendance_start');
-                var dayOfWeek = new Date(v).getDay();
+                var dateIso = model.get('attendance_start');
+                var date = PO.Utilities.pgToDate(dateIso);
+                var dayOfWeek = date.getDay();
                 if (dayOfWeek) return DAY_NAME_OF_WEEK_SHORT[dayOfWeek];
                 return "Err"
             },
@@ -100,8 +101,8 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 var endIso = model.get('attendance_end');
                 if ("" == startIso || "" == endIso) return "";
                 
-                var startDate = new Date(startIso);
-                var endDate = new Date(endIso);
+		var startDate = PO.Utilities.pgToDate(startIso);
+                var endDate = PO.Utilities.pgToDate(endIso);
                 var diffHours = Math.round(10.0 * (endDate.getTime() - startDate.getTime()) / 1000.0 / 60.0 / 60.0) / 10.0;
                 return ""+Ext.util.Format.number(diffHours, '0.00')+"h";
             }

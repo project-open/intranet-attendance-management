@@ -8,6 +8,7 @@ Ext.Loader.setConfig({disableCaching: false});
 Ext.require([
     'Ext.data.*',
     'Ext.grid.*',
+    'PO.Utilities',
     'PO.model.category.Category',
     'PO.store.CategoryStore',
     'PO.controller.StoreLoadCoordinator',
