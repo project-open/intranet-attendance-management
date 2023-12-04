@@ -9,6 +9,11 @@ ToDo: Features
 
 - Localization to German
 
+- Drill-down per user:
+  - Open with filter per user + LoD++
+  - Try to integrate timesheet hours into "left dimension"
+
+
 ToDo: Optional Features
 
 - Clarify: What happens when editing a date, so that the
@@ -45,17 +50,9 @@ Report Pausenzeiten
 
 ToDo: Features
 
-- Filter:
-	- User
-	- Abteilung
-	- Zeitraum
-- Anzeige:
-	- Pausenzeiten
-	- Anwesenheitszeiten
 	- Mindestens 15 pro Pause
 	- Ab 6h verpflichtend 30min Pause
 	- Ab 9h 45min Pause
-	- Pro Monat (31 Spalten oben) und pro User (links)
 	- Jede Zelle:
 		- Gesamtzeit Pausen
 		- Rot wenn Business-Regeln verletzt (oben)
@@ -140,4 +137,21 @@ Timesheet Monthly Calendar:
 - Pro Tag zusätzlicher Eintrag: Anwesenheit
 - Farbe rot/grün in Abhängigkeit von 8h 
 - Soll Anwesenheit = 8h/Tag * Verfügbarkeit
+
+
+Report Pausenzeiten
+
+- Filter:
+	- User
+	- Abteilung
+	- Zeitraum
+- Anzeige:
+	- Pausenzeiten
+	- Anwesenheitszeiten
+	- Pro Monat (31 Spalten oben) und pro User (links)
+	- Jede Zelle:
+		- Gesamtzeit Pausen
+		- Rot wenn Business-Regeln verletzt (oben)
+		  mit Kommentar warum
+	- Used to manually calculate working time per month
 
