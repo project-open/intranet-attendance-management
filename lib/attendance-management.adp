@@ -42,6 +42,12 @@ const DAY_NAME_OF_WEEK_SHORT = [
     "<%= [_ intranet-timesheet2.Day_of_week_Sat] %>"
 ];
 
+// Localization: Start with English and overwrite with locale specific translation from database
+const l10n = {<multiple name="english_messages">@english_messages.message_key@: "@english_messages.message@",
+</multiple>};
+const l10n_locale = {<multiple name="locale_messages">@locale_messages.message_key@: "@locale_messages.message@",
+</multiple>};
+Object.keys(l10n_locale).forEach(key => {var val = l10n_locale[key]; l10n[key] = val;});
 
 function launchTimesheetAttendanceLogging(){
     // Stores

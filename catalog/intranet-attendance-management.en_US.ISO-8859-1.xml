@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-attendance-management" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="All_Details">All Details</msg>
+  <msg key="Attendance_Report">Attendance Report</msg>
+  <msg key="Attendance_Report_help">This report returns a list of attendances grouped per user and date.</msg>
+  <msg key="Attendance_Status">Attendance Status</msg>
+  <msg key="Attendance_Type">Attendance Type</msg>
+  <msg key="Attendances_per_User">Attendances per User</msg>
+  <msg key="Attendances_per_User_Date">Attendances per User and Date</msg>
+  <msg key="Button_text_Add">Add entry</msg>
+  <msg key="Button_text_Delete">Delete entry</msg>
+  <msg key="Button_text_Next_week">Next week</msg>
+  <msg key="Button_text_Previous_week">Previous week</msg>
+  <msg key="Button_text_Start_break">Start break</msg>
+  <msg key="Button_text_Start_work">Start work</msg>
+  <msg key="Button_text_Stop">Stop logging</msg>
+  <msg key="error_with_attendance_data">Rrror with attendance data</msg>
+  <msg key="found_attendance_entries_without_end_time">Found found attendance entries without end time</msg>
+  <msg key="found_breaks_shorter_than_allowed">Found breaks shorter than allowed</msg>
+  <msg key="found_entries_with_end_time_before_start_time">Found entries with end time before start time</msg>
+  <msg key="found_items_longer_than_allowed">Found items longer than allowed</msg>
+  <msg key="Heading_Break">Break</msg>
+  <msg key="Heading_Date">Date</msg>
+  <msg key="Heading_DayOfWeek">DoW</msg>
+  <msg key="Heading_Duration">Duration</msg>
+  <msg key="Heading_End">End</msg>
+  <msg key="Heading_ID">ID</msg>
+  <msg key="Heading_Note">Note</msg>
+  <msg key="Heading_Start">Start</msg>
+  <msg key="Heading_Timesheet">Timesheet</msg>
+  <msg key="Heading_Type">Type</msg>
+  <msg key="Heading_User">User</msg>
+  <msg key="Heading_Work">Work</msg>
+  <msg key="please_edit_attendances_to_resolve_the_issues">Please edit attendances to resolve the issues</msg>
+  <msg key="there_is_already_an_entry_with_the_same_start_time">There is already an entry with the same start time</msg>
+  <msg key="there_should_be_at_most_one_of_them">There should be at most one of them</msg>
+  <msg key="Total">Total</msg>
+  <msg key="User_Department">User Department</msg>
+  <msg key="we_will_discard_the_new_entry">We will discard the new entry</msg>
+</message_catalog>

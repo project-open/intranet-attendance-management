@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-attendance-management" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="All_Details">Alle Details</msg>
+  <msg key="Attendance_Report">Anwesenheitsbericht</msg>
+  <msg key="Attendance_Report_help">Dieser Bericht listet Anwesenheiten gruppiert nach Benutzern und Datum.</msg>
+  <msg key="Attendance_Status">Status Anwesenheit</msg>
+  <msg key="Attendance_Type">Typ Anwesenheit</msg>
+  <msg key="Attendances_per_User">Anwesenheiten pro Benutzer</msg>
+  <msg key="Attendances_per_User_Date">Anwesenheiten pro Benutzer und Datum</msg>
+  <msg key="Button_text_Add">Neuer Eintrag</msg>
+  <msg key="Button_text_Delete">Eintrag löschen</msg>
+  <msg key="Button_text_Next_week">Nächste Woche</msg>
+  <msg key="Button_text_Previous_week">Vorige Woche</msg>
+  <msg key="Button_text_Start_break">Pause anfangen</msg>
+  <msg key="Button_text_Start_work">Arbeit anfangen</msg>
+  <msg key="Button_text_Stop">Eintrag beenden</msg>
+  <msg key="error_with_attendance_data">Fehler mit Anwesenheiten</msg>
+  <msg key="found_attendance_entries_without_end_time">Anwesenheiten ohne Endzeit</msg>
+  <msg key="found_breaks_shorter_than_allowed">Pause kürzer als erlaubt</msg>
+  <msg key="found_entries_with_end_time_before_start_time">Einträge mit Ende vor Anfang</msg>
+  <msg key="found_items_longer_than_allowed">Einträge länger als erlaubt</msg>
+  <msg key="Heading_Break">Pause</msg>
+  <msg key="Heading_Date">Datum</msg>
+  <msg key="Heading_DayOfWeek">Wochentag</msg>
+  <msg key="Heading_Duration">Dauer</msg>
+  <msg key="Heading_End">End</msg>
+  <msg key="Heading_ID">ID</msg>
+  <msg key="Heading_Note">Kommentar</msg>
+  <msg key="Heading_Start">Start</msg>
+  <msg key="Heading_Timesheet">Zeiterfassung</msg>
+  <msg key="Heading_Type">Typ</msg>
+  <msg key="Heading_User">Benutzer</msg>
+  <msg key="Heading_Work">Arbeit</msg>
+  <msg key="please_edit_attendances_to_resolve_the_issues">Bitte Einträge modifizieren, um das Problem zu lösen</msg>
+  <msg key="there_is_already_an_entry_with_the_same_start_time">Es gibt bereits einen Eintrag mit der selben Startzeit</msg>
+  <msg key="there_should_be_at_most_one_of_them">Es sollte höchstens einen geben</msg>
+  <msg key="Total">Total</msg>
+  <msg key="User_Department">Abteilung</msg>
+  <msg key="we_will_discard_the_new_entry">Der Eintrag wird verworfen</msg>
+</message_catalog>

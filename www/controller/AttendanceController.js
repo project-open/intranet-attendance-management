@@ -226,30 +226,30 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // There should be never more than one...
         if (openItemsCount > 1) {
             issueCount = issueCount + openItemsCount-1;
-            message = message + '<li>Found ' + openItemsCount + ' attendance entríes without end-time.' +
-                '<br>There should be at most one of them.'
+            message = message + '<li>'+l10n.found_attendance_entries_without_end_time +
+                '<br>'+l10n.there_should_be_at_most_one_of_them;
         }
 
         // End time before start time?
         if (endBeforeStartCount > 0) {
             issueCount = issueCount + endBeforeStartCount;
-            message = message + '<li>Found entries with end time before start time.'
+            message = message + '<li>'+l10n.found_entries_with_end_time_before_start_time;
         }
 
         // Breaks shorter than 15min
         if (breaksTooShort > 0) {
             issueCount = issueCount + breaksTooShort;
-            message = message + '<li>Found '+breaksTooShort+' breaks shorter than 15 min.'
+            message = message + '<li>'+l10n.found_breaks_shorter_than_allowed;
         }
 
         // Interval Too long
         if (intervalTooLong > 0) {
             issueCount = issueCount + intervalTooLong;
-            message = message + '<li>Found ' + intervalTooLong + ' items with more than 12 hours.'
+            message = message + '<li>'+l10n.found_items_longer_than_allowed;
         }
 
         if ("" != message) {
-            message = "<ul>" + message + "</ul>" + '<br>Please edit manually to resolve the ' + issueCount + ' issue(s).'
+            message = "<ul>" + message + '</ul><br>' + l10n.please_edit_attendances_to_resolve_the_issues;
 	    me.errorMessage(message);
         }
     },
@@ -323,9 +323,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             var startIso = item.get('attendance_start');
             if (startIso.substring(0,16) == params.attendance_start.substring(0,16)) {
 
-                var message = "<li>There is already an entry with the same start time<br>"+
-		    startIso.substring(0,16) + ", so we discard the new entry."
-		message = "<ul>" + message + "</ul>";
+                var message = '<ul><li>' + l10n.there_is_already_an_entry_with_the_same_start_time +
+		    startIso.substring(0,16) + l10n.we_will_discard_the_new_entry + '</ul>';
 		me.errorMessage(message);
 
                 me.enableDisableButtons();
@@ -345,7 +344,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
                     var jsonData = reader.jsonData;
                     var message = jsonData.msg;
                     alert(message);
-                    
 		}
             });
 	}
@@ -357,14 +355,13 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
      * Show a standard error message to the user
      */
     errorMessage: function(message) {
-        var title = 'Error with attendance data';
         var msgBox = Ext.create('Ext.window.MessageBox', {});
         msgBox.show({
-            title: title,
+            title: l10n.error_with_attendance_data,
             msg: message,
             minWidth: 500,
             minHeight: 150,
-            buttonText: { yes: "OK" },
+            buttonText: { yes: l10n.ok },
             icon: Ext.Msg.INFO
         });
     },
@@ -509,7 +506,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     onButtonStartWork: function() {
         var me = this;
         console.log('AttendanceController.onButtonStartWork');
-
         me.createNewAttendance(); // Work attendance
         me.checkConsistency();
     },
@@ -521,7 +517,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     onButtonStartBreak: function() {
         var me = this;
         console.log('AttendanceController.onButtonStartBreak');
-
         me.createNewAttendance({attendance_type_id: 92110}); // Break
         me.checkConsistency();
     },
@@ -534,7 +529,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     onButtonAdd: function() {
         var me = this;
         console.log('AttendanceController.onButtonStartWork');
-
         var startTime = /\d\d:\d\d/.exec(""+me.attendanceWeekDate)[0];
         var startDateIso = Ext.Date.format(me.attendanceWeekDate, 'Y-m-d');
 

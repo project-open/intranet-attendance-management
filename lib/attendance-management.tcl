@@ -36,3 +36,10 @@ set debug_json_list {}
 foreach id [array names debug_hash] { lappend debug_json_list "'$id': $debug_hash($id)" }
 set debug_json "{\n\t[join $debug_json_list ",\n\t"]\n}"
 
+
+
+set english_message_sql "select	* from lang_messages where locale = 'en_US' and package_key = 'intranet-attendance-management'"
+db_multirow english_messages english_messages $english_message_sql
+
+set locale_message_sql "select * from lang_messages where locale = :user_locale and package_key = 'intranet-attendance-management'"
+db_multirow locale_messages locale_messages $locale_message_sql

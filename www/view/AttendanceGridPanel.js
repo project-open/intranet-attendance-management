@@ -28,11 +28,9 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
     region: 'center',
     columns: [
         {
-            text: "ID", width: 60, dataIndex: 'id', hidden: true
+            text: l10n.Heading_ID, width: 60, dataIndex: 'id', hidden: true
         }, {
-            text: "User ID", width: 60, dataIndex: 'attendance_user_id', hidden: true
-        }, {
-            text: "Type",
+            text: l10n.Heading_Type,
             dataIndex: 'attendance_type_id',
             renderer: function(value){
                 var attendanceTypeStore = Ext.StoreManager.get('attendanceTypeStore');
@@ -47,7 +45,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 valueField:             'category_id',
             }
         }, {
-            text: "DoW",
+            text: l10n.Heading_DayOfWeek,
             hidden: false,
 	    width: 50,
 	    // Don't put a dataIndex here, rowEditing editor will stop
@@ -59,7 +57,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 return "Err"
             },
         }, {
-            text: "Date",
+            text: l10n.Heading_Date,
             dataIndex: 'attendance_date', 
             renderer: function(v) {
                 var t = typeof(v);
@@ -73,7 +71,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 format: 'Y-m-d'
             }
         }, {
-            text: "Start Time",
+            text: l10n.Heading_Start,
             xtype: 'templatecolumn',
             tpl: '{attendance_start_time}',
             dataIndex: 'attendance_start_time',
@@ -84,7 +82,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 store: timeEntryStore
             }
         }, {
-            text: "End Time", 
+            text: l10n.Heading_End, 
             dataIndex: 'attendance_end_time',
             editor: {
                 xtype: 'combobox',
@@ -93,7 +91,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 store: timeEntryStore
             }
         }, {
-            text: "Duration",
+            text: l10n.Heading_Duration,
             width: 70,
             editor: false,
             renderer: function(dunno, cell, model, pos) {
@@ -107,13 +105,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 return ""+Ext.util.Format.number(diffHours, '0.00')+"h";
             }
         }, {
-            text: "Name", flex: 1, dataIndex: 'object_name', hidden: true
-        }, {
-            text: "Attendance Start ISO", width: 150, dataIndex: 'attendance_start', hidden: true
-        }, {
-            text: "Attendance End ISO", width: 150, dataIndex: 'attendance_end', hidden: true
-        }, {
-            text: "Note", flex: 1, dataIndex: 'attendance_note',
+            text: l10n.Heading_Note, flex: 1, dataIndex: 'attendance_note',
             editor: { allowBlank: true }
         }
     ],

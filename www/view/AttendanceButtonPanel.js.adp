@@ -22,36 +22,36 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
         xtype: 'tbspacer', width: 0
     }, {
         icon: '/intranet/images/navbar_default/clock_go.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Start_work "Start&nbsp;work"] %>',
+        tooltip: '<nobr><%= [lang::message::lookup "" intranet-attendance-management.Button_text_Start_work "Start work"] %></nobr>',
         id: 'buttonStartWork',
         disabled: false
     }, {
         icon: '/intranet/images/navbar_default/cup_go.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Start_break "Start&nbsp;break"] %>',
+        tooltip: '<nobr><%= [lang::message::lookup "" intranet-attendance-management.Button_text_Start_break "Start break"] %></nobr>',
         id: 'buttonStartBreak',
         disabled: false
     }, {
         xtype: 'tbspacer', width: 0
     }, {
         icon: '/intranet/images/navbar_default/stop.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Stop "Stop&nbsp;logging"] %>',
+        tooltip: '<nobr><%= [lang::message::lookup "" intranet-attendance-management.Button_text_Stop "Stop logging"] %></nobr>',
         id: 'buttonStop',
         disabled: false
     }, {
         icon: '/intranet/images/navbar_default/add.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Add "Add&nbsp;entry"] %>',
+        tooltip: '<nobr><%= [lang::message::lookup "" intranet-attendance-management.Button_text_Add "Add entry"] %></nobr>',
         id: 'buttonAdd',
         disabled: false
     }, {
         icon: '/intranet/images/navbar_default/delete.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Delete "Delete&nbsp;entry"] %>',
+        tooltip: '<nobr><%= [lang::message::lookup "" intranet-attendance-management.Button_text_Delete "Delete entry"] %></nobr>',
         id: 'buttonDelete',
         disabled: false
     }, {
         xtype: 'tbspacer', width: 20
     }, {
         icon: '/intranet/images/navbar_default/arrow_left.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Previous_week "Previous&nbsp;week"] %>',
+        tooltip: '<nobr><%= [lang::message::lookup "" intranet-attendance-management.Button_text_Previous_week "Previous week"] %></nobr>',
         id: 'buttonPreviousWeek',
         disabled: false
     }, {
@@ -60,7 +60,7 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
         id: 'labelWeek'
     }, {
         icon: '/intranet/images/navbar_default/arrow_right.png',
-        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Next_week "Next&nbsp;week"] %>',
+        tooltip: '<nobr><%= [lang::message::lookup "" intranet-attendance-management.Button_text_Next_week "Next week"] %></nobr>',
         id: 'buttonNextWeek',
         disabled: false
     }, {

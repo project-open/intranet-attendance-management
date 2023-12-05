@@ -6,19 +6,12 @@
 # Please see https://www.project-open.com/ for licensing.
 
 ad_page_contract {
-    Lists attendances dependent on interval, time, user and department.
-    - Anzeige:
-	- Pausenzeiten
-	- Anwesenheitszeiten
-	- Mindestens 15 pro Pause
-	- Ab 6h verpflichtend 30min Pause
-	- Ab 9h 45min Pause
-	- Pro Monat (31 Spalten oben) und pro User (links)
-	- Jede Zelle:
-		- Gesamtzeit Pausen
-		- Rot wenn Business-Regeln verletzt (oben)
-		  mit Kommentar warum
-	- Used to manually calculate working time per month
+    Lists attendances (work and break) dependent on interval, time, user and department.
+    Checks business rules for attendances:
+    - min_break, max_break, min_work, max_work
+    - min_work_break 6 0.5: At least 0.5 hours break after 6 hours of work
+    - min_work_break 9 0.75: At least 0.75 hours break after 9 hours of work
+    Used to manually calculate working time per month.
 } {
     { report_start_date "" }
     { report_end_date "" }
@@ -26,7 +19,7 @@ ad_page_contract {
     { report_user_id "" }
     { report_attendance_type_id "" }
     { report_attendance_status_id "" }
-    { level_of_detail:integer 3 }
+    { level_of_detail:integer 2 }
     { output_format "html" }
     { number_locale "" }
 }
@@ -46,8 +39,7 @@ set read_p [db_string report_perms "
 set read_p "t"
 
 if {"t" ne $read_p } {
-    set message "You don't have the necessary permissions to view this page"
-    ad_return_complaint 1 "<li>$message"
+    ad_return_complaint 1 [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]
     ad_script_abort
 }
 
@@ -110,7 +102,7 @@ set context_bar [im_context_bar $page_title]
 set help_text "
 	<strong>$page_title:</strong><br>
 	[lang::message::lookup "" intranet-attendance-management.Attendance_Report_help "
-	This report returns a list of attendances grouped per user.
+	This report returns a list of attendances grouped per user and date.
 "]"
 
 
@@ -228,17 +220,17 @@ set report_sql "
 #
 
 # Global Header
-set header0 {
-    "User"
-    "Date"
-    "Type"
-    "Start"
-    "End"
-    "Work"
-    "Break"
-    "Timesheet"
-    "Note"
-}
+set header0 [list \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_User "User"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Date "Date"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Type "Type"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Start "Start"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_End "End"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Work "Work"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Break "Break"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Timesheet "Timesheet"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_note "Note"] \
+]
 
 # The entries in this list include <a HREF=...> tags
 # in order to link the entries to the rest of the system (New!)
@@ -289,17 +281,17 @@ set report_def [list \
 
 
 # Global Footer Line
-set footer0 {
-    "Total"
-    ""
-    ""
-    ""
-    ""
-    "$attendance_work_total_pretty"
-    "$attendance_break_total_pretty"
-    ""
-    ""    
-}
+set footer0 [list \
+		 [lang::message::lookup "" intranet-attendance-management.Total "Total"] \
+		 "" \
+		 "" \
+		 "" \
+		 "" \
+		 "\$attendance_work_total_pretty" \
+		 "\$attendance_break_total_pretty" \
+		 "" \
+		 "" \
+]
 
 
 # ------------------------------------------------------------
@@ -353,23 +345,23 @@ switch $output_format {
 		<form>
 		<table cellspacing=2>
 		<tr class=rowtitle>
-		  <td class=rowtitle colspan=2 align=center>Filters</td>
+		  <td class=rowtitle colspan=2 align=center>[lang::message::lookup "" intranet-core.Filter "Filter"]</td>
 		</tr>
 		<tr>
-		  <td>Level of<br>Details</td>
+		  <td>[lang::message::lookup "" intranet-reporting.LevelOfDetails "Level of Details"]:</td>
 		  <td>
 		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
 		  </td>
 		</tr>
 
 		<tr>
-		  <td class=form-label>[lang::message::lookup "" intranet-core.Start_Date "Start Date"]</td>
+		  <td class=form-label>[lang::message::lookup "" intranet-core.Start_Date "Start Date"]:</td>
 		  <td class=form-widget>
 		    <input type=textfield name=report_start_date value=$report_start_date>
 		  </td>
 		</tr>
 		<tr>
-		  <td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]</td>
+		  <td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]:</td>
 		  <td class=form-widget>
 		    <input type=textfield name=report_end_date value=$report_end_date>
 		  </td>
@@ -377,12 +369,12 @@ switch $output_format {
 
 		<tr>
 		  <td>[lang::message::lookup "" intranet-attendance-management.User_Department "User Department"]:</td>
-		  <td>[im_cost_center_select -include_empty 1 -include_empty_name "All" report_department_id $report_department_id]</td>
+		  <td>[im_cost_center_select -include_empty 1 -include_empty_name [_ intranet-core.All] report_department_id $report_department_id]</td>
 		</tr>
 
 		<tr>
 		  <td>[lang::message::lookup "" intranet-attendance-management.Attendance_Type "Attendance Type"]:</td>
-		  <td>[im_category_select -include_empty_p 1 "Intranet Attendance Type" report_attendance_type_id $report_attendance_type_id]</td>
+		  <td>[im_category_select -translate_p 1 -include_empty_p 1 "Intranet Attendance Type" report_attendance_type_id $report_attendance_type_id]</td>
 		</tr>
 
 		<tr>
@@ -391,20 +383,20 @@ switch $output_format {
 		</tr>
 
 		<tr>
-		  <td class=form-label>[lang::message::lookup "" intranet-reporting.Output_Format Format]</td>
+		  <td class=form-label>[lang::message::lookup "" intranet-reporting.Output_Format Format]:</td>
 		  <td class=form-widget>
 		    [im_report_output_format_select output_format "" $output_format]
 		  </td>
 		</tr>
 		<tr>
-		  <td class=form-label><nobr>[lang::message::lookup "" intranet-reporting.Number_Format "Number Format"]</nobr></td>
+		  <td class=form-label><nobr>[lang::message::lookup "" intranet-reporting.Number_Format "Number Format"]:</td>
 		  <td class=form-widget>
 		    [im_report_number_locale_select number_locale $number_locale]
 		  </td>
 		</tr>
 		<tr>
 		  <td</td>
-		  <td><input type=submit value='Submit'></td>
+		  <td><input type=submit value='[_ intranet-core.Submit]'></td>
 		</tr>
 		</table>
 		</form>
