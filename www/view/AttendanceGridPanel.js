@@ -35,13 +35,13 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
             renderer: function(value){
                 var attendanceTypeStore = Ext.StoreManager.get('attendanceTypeStore');
                 var model = attendanceTypeStore.getById(value);
-                var result = model.get('category');
+                var result = model.get('category_translated');
                 return result;
             },
             editor: {
                 xtype:                  'combo',
                 store:                  'attendanceTypeStore',
-                displayField:           'category',
+                displayField:           'category_translated',
                 valueField:             'category_id',
             }
         }, {
