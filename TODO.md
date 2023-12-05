@@ -6,15 +6,9 @@ Editor Portlet
 ==============
 
 ToDo: Features
-
-- Localization to German
-
 ToDo: Optional Features
-
 - Add parameters for min and max durations of intervals/breaks?
-
 Bugs:
-
 - Entering Start Time of "8:00" (without leading 0 before the 8)
   doesn't save, but doesn't produce an error message.
 
@@ -23,16 +17,11 @@ Timesheet Monthly Calendar
 ==========================
 
 ToDo: Features
-
 - Vergleich Anwesenheit vs. Soll Anwesenheit
   - Monatlich mit Berechnung der Soll-Anwesenheit
   - Calculate monthly required presence including
     absences
-
-ToAsk:
-
 - Localization of Work, Break etc.
-
 
 
 Report Pausenzeiten
@@ -43,9 +32,7 @@ ToDo: Features
 - Drill-down per user:
   - Open with filter per user + LoD++
   - Try to integrate timesheet hours into "left dimension"
-
-
-
+  - Business Logic Checks:
 	- Mindestens 15 pro Pause
 	- Ab 6h verpflichtend 30min Pause
 	- Ab 9h 45min Pause
@@ -57,19 +44,9 @@ ToDo: Features
 
 
 
-Report Abgleich Anwesenheit vs. Projektstunden
-==============================================
-
-
-
-Other ToDos:
-- Reactivate User Base Data portlet in "My Account"
-
-
 
 Done
 ====
-
 
 Editor portlet:
 
@@ -106,7 +83,8 @@ Editor portlet:
 - (+) and (-) buttons in future weeks
 - Clarify: What happens when editing a date, so that the
   attendance moves to a different week?
-
+- Localization to German
+  - Localize Attendance Type Store
 
 - Bug: Format for GridPanel date column is different from renderer
 - Bug: Creating a new item doesn't save time
@@ -155,4 +133,5 @@ Report Pausenzeiten
 		- Rot wenn Business-Regeln verletzt (oben)
 		  mit Kommentar warum
 	- Used to manually calculate working time per month
+- Translated to German
 
