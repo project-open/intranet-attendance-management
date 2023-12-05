@@ -35,6 +35,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             '#buttonStartWork': { click: this.onButtonStartWork },
             '#buttonStartBreak': { click: this.onButtonStartBreak },
             '#buttonStop': { click: this.onButtonStop },
+            '#buttonAdd': { click: this.onButtonAdd },
             '#buttonDelete': { click: this.onButtonDelete },
             '#buttonPreviousWeek': { click: this.onButtonPreviousWeek },
             '#buttonNextWeek': { click: this.onButtonNextWeek },
@@ -160,7 +161,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         var count = 0;
         me.attendanceStore.each(function(item) {
-
             var end = item.get('attendance_end');
             if ("" == end) { count++; }
         });
@@ -187,6 +187,9 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Itervals of more than a day
         var intervalTooLong = 0;
         
+	// Two entries starting at the same time
+	var sameStart = 0;
+
         me.attendanceStore.each(function(item) {
             var endIso = item.get('attendance_end');
             var startIso = item.get('attendance_start');
@@ -247,16 +250,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         if ("" != message) {
             message = "<ul>" + message + "</ul>" + '<br>Please edit manually to resolve the ' + issueCount + ' issue(s).'
-            var title = 'Inconsistent attendance data';
-            var msgBox = Ext.create('Ext.window.MessageBox', {});
-            msgBox.show({
-                title: title,
-                msg: message,
-                minWidth: 500,
-                minHeight: 150,
-                buttonText: { yes: "OK" },
-                icon: Ext.Msg.INFO
-            });
+	    me.errorMessage(message);
         }
     },
 
@@ -287,12 +281,12 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     /*
      * Start logging an attendance
      */
-    createNewAttendance: function(attendance_type_id) {
+    createNewAttendance: function(config) {
         var me = this;
-        console.log('AttendanceController.createNewAttendance: '+attendance_type_id);
-
-        // ToDo: Check that there is no other line currently open with an empty end-date
-                
+        console.log('AttendanceController.createNewAttendance: ');
+        console.log(config);
+        
+        // Cancel any ongoing edit session.
         me.attendanceGridRowEditing.cancelEdit();
 
         // Start logging
@@ -300,24 +294,80 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         var startTime = /\d\d:\d\d/.exec(""+now)[0];
         var startDateIso = now.toISOString().substring(0,10);
 
-        // The Attendance object is a 1:1 reflection of what is in the DB,
-        // so all attributes are strings.
-        var attendance = new Ext.create('AttendanceManagement.model.Attendance', {
-            attendance_user_id: ""+me.current_user_id,
-            attendance_type_id: ""+attendance_type_id, // Attendance
-            attendance_status_id: ""+92020, // Active
+        // Set default args for a new attendance. Can be overwritten by config.
+        var params = Ext.apply({
+            attendance_type_id: 92100,    // Work
+            attendance_status_id: 92020,  // active
             attendance_date: startDateIso,
             attendance_start_time: startTime,
             attendance_start: startDateIso+' '+startTime, // no time zone -> current TZ
             attendance_note: ""
+        }, config);
+
+        // The Attendance object is a 1:1 reflection of what is in the DB,
+        // so all attributes are strings.
+        var attendance = new Ext.create('AttendanceManagement.model.Attendance', {
+            attendance_user_id: ""+me.current_user_id,
+            attendance_type_id: ""+params.attendance_type_id,
+            attendance_status_id: ""+params.attendance_status_id,
+            attendance_date: params.attendance_date,
+            attendance_start_time: params.attendance_start_time,
+            attendance_start: params.attendance_start,
+            attendance_note: params.attendance_note
         });
         
+        
+        // Check if there is a second entry with the same start
+	var duplicate = false;
+        me.attendanceStore.each(function(item) {
+            var startIso = item.get('attendance_start');
+            if (startIso.substring(0,16) == params.attendance_start.substring(0,16)) {
+
+                var message = "<li>There is already an entry with the same start time<br>"+
+		    startIso.substring(0,16) + ", so we discard the new entry."
+		message = "<ul>" + message + "</ul>";
+		me.errorMessage(message);
+
+                me.enableDisableButtons();
+                duplicate = true;
+            }
+            
+        });
+
         // Add to end of the store and sync
-        var addResult = me.attendanceStore.add(attendance);
+	if (!duplicate) {
+            me.attendanceStore['autoSyncSuspended'] = true;
+            var addResult = me.attendanceStore.add(attendance);
+            me.attendanceStore['autoSyncSuspended'] = false;
+            me.attendanceStore.sync({
+		failure: function(batch, options) {
+                    var reader = batch.proxy.getReader();
+                    var jsonData = reader.jsonData;
+                    var message = jsonData.msg;
+                    alert(message);
+                    
+		}
+            });
+	}
 
         me.enableDisableButtons();
     },
     
+    /**
+     * Show a standard error message to the user
+     */
+    errorMessage: function(message) {
+        var title = 'Error with attendance data';
+        var msgBox = Ext.create('Ext.window.MessageBox', {});
+        msgBox.show({
+            title: title,
+            msg: message,
+            minWidth: 500,
+            minHeight: 150,
+            buttonText: { yes: "OK" },
+            icon: Ext.Msg.INFO
+        });
+    },
     
     /**
      * Set the enabled/disabled status of all buttons
@@ -336,32 +386,24 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         var currentWeekMonday = me.getMonday(new Date());
         var currentWeekISO = Ext.Date.format(currentWeekMonday, 'Y-m-d')
         var controllerWeekISO = Ext.Date.format(me.attendanceWeekDate, 'Y-m-d')
-        if (currentWeekISO != controllerWeekISO) {
-            buttonStartWork.disable();
-            buttonStartBreak.disable()
-            buttonDelete.disable();
-            buttonStop.disable();
-            return;
-        }
-        
-        // Get the number of selected entries
+        var currentWeekP = false;
+        if (currentWeekISO == controllerWeekISO) { currentWeekP = true; }
+
+        // Get the number of selected entries and the number of "open" items
         var selection = me.attendanceGrid.getSelectionModel().getSelection();
         var selectionLen = selection.length;
-
-        // Get the number of entries without end date
         var openItemsCount = me.getOpenAttendanceEntriesCount();
 
-        // Delete is enabled if one item is selected, disabled otherwise.
+        // Delete is always (past+future) enabled if one item is selected
         buttonDelete.setDisabled(1 != selectionLen);
         
-        // Stop is enabled, if at least one item is "open"
-        // Stop will handle the case of more than item being open.
-        buttonStop.setDisabled(0 == openItemsCount);
+        // Stop is enabled in the current week if at least one item is "open"
+        buttonStop.setDisabled(0 == openItemsCount || !currentWeekP);
 
-        // StartWork is enabled if no item is open
-        // StartBreak is enabled if no item is open
-        buttonStartWork.setDisabled(0 != openItemsCount);
-        buttonStartBreak.setDisabled(0 != openItemsCount);
+        // StartWork + StartBreak are enabled in the current week if no item is open
+        // => disabled if either items are open or not this week.
+        buttonStartWork.setDisabled(0 != openItemsCount || !currentWeekP);
+        buttonStartBreak.setDisabled(0 != openItemsCount || !currentWeekP);
     },
 
     
@@ -462,29 +504,50 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     
     /*
      * Start logging working time
+     * This button is only active in the current week.
      */
     onButtonStartWork: function() {
         var me = this;
         console.log('AttendanceController.onButtonStartWork');
 
-        me.selectCurrentWeek();
-
-        me.createNewAttendance(92100); // Work attendance
+        me.createNewAttendance(); // Work attendance
         me.checkConsistency();
     },
 
     /*
-     * Start a break
+     * Start a break.
+     * This button is only active in the current week.
      */
     onButtonStartBreak: function() {
         var me = this;
         console.log('AttendanceController.onButtonStartBreak');
 
-        me.selectCurrentWeek();
-
-        me.createNewAttendance(92110); // Break
+        me.createNewAttendance({attendance_type_id: 92110}); // Break
         me.checkConsistency();
     },
+
+
+    /*
+     * Add an empty line with no data.
+     * This can be pressed in any week
+     */
+    onButtonAdd: function() {
+        var me = this;
+        console.log('AttendanceController.onButtonStartWork');
+
+        var startTime = /\d\d:\d\d/.exec(""+me.attendanceWeekDate)[0];
+        var startDateIso = Ext.Date.format(me.attendanceWeekDate, 'Y-m-d');
+
+        // Set default args for a new attendance. Can be overwritten by config.
+        me.createNewAttendance({
+            attendance_date: startDateIso,
+            attendance_start_time: startTime,
+            attendance_start: startDateIso+' '+startTime
+        });
+
+        me.checkConsistency();
+    },
+
 
     /**
      * Add end to the only (hopefully...) entry without end in this week.
@@ -493,8 +556,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     onButtonStop: function() {
         var me = this;
         console.log('AttendanceController.onButtonStop');
-
-        me.selectCurrentWeek();
 
         // Make sure no editing is in course
         me.attendanceGridRowEditing.cancelEdit();
@@ -521,8 +582,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     onButtonDelete: function() {
         var me = this;
         console.log('AttendanceController.onButtonDelete');
-
-        me.selectCurrentWeek();
 
         var selModel = me.attendanceGrid.getSelectionModel();
         var records = selModel.getSelection();

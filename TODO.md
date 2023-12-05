@@ -9,20 +9,14 @@ ToDo: Features
 
 - Localization to German
 
-
 ToDo: Optional Features
 
-- Clarify: What happens when editing a date, so that the
-  attendance moves to a different week?
 - Add parameters for min and max durations of intervals/breaks?
 
-ToAsk:
-
-- (+) and (-) buttons in previous weeks?
-- (+) and (-) buttons in future weeks?
- 
-
 Bugs:
+
+- Entering Start Time of "8:00" (without leading 0 before the 8)
+  doesn't save, but doesn't produce an error message.
 
 
 Timesheet Monthly Calendar
@@ -108,6 +102,11 @@ Editor portlet:
   => Handle in report (globally)
   => User can check himself in the monthly calendar view
 - Done: Consistency checker: Check for multiple open issues only today?
+- (+) and (-) buttons in previous weeks
+- (+) and (-) buttons in future weeks
+- Clarify: What happens when editing a date, so that the
+  attendance moves to a different week?
+
 
 - Bug: Format for GridPanel date column is different from renderer
 - Bug: Creating a new item doesn't save time

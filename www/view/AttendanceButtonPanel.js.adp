@@ -38,6 +38,11 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
         id: 'buttonStop',
         disabled: false
     }, {
+        icon: '/intranet/images/navbar_default/add.png',
+        tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Add "Add&nbsp;entry"] %>',
+        id: 'buttonAdd',
+        disabled: false
+    }, {
         icon: '/intranet/images/navbar_default/delete.png',
         tooltip: '<%= [lang::message::lookup "" intranet-attendance-management.Delete "Delete&nbsp;entry"] %>',
         id: 'buttonDelete',
