@@ -19,7 +19,7 @@ ad_page_contract {
     { report_user_id "" }
     { report_attendance_type_id "" }
     { report_attendance_status_id "" }
-    { level_of_detail:integer 2 }
+    { level_of_detail:integer 3 }
     { output_format "html" }
     { number_locale "" }
 }
@@ -54,7 +54,7 @@ if {$level_of_detail > 3} { set level_of_detail 3 }
 # Default is user locale
 if {"" == $number_locale} { set number_locale [lang::user::locale] }
 
-set days_in_past 7
+set days_in_past 3
 db_1row todays_date "
 select
         to_char(sysdate::date - :days_in_past::integer, 'YYYY') as todays_year,
@@ -247,7 +247,7 @@ set report_def [list \
 					      group_by attendance_id \
 					      header {
 						  ""
-						  "$attendance_start_date"
+						  "<nobr>$attendance_start_date</nobr>"
 						  "$attendance_type"
 						  "$attendance_start_time"
 						  "$attendance_end_time"
@@ -438,41 +438,29 @@ if {1} {
 	# -------------------------------------------------------
 	# Aggregate attendance data per day and user
 	set key "$attendance_user_id-$attendance_start_date"
-	set v ""
+	set v [list]
 	if {[info exists cell_hash($key)]} { set v $cell_hash($key) }
 
-	# Check for the properties of the new attendances wrt. the last ones in v
-	set last_tuple [lindex $v end]
-	set last_type_id [lindex $last_tuple 0]
-	set last_start_date [lindex $last_tuple 1]
-	set last_start_time [lindex $last_tuple 2]
-	set last_end_time [lindex $last_tuple 3]
-
-	ns_log Notice "attendance-report:"
-	ns_log Notice "attendance-report: user_id=$attendance_user_id, day=$attendance_start_date"
-	ns_log Notice "attendance-report: curr: type_id=$attendance_type_id, start_date=$attendance_start_date, start_time=$attendance_start_time, end_time=$attendance_end_time"
-	ns_log Notice "attendance-report: last: type_id=$last_type_id, start_date=$last_start_date, start_time=$last_start_time, end_time=$last_end_time"
-
-
-	set cell_errors ""
-	if {[info exists cell_errors_hash($key)]} { set cell_errors $cell_errors_hash($key) }
-
-	if {"" ne $attendance_break} { 
-	    if {$attendance_break < 0.15} { 
-		lappend cell_errors "<li>Break $attendance_break_pretty is shorter than 15 minutes"
-	    }
-	}
-
-
-	set cell_errors_hash($key) $cell_errors
-
-	lappend v [list $attendance_type_id $attendance_start_date $attendance_start_time $attendance_end_time $attendance_duration_hours]
+	# Write attendance data into hash-list
+	set list [list]
+	set vars {attendance_id attendance_type_id attendance_start_date attendance_start attendance_end attendance_duration_hours}
+	foreach var $vars { lappend list $var [set $var] }
+	lappend v $list
 	set cell_hash($key) $v
 
-	set cell_contents "<pre>[join $v "\n"]</pre><font=red>[join $cell_errors "\n"]</font>"
 
 	# -------------------------------------------------------
-	# Check business rules
+	# Check for consistency and return a list of issues
+	# Takes as input a list of hashes of attendances (list representation)
+	set errors [im_attendance_check_consistency -attendance_hashs $v]
+
+	# Format the cell "notes" for debugging
+	set cell_contents "<pre>[join $v "\n"]\n<font color=red>[join $errors "\n"]</font></pre>"
+
+	if {[llength $errors] > 0} {
+	    ns_log Notice "attendance-report: errors=$errors"
+	}
+
 
 	# -------------------------------------------------------
 	# Mix-in the timesheet information

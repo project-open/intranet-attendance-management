@@ -153,3 +153,51 @@ ad_proc -public im_attendance_daily_attendance_hours {
     }
     return $hours_per_day
 }
+
+
+ad_proc -public im_attendance_check_consistency {
+    -attendance_hashs:required
+} {
+    Checks a list of attendances for a given user and day for consistency.
+    Returns and empty list when successful, or a list of error strings otherwise
+} {
+    # ns_log Notice "check_consistency: hash=$attendance_hashs"
+    set errors [list]
+
+    set last_att [list]
+    foreach curr_att $attendance_hashs {
+	array unset last_hash
+	array unset curr_hash
+
+	array set last_hash $last_att
+	array set curr_hash $curr_att
+
+	ns_log Notice "check_consistency: ----------------------------------------"
+	ns_log Notice "check_consistency: last: $last_att"
+	ns_log Notice "check_consistency: curr: $curr_att"
+
+	if {[im_attendance_type_break] eq $curr_hash(attendance_type_id)} {
+	    set duration $curr_hash(attendance_duration_hours)
+	    ns_log Notice "check_consistency: break: duration=$duration"
+	    
+	    if {$curr_hash(attendance_duration_hours) < 0.20} { 
+		lappend errors "Break #$curr_hash(attendance_id) on [string range $curr_hash(attendance_start) 0 15] is shorter than 15 minutes"
+	    }
+	}
+
+
+	# Compare curr_hash with last_hash, if last_hash is defined
+	if {$last_att ne ""} {
+	    # Check for the properties of the new attendances wrt. the last ones in v
+
+	    # ToDo
+
+	}
+
+
+	# Copy the current attendance into the last attendance
+	set last_att $curr_att
+    }
+
+    return $errors
+}
