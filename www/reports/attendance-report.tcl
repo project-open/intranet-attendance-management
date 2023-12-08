@@ -19,7 +19,7 @@ ad_page_contract {
     { report_user_id "" }
     { report_attendance_type_id "" }
     { report_attendance_status_id "" }
-    { level_of_detail:integer 3 }
+    { level_of_detail:integer 2 }
     { output_format "html" }
     { number_locale "" }
 }
@@ -50,6 +50,11 @@ if {"t" ne $read_p } {
 
 # Maxlevel is 3.
 if {$level_of_detail > 3} { set level_of_detail 3 }
+
+# Deactivate department filter if user filter was set (more specific)
+if {"" ne $report_user_id && 0 ne $report_user_id} {
+    set report_department_id ""
+}
 
 # Default is user locale
 if {"" == $number_locale} { set number_locale [lang::user::locale] }
@@ -103,6 +108,7 @@ set help_text "
 	<strong>$page_title:</strong><br>
 	[lang::message::lookup "" intranet-attendance-management.Attendance_Report_help "
 	This report returns a list of attendances grouped per user and date.
+        Start date is inclusive, end date is exclusive (2023-11-01 - 2023-12-01 shows November).
 "]"
 
 
@@ -122,7 +128,9 @@ set date_format "YYYY-MM-DD"
 
 # Set URLs on how to get to other parts of the system for convenience.
 set user_url "/intranet/users/view?user_id="
-set this_url "[export_vars -base "/intranet-attendance-management/reports/attendance-report" {report_start_date report_end_date level_of_detail} ]?"
+set base_url "/intranet-attendance-management/reports/attendance-report"
+set this_url "[export_vars -base $base_url {report_start_date report_end_date level_of_detail} ]?"
+set base_url_date "[export_vars -base $base_url {report_start_date report_end_date}]"
 
 # Level of Details
 # Determines the LoD of the grouping to be displayed
@@ -184,6 +192,10 @@ if {"" ne $report_department_id && 0 ne $report_department_id} {
     lappend criteria "e.department_id in ([join [im_sub_cost_center_ids $report_department_id] ", "])\n"
 }
 
+if {"" ne $report_user_id && 0 ne $report_user_id} {
+    lappend criteria "e.employee_id = :report_user_id"
+}
+
 set where_clause [join $criteria " and\n\t"]
 if { $where_clause ne "" } { set where_clause " and $where_clause" }
 
@@ -193,6 +205,7 @@ set report_sql "
 		a.*,
 		im_cost_center_name_from_id(e.department_id) as user_department,
 		to_char(a.attendance_start, 'YYYY-MM-DD') as attendance_start_date,
+		to_char(a.attendance_start + '1 day'::interval, 'YYYY-MM-DD') as attendance_start_date_next,
 		to_char(a.attendance_start, 'HH24:MI') as attendance_start_time,
 		to_char(a.attendance_end, 'HH24:MI') as attendance_end_time,
 		im_name_from_user_id(a.attendance_user_id) as user_name,
@@ -237,7 +250,8 @@ set header0 [list \
 set report_def [list \
 		    group_by attendance_user_id \
 		    header {
-			"#colspan=9 <a href=$user_url$attendance_user_id target=_>$user_name</a> ($user_department)"
+			"#colspan=9 
+                        <a href=$user_url$attendance_user_id target=_>$user_name</a> ($user_department)"
 		    } \
 		    content [list \
 				 group_by attendance_start_date \
@@ -254,14 +268,15 @@ set report_def [list \
 						  "$attendance_work_pretty"
 						  "$attendance_break_pretty"
 						  ""
-						  "$attendance_note"
+						  "$attendance_note $cell_contents"
 					      } \
 					      content {} \
 					      footer {} \
 				 ] \
 				 footer {
 				     ""
-				     "#colspan=2 <i>$attendance_start_date</i>"
+				     "#colspan=2 <nobr><a href=$base_url?report_user_id=$attendance_user_id&level_of_detail=3&report_start_date=$attendance_start_date&report_end_date=$attendance_start_date_next target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
+                                     <i>$attendance_start_date</i></nobr>"
 				     ""
 				     ""
 				     "<i>$attendance_date_work_pretty</i>"
@@ -271,7 +286,9 @@ set report_def [list \
 				 } \
 				] \
 		    footer {
-			"#colspan=5 <b><a href=$user_url$attendance_user_id target=_>$user_name</a></b>"
+			"#colspan=5 <a href=$base_url_date&report_user_id=$attendance_user_id&level_of_detail=3 
+                        target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
+                        <b><a href=$user_url$attendance_user_id target=_>$user_name</a> ($user_department) </b>"
 			"<b>$attendance_user_work_pretty</b>"
 			"<b>$attendance_user_break_pretty</b>"
 			""
@@ -371,6 +388,12 @@ switch $output_format {
 		  <td>[lang::message::lookup "" intranet-attendance-management.User_Department "User Department"]:</td>
 		  <td>[im_cost_center_select -include_empty 1 -include_empty_name [_ intranet-core.All] report_department_id $report_department_id]</td>
 		</tr>
+
+		<tr>
+		  <td class=form-label>[lang::message::lookup "" intranet-core.User "User"]</td>
+		  <td class=form-widget>
+		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name [lang::message::lookup "" intranet-core.All "All"] report_user_id $report_user_id] 
+		</td>
 
 		<tr>
 		  <td>[lang::message::lookup "" intranet-attendance-management.Attendance_Type "Attendance Type"]:</td>
