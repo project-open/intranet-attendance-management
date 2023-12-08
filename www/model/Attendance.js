@@ -47,6 +47,17 @@ Ext.define('AttendanceManagement.model.Attendance', {
         'attendance_date',			// Date part of start- and end time
         'attendance_start_time',		// Time part of start date
         'attendance_end_time'			// Time part of end date
+    ],
+
+    validations: [
+        // {type: 'presence',  field: 'age'},
+        // {type: 'length',    field: 'name',     min: 2},
+        // {type: 'inclusion', field: 'gender',   list: ['Male', 'Female']},
+        // {type: 'exclusion', field: 'username', list: ['Admin', 'Operator']},
+        {type: 'format', field: 'attendance_date', matcher: /^\d{4}\-\d{2}\-\d{2}$/ },
+        {type: 'format', field: 'attendance_start_time', matcher: /^\d{2}\:\d{2}$/ },
+        {type: 'format', field: 'attendance_end_time', matcher: /^\d{2}\:\d{2}$/ }
     ]
+
 });
 

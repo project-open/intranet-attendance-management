@@ -43,9 +43,9 @@ const DAY_NAME_OF_WEEK_SHORT = [
 ];
 
 // Localization: Start with English and overwrite with locale specific translation from database
-const l10n = {<multiple name="english_messages">@english_messages.message_key@: "@english_messages.message@",
+var l10n = {<multiple name="english_messages">@english_messages.message_key@: "@english_messages.message@",
 </multiple>};
-const l10n_locale = {<multiple name="locale_messages">@locale_messages.message_key@: "@locale_messages.message@",
+var l10n_locale = {<multiple name="locale_messages">@locale_messages.message_key@: "@locale_messages.message@",
 </multiple>};
 Object.keys(l10n_locale).forEach(key => {var val = l10n_locale[key]; l10n[key] = val;});
 
@@ -53,20 +53,10 @@ function launchTimesheetAttendanceLogging(){
     // Stores
     var attendanceStore = Ext.StoreManager.get('attendanceStore');
 
-    // Row editor for attendance grid, vetos inconcistent entries 
+    // Row editor for attendance grid
+    // The controller registers validateedit and edit events
     var rowEditing = Ext.create('Ext.grid.plugin.RowEditing', {
-        clicksToMoveEditor: 2,
-        listeners: {
-            edit: function(editor, context, eOpts) {
-                // Check that the endTime is later than startTime
-                var startTime = context.record.get('attendance_start_time');
-                var endTime = context.record.get('attendance_end_time');
-                if (startTime > endTime) {
-                    return false;                     // Just return false - no error message
-                }
-                context.record.save();
-            }
-        }
+        clicksToMoveEditor: 2
     });
 
     // The actual grid for attendance entries

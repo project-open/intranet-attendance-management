@@ -49,6 +49,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         me.attendanceGrid.on('selectionchange', this.onGridSelectionChange, me);
 
         // Listen to the Grid Editor that allows to specify start- and end time
+        me.attendanceGrid.on('validateedit', this.onGridValidateEdit, me);
         me.attendanceGrid.on('edit', this.onGridEdit, me);
 
         // Catch a global key strokes. This is used to abort entry with Esc.
@@ -187,8 +188,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Itervals of more than a day
         var intervalTooLong = 0;
         
-	// Two entries starting at the same time
-	var sameStart = 0;
+        // Two entries starting at the same time
+        var sameStart = 0;
 
         me.attendanceStore.each(function(item) {
             var endIso = item.get('attendance_end');
@@ -250,7 +251,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         if ("" != message) {
             message = "<ul>" + message + '</ul><br>' + l10n.please_edit_attendances_to_resolve_the_issues;
-	    me.errorMessage(message);
+            me.errorMessage(message);
         }
     },
 
@@ -318,14 +319,14 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         
         
         // Check if there is a second entry with the same start
-	var duplicate = false;
+        var duplicate = false;
         me.attendanceStore.each(function(item) {
             var startIso = item.get('attendance_start');
             if (startIso.substring(0,16) == params.attendance_start.substring(0,16)) {
 
                 var message = '<ul><li>' + l10n.there_is_already_an_entry_with_the_same_start_time +
-		    startIso.substring(0,16) + l10n.we_will_discard_the_new_entry + '</ul>';
-		me.errorMessage(message);
+                    startIso.substring(0,16) + l10n.we_will_discard_the_new_entry + '</ul>';
+                me.errorMessage(message);
 
                 me.enableDisableButtons();
                 duplicate = true;
@@ -334,21 +335,24 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         });
 
         // Add to end of the store and sync
-	if (!duplicate) {
+        if (!duplicate) {
             me.attendanceStore['autoSyncSuspended'] = true;
             var addResult = me.attendanceStore.add(attendance);
             me.attendanceStore['autoSyncSuspended'] = false;
             me.attendanceStore.sync({
-		failure: function(batch, options) {
+                failure: function(batch, options) {
                     var reader = batch.proxy.getReader();
                     var jsonData = reader.jsonData;
                     var message = jsonData.msg;
                     alert(message);
-		}
+                }
             });
-	}
+        }
 
+        // enabled/disables the buttons in function of status
         me.enableDisableButtons();
+
+        return attendance;
     },
     
     /**
@@ -361,7 +365,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             msg: message,
             minWidth: 500,
             minHeight: 150,
-            buttonText: { yes: l10n.ok },
+            buttonText: { yes: l10n.Button_OK },
             icon: Ext.Msg.INFO
         });
     },
@@ -409,15 +413,48 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     ***************************************************************************************** */
 
     /**
+     * Validation of the input line:
+     * The endTime field may be empty, but both start- and endTime
+     * should have valid formats. endTime should be after startTime.
+     */
+    onGridValidateEdit: function(editor, e, eOpts) {
+        var me = this;
+        console.log('AttendanceController.onGridValidateEdit');
+
+        var newModel = e.record.copy();        //copy the old model
+        newModel.set(e.newValues);             //set the values from the editing plugin form
+
+        var errors = newModel.validate();
+        var startTime = newModel.get('attendance_start_time');
+        var endTime = newModel.get('attendance_end_time');
+        if ("" !== endTime) {
+            // Make sure endTime is later than startTime
+            if (startTime.localeCompare(endTime) == 1) {
+                errors.add({field: 'attendance_end_time',  message: 'must be later than start'});
+            }
+        }
+
+	// Use this to mark a field as bad
+	// editor.editor.getForm().findField('fieldName').markInvalid('Message here');
+
+        if (!errors.isValid()) {
+            editor.editor.form.markInvalid(errors);  //the double "editor" is correct
+            return false;                            //prevent the editing plugin from closing
+        }
+
+        return true;
+    },
+
+    /**
      * The user has edited some entry.
      * We now have to set attendance_start and attendance_end
      * (the actual fields stored in the DB) based on date, 
      * start_time and end_time.
      */
-    onGridEdit: function(editor, context) {
+    onGridEdit: function(editor, e, eOpts) {
         var me = this;
         console.log('AttendanceController.onGridEdit');
-        var rec = context.record;
+        var rec = e.record;
         
         var attendance_date = rec.get('attendance_date');
         var attendance_start = rec.get('attendance_start');
@@ -533,11 +570,14 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         var startDateIso = Ext.Date.format(me.attendanceWeekDate, 'Y-m-d');
 
         // Set default args for a new attendance. Can be overwritten by config.
-        me.createNewAttendance({
+        var att = me.createNewAttendance({
             attendance_date: startDateIso,
             attendance_start_time: startTime,
             attendance_start: startDateIso+' '+startTime
         });
+
+        // Start editing the new entry
+        me.attendanceGridRowEditing.startEdit(att, 0);
 
         me.checkConsistency();
     },

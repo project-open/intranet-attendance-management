@@ -47,8 +47,8 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
         }, {
             text: l10n.Heading_DayOfWeek,
             hidden: false,
-	    width: 50,
-	    // Don't put a dataIndex here, rowEditing editor will stop
+            width: 50,
+            // Don't put a dataIndex here, rowEditing editor will stop
             renderer: function(v, html, model) {
                 var dateIso = model.get('attendance_start');
                 var date = PO.Utilities.pgToDate(dateIso);
@@ -68,7 +68,9 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 xtype: 'podatefield',
                 allowBlank: true,
                 startDay: week_start_day,
-                format: 'Y-m-d'
+                format: 'Y-m-d',
+		allowBlank: false,
+		validator: function(a, b, c) { alert(a); }
             }
         }, {
             text: l10n.Heading_Start,
@@ -79,7 +81,8 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 xtype: 'combobox',
                 triggerAction: 'all',
                 selectOnTab: true,
-                store: timeEntryStore
+                store: timeEntryStore,
+                regex: /^\d{2}\:\d{2}$/
             }
         }, {
             text: l10n.Heading_End, 
@@ -89,6 +92,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 triggerAction: 'all',
                 selectOnTab: true,
                 store: timeEntryStore
+                // ,regex: /^\d{2}\:\d{2}$/
             }
         }, {
             text: l10n.Heading_Duration,
@@ -99,7 +103,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 var endIso = model.get('attendance_end');
                 if ("" == startIso || "" == endIso) return "";
                 
-		var startDate = PO.Utilities.pgToDate(startIso);
+                var startDate = PO.Utilities.pgToDate(startIso);
                 var endDate = PO.Utilities.pgToDate(endIso);
                 var diffHours = Math.round(10.0 * (endDate.getTime() - startDate.getTime()) / 1000.0 / 60.0 / 60.0) / 10.0;
                 return ""+Ext.util.Format.number(diffHours, '0.00')+"h";
