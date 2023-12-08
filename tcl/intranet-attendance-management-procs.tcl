@@ -176,6 +176,7 @@ ad_proc -public im_attendance_check_consistency {
 	ns_log Notice "check_consistency: last: $last_att"
 	ns_log Notice "check_consistency: curr: $curr_att"
 
+	# There should be no breaks shorter than min_break_time
 	if {[im_attendance_type_break] eq $curr_hash(attendance_type_id)} {
 	    set duration $curr_hash(attendance_duration_hours)
 	    ns_log Notice "check_consistency: break: duration=$duration"
