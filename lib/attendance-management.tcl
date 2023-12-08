@@ -38,8 +38,8 @@ set debug_json "{\n\t[join $debug_json_list ",\n\t"]\n}"
 
 
 
-set english_message_sql "select	* from lang_messages where locale = 'en_US' and package_key = 'intranet-attendance-management'"
+set english_message_sql "select	message_key, replace(replace(message, E'\n', '\\n'), E'\r', '') as message from lang_messages where locale = 'en_US' and package_key = 'intranet-attendance-management'"
 db_multirow english_messages english_messages $english_message_sql
 
-set locale_message_sql "select * from lang_messages where locale = :user_locale and package_key = 'intranet-attendance-management'"
+set locale_message_sql "select message_key, replace(replace(message, E'\n', '\\n' ), E'\r', '') as message from lang_messages where locale = :user_locale and package_key = 'intranet-attendance-management'"
 db_multirow locale_messages locale_messages $locale_message_sql
