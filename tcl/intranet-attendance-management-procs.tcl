@@ -176,22 +176,55 @@ ad_proc -public im_attendance_check_consistency {
 	ns_log Notice "check_consistency: last: $last_att"
 	ns_log Notice "check_consistency: curr: $curr_att"
 
+	# Exctract start/end date/time from current/last attendance. That's 8 variables in total (2^3)
+	set curr_start_date [string range $curr_hash(attendance_start) 0 9]
+	set curr_end_date [string range $curr_hash(attendance_end) 0 9]
+	set curr_start_time [string range $curr_hash(attendance_start) 11 15]
+	set curr_end_time [string range $curr_hash(attendance_end) 11 15]
+	ns_log Notice "check_consistency: curr_start_date='$curr_start_date', curr_end_date='$curr_end_date', curr_start_time='$curr_start_time', curr_end_time='$curr_end_time'"
+
+	if {$last_att ne ""} {
+	    set last_start_date [string range $last_hash(attendance_start) 0 9]
+	    set last_end_date [string range $last_hash(attendance_end) 0 9]
+	    set last_start_time [string range $last_hash(attendance_start) 11 15]
+	    set last_end_time [string range $last_hash(attendance_end) 11 15]
+	} else {
+	    set last_start_date ""
+	    set last_end_date ""
+	    set last_start_time ""
+	    set last_end_time ""
+	}
+	ns_log Notice "check_consistency: last_start_date='$last_start_date', last_end_date='$last_end_date', last_start_time='$last_start_time', last_end_time='$last_end_time'"
+
+
+	# The _date_ component of curr_attendance_start and curr_attendance_end should be the same (unless end_date is empty)
+	if {"" ne $curr_end_date && $curr_start_date ne $curr_end_date} {
+	    lappend errors "Attendance #$curr_hash(attendance_id) on $curr_start_date has different dates between start and end"
+	}
+	
+	# The _date_ component of last_start_date and curr_start_date should be the same (unless last_start_date is empty (non existent))
+	if {"" ne $last_start_date && $curr_start_date ne $last_start_date} {
+	    lappend errors "Attendance #$curr_hash(attendance_id) on $curr_start_date has different date than it's predecessor. Internal error?"
+	}
+	
+
 	# There should be no breaks shorter than min_break_time
 	if {[im_attendance_type_break] eq $curr_hash(attendance_type_id)} {
 	    set duration $curr_hash(attendance_duration_hours)
 	    ns_log Notice "check_consistency: break: duration=$duration"
 	    
 	    if {$curr_hash(attendance_duration_hours) < 0.20} { 
-		lappend errors "Break #$curr_hash(attendance_id) on [string range $curr_hash(attendance_start) 0 15] is shorter than 15 minutes"
+		lappend errors "Break #$curr_hash(attendance_id) on $curr_start_date is shorter than 15 minutes"
 	    }
 	}
 
 
 	# Compare curr_hash with last_hash, if last_hash is defined
-	if {$last_att ne ""} {
-	    # Check for the properties of the new attendances wrt. the last ones in v
-
-	    # ToDo
+	if {"" ne $last_end_time} {
+	    # Check that last attendance and current one don't overlap
+	    if {$last_end_time > $curr_start_time} {
+		lappend errors "Attendance #$curr_hash(attendance_id) on $curr_start_date overlaps with attendance #$last_hash(attendance_id)."
+	    }
 
 	}
 
@@ -199,6 +232,11 @@ ad_proc -public im_attendance_check_consistency {
 	# Copy the current attendance into the last attendance
 	set last_att $curr_att
     }
+
+    # ToDo Check:
+    # if there is a timesheet entry, but no attendance
+    # if deviation between timesheet and attendances is > ...
+
 
     return $errors
 }
