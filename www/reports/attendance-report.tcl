@@ -200,33 +200,81 @@ set where_clause [join $criteria " and\n\t"]
 if { $where_clause ne "" } { set where_clause " and $where_clause" }
 
 
-set report_sql "
-	select
-		a.*,
+# Previous version of the report_sql, preserved for clarity of documentation.
+# The only problem with this version is that it doesn't show all timesheet
+# hours (im_hours), if the user didn't log an attendance on that day.
+# We could have preserved this SQL and instead created a fake attendance for
+# all days with im_hours, but that would have been ugly as well.
+set simplified_report_sql "
+	select	a.*,
 		im_cost_center_name_from_id(e.department_id) as user_department,
 		to_char(a.attendance_start, 'YYYY-MM-DD') as attendance_start_date,
 		to_char(a.attendance_start + '1 day'::interval, 'YYYY-MM-DD') as attendance_start_date_next,
 		to_char(a.attendance_start, 'HH24:MI') as attendance_start_time,
 		to_char(a.attendance_end, 'HH24:MI') as attendance_end_time,
 		im_name_from_user_id(a.attendance_user_id) as user_name,
-		-- im_category_from_id(a.attendance_type_id) as attendance_type,
-		-- (select sum(h.hours) from im_hours h where h.user_id = a.attendance_user_id and h.day::date = a.attendance_start::date) as ts_sum,
 		coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) as attendance_duration_hours,
 		CASE when a.attendance_type_id = [im_attendance_type_work] THEN coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) END as attendance_work,
 		CASE when a.attendance_type_id = [im_attendance_type_break] THEN coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) END as attendance_break
-	from
-		im_attendance_intervals a,
+	from	im_attendance_intervals a,
 		im_employees e
-	where
-		a.attendance_user_id = e.employee_id and
+	where	a.attendance_user_id = e.employee_id and
 		a.attendance_start >= :report_start_date and
 		a.attendance_start < :report_end_date
 		$where_clause
-	order by
-		user_name,
-		attendance_start
+	order by user_name, attendance_start
 "
 
+# This 
+set report_sql "
+select	a.attendance_id,
+	t.user_id as attendance_user_id,
+	a.attendance_start,
+	a.attendance_end,
+	a.attendance_type_id,
+	a.attendance_status_id,
+	a.attendance_note,
+	im_cost_center_name_from_id(e.department_id) as user_department,
+	to_char(t.date, 'YYYY-MM-DD') as attendance_start_date,
+	to_char(t.date + '1 day'::interval, 'YYYY-MM-DD') as attendance_start_date_next,
+	to_char(a.attendance_start, 'HH24:MI') as attendance_start_time,
+	to_char(a.attendance_end, 'HH24:MI') as attendance_end_time,
+	im_name_from_user_id(t.user_id) as user_name,
+	coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) as attendance_duration_hours,
+	CASE when a.attendance_type_id = [im_attendance_type_work] THEN coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) END as attendance_work,
+	CASE when a.attendance_type_id = [im_attendance_type_break] THEN coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) END as attendance_break
+from
+	-- Create a list of all (date, user_id) tuples with either attenances or im_hours
+	(select distinct date, user_id
+	from
+		(select	aa.attendance_start::date as date,
+			aa.attendance_user_id as user_id
+		from	im_attendance_intervals aa,
+			im_employees e
+		where	aa.attendance_user_id = e.employee_id and
+			aa.attendance_start >= :report_start_date and
+			aa.attendance_start < :report_end_date
+	UNION
+		select	h.day::date as date,
+			h.user_id as user_id
+		from	im_hours h
+		where	h.day >= :report_start_date and
+			h.day < :report_end_date
+		) tt
+	) t
+	-- Join the list
+	LEFT OUTER JOIN im_attendance_intervals a ON (t.date = a.attendance_start::date and t.user_id = a.attendance_user_id)
+	LEFT OUTER JOIN im_employees e ON (t.user_id = e.employee_id)
+where	
+	t.date >= :report_start_date and
+	t.date < :report_end_date
+	$where_clause
+order by
+	user_name,
+	attendance_start
+	
+"
+# ad_return_complaint 1 [im_ad_hoc_query -format html $report_sql]
 
 # ------------------------------------------------------------
 # Report Definition

@@ -6,6 +6,7 @@ Editor Portlet
 ==============
 
 ToDo: Features
+
 ToDo: Optional Features
 - Add parameters for min and max durations of intervals/breaks?
 Bugs:
@@ -85,6 +86,8 @@ Editor portlet:
   attendance moves to a different week?
 - Localization to German
   - Localize Attendance Type Store
+- (+) button: Switch to edit mode
+
 
 - Bug: Format for GridPanel date column is different from renderer
 - Bug: Creating a new item doesn't save time
