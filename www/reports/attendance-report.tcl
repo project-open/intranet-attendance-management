@@ -157,15 +157,21 @@ set timesheet_sql "
 		h.user_id,
 		h.day::date
 "
+set ts_sum_total 0.0
 db_foreach timesheet_info $timesheet_sql {
+    # timesheet sum per user and date
     set ts_key "$user_id-$day_date"
     set ts_hash($ts_key) $hours
 
+    # timesheet sum per user
     set ts_key "$user_id"
     set v 0.0
     if {[info exists ts_user_hash($ts_key)]} { set v $ts_user_hash($ts_key) }
     set v [expr $v + $hours]
     set ts_user_hash($ts_key) $v
+
+    # timesheet total
+    set ts_sum_total [expr $ts_sum_total + $hours]
 }
 
 
@@ -308,7 +314,7 @@ set report_def [list \
 				 content [list \
 					      group_by attendance_id \
 					      header {
-						  ""
+						  "$attendance_id"
 						  "<nobr>$attendance_start_date</nobr>"
 						  "$attendance_type"
 						  "$attendance_start_time"
@@ -329,7 +335,7 @@ set report_def [list \
 				     ""
 				     "<i>$attendance_date_work_pretty</i>"
 				     "<i>$attendance_date_break_pretty</i>"
-				     "$ts_hours_pretty"
+				     "$ts_sum_per_user_day_pretty"
 				     "$cell_contents"
 				 } \
 				] \
@@ -339,7 +345,7 @@ set report_def [list \
                         <b><a href=$user_url$attendance_user_id target=_>$user_name</a> ($user_department) </b>"
 			"<b>$attendance_user_work_pretty</b>"
 			"<b>$attendance_user_break_pretty</b>"
-			""
+			"<b>$ts_sum_per_user</b>"
 			""
 		    } \
 		   ]
@@ -354,7 +360,7 @@ set footer0 [list \
 		 "" \
 		 "\$attendance_work_total_pretty" \
 		 "\$attendance_break_total_pretty" \
-		 "" \
+		 "\$ts_sum_total" \
 		 "" \
 ]
 
@@ -390,7 +396,7 @@ set attendance_date_break 0
 set attendance_break_total 0
 set attendance_break_total_pretty 0
 
-set ts_hours 0
+set ts_sum_per_user_day 0
 
 # ------------------------------------------------------------
 # Start Formatting the HTML Page Contents
@@ -488,158 +494,150 @@ switch $output_format {
     }
 }
 
-if {1} {
-    set footer_array_list [list]
-    set last_value_list [list]
 
-    im_report_render_row \
-	-output_format $output_format \
-	-row $header0 \
-	-row_class "rowtitle" \
-	-cell_class "rowtitle"
+set footer_array_list [list]
+set last_value_list [list]
 
-    set counter 0
-    set class ""
-    db_foreach sql $report_sql {
-	set class $rowclass([expr {$counter % 2}])
+im_report_render_row \
+    -output_format $output_format \
+    -row $header0 \
+    -row_class "rowtitle" \
+    -cell_class "rowtitle"
 
-	set attendance_type [im_category_from_id -translate_p 1 $attendance_type_id]
-	set attendance_status [im_category_from_id -translate_p 1 $attendance_status_id]
+set counter 0
+set class ""
+db_foreach sql $report_sql {
+    set class $rowclass([expr {$counter % 2}])
 
-	# -------------------------------------------------------
-	# Aggregate attendance data per day and user
-	set key "$attendance_user_id-$attendance_start_date"
-	set v [list]
-	if {[info exists cell_hash($key)]} { set v $cell_hash($key) }
+    set attendance_type [im_category_from_id -translate_p 1 $attendance_type_id]
+    set attendance_status [im_category_from_id -translate_p 1 $attendance_status_id]
 
-	# Write attendance data into hash-list
-	set list [list]
-	set vars {attendance_id attendance_type_id attendance_start_date attendance_start attendance_end attendance_duration_hours}
-	foreach var $vars { lappend list $var [set $var] }
-	lappend v $list
-	set cell_hash($key) $v
+    # -------------------------------------------------------
+    # Aggregate attendance data per day and user
+    set key "$attendance_user_id-$attendance_start_date"
+    set v [list]
+    if {[info exists cell_hash($key)]} { set v $cell_hash($key) }
 
-
-	# -------------------------------------------------------
-	# Check for consistency and return a list of issues
-	# Takes as input a list of hashes of attendances (list representation)
-	set errors [im_attendance_check_consistency -attendance_hashs $v]
-
-	# Format the cell "notes" for debugging
-	set cell_contents "<pre>[join $v "\n"]\n<font color=red>[join $errors "\n"]</font></pre>"
-
-	if {[llength $errors] > 0} {
-	    ns_log Notice "attendance-report: errors=$errors"
-	}
+    # Write attendance data into hash-list
+    set list [list]
+    set vars {attendance_id attendance_type_id attendance_start_date attendance_start attendance_end attendance_duration_hours}
+    foreach var $vars { lappend list $var [set $var] }
+    lappend v $list
+    set cell_hash($key) $v
 
 
-	# -------------------------------------------------------
-	# Mix-in the timesheet information
-	set ts_hours 0
-	set ts_hours_pretty ""
-	set ts_key "$attendance_user_id-$attendance_start_date"
-	if {[info exists ts_hash($ts_key)]} { 
-	    set ts_hours $ts_hash($ts_key) 
-	    set ts_hours_pretty [im_report_format_number [expr round(100.0 * $ts_hours) / 100.0] $output_format $number_locale]
-	}
+    # -------------------------------------------------------
+    # Check for consistency and return a list of issues
+    # Takes as input a list of hashes of attendances (list representation)
+    set errors [im_attendance_check_consistency -attendance_hashs $v]
 
+    # Format the cell "notes" for debugging
+    set cell_contents "<pre>[join $v "\n"]\n<font color=red>[join $errors "\n"]</font></pre>"
 
-	# -------------------------------------------------------
-	# Format the report footer
-	im_report_display_footer \
-	    -output_format $output_format \
-	    -group_def $report_def \
-	    -footer_array_list $footer_array_list \
-	    -last_value_array_list $last_value_list \
-	    -level_of_detail $level_of_detail \
-	    -row_class $class \
-	    -cell_class $class
-
-	im_report_update_counters -counters $counters
-
-
-	# Restrict the length of the attendance_note to 40 characters.
-	set attendance_note_pretty [string_truncate -len 40 $attendance_note]
-
-	# Format work+break, also for counters
-	set attendance_work_pretty ""
-	set attendance_break_pretty ""
-	if {"" ne $attendance_work} { set attendance_work_pretty [im_report_format_number [expr round(100.0 * $attendance_work) / 100.0] $output_format $number_locale] }
-	if {"" ne $attendance_break} { 
-	    set attendance_break_pretty [im_report_format_number [expr round(100.0 * $attendance_break ) / 100.0] $output_format $number_locale] 
-
-	    # Business Logic: Show short breaks in red
-	    if {$attendance_break < 0.15} { set attendance_break_pretty "<font color=red><b>$attendance_break_pretty</b></font>" }
-	}
-
-	
-	set attendance_date_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_date_work)   / 100.0] $output_format $number_locale]
-	set attendance_user_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_user_work)   / 100.0] $output_format $number_locale]
-	set attendance_work_total_pretty  [im_report_format_number [expr round(100.0 * $attendance_work_total)  / 100.0] $output_format $number_locale]
-
-	set attendance_date_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_date_break)  / 100.0] $output_format $number_locale]
-	set attendance_user_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_user_break)  / 100.0] $output_format $number_locale]
-	set attendance_break_total_pretty [im_report_format_number [expr round(100.0 * $attendance_break_total) / 100.0] $output_format $number_locale]
-
-	set vars {
-	    attendance_user_work_pretty attendance_date_work_pretty attendance_work_total_pretty 
-	    attendance_date_break_pretty attendance_user_break_pretty attendance_break_total_pretty
-	}
-	foreach var $vars {
-	    if {"0.00" eq [set $var]} { set $var "" }
-	}
-
-
-	set last_value_list [im_report_render_header \
-				 -output_format $output_format \
-				 -group_def $report_def \
-				 -last_value_array_list $last_value_list \
-				 -level_of_detail $level_of_detail \
-				 -row_class $class \
-				 -cell_class $class
-			    ]
-
-	set footer_array_list [im_report_render_footer \
-				   -output_format $output_format \
-				   -group_def $report_def \
-				   -last_value_array_list $last_value_list \
-				   -level_of_detail $level_of_detail \
-				   -row_class $class \
-				   -cell_class $class
-			      ]
-
-	incr counter
+    if {[llength $errors] > 0} {
+	ns_log Notice "attendance-report: errors=$errors"
     }
 
+
+    # -------------------------------------------------------
+    # Mix-in the timesheet information
+    set ts_sum_per_user_day 0
+    set ts_sum_per_user_day_pretty ""
+    set ts_key "$attendance_user_id-$attendance_start_date"
+    if {[info exists ts_hash($ts_key)]} { 
+	set ts_sum_per_user_day $ts_hash($ts_key) 
+	set ts_sum_per_user_day_pretty [im_report_format_number [expr round(100.0 * $ts_sum_per_user_day) / 100.0] $output_format $number_locale]
+    }
+
+    # Sum of hours per user
+    set ts_sum_per_user ""
+    if {[info exists ts_user_hash($attendance_user_id)]} { set ts_sum_per_user $ts_user_hash($attendance_user_id) }
+
+
+    # -------------------------------------------------------
+    # Format the report footer
     im_report_display_footer \
 	-output_format $output_format \
 	-group_def $report_def \
 	-footer_array_list $footer_array_list \
 	-last_value_array_list $last_value_list \
 	-level_of_detail $level_of_detail \
-	-display_all_footers_p 1 \
 	-row_class $class \
 	-cell_class $class
 
-    im_report_render_row \
-	-output_format $output_format \
-	-row $footer0 \
-	-row_class $class \
-	-cell_class $class \
-	-upvar_level 1
+    im_report_update_counters -counters $counters
 
-} else {
+
+    # Restrict the length of the attendance_note to 40 characters.
+    set attendance_note_pretty [string_truncate -len 40 $attendance_note]
+
+    # Format work+break, also for counters
+    set attendance_work_pretty ""
+    set attendance_break_pretty ""
+    if {"" ne $attendance_work} { set attendance_work_pretty [im_report_format_number [expr round(100.0 * $attendance_work) / 100.0] $output_format $number_locale] }
+    if {"" ne $attendance_break} { 
+	set attendance_break_pretty [im_report_format_number [expr round(100.0 * $attendance_break ) / 100.0] $output_format $number_locale] 
+
+	# Business Logic: Show short breaks in red
+	if {$attendance_break < 0.15} { set attendance_break_pretty "<font color=red><b>$attendance_break_pretty</b></font>" }
+    }
 
     
-    db_foreach sql $report_sql {
-	set key "$user_id-$attendance_start_date"
-	set work_hash($key) $attendance_work
-	set break_hash($key) $attendance_break
+    set attendance_date_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_date_work)   / 100.0] $output_format $number_locale]
+    set attendance_user_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_user_work)   / 100.0] $output_format $number_locale]
+    set attendance_work_total_pretty  [im_report_format_number [expr round(100.0 * $attendance_work_total)  / 100.0] $output_format $number_locale]
+
+    set attendance_date_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_date_break)  / 100.0] $output_format $number_locale]
+    set attendance_user_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_user_break)  / 100.0] $output_format $number_locale]
+    set attendance_break_total_pretty [im_report_format_number [expr round(100.0 * $attendance_break_total) / 100.0] $output_format $number_locale]
+
+    set vars {
+	attendance_user_work_pretty attendance_date_work_pretty attendance_work_total_pretty 
+	attendance_date_break_pretty attendance_user_break_pretty attendance_break_total_pretty
+    }
+    foreach var $vars {
+	if {"0.00" eq [set $var]} { set $var "" }
     }
 
 
+    set last_value_list [im_report_render_header \
+			     -output_format $output_format \
+			     -group_def $report_def \
+			     -last_value_array_list $last_value_list \
+			     -level_of_detail $level_of_detail \
+			     -row_class $class \
+			     -cell_class $class
+			]
 
+    set footer_array_list [im_report_render_footer \
+			       -output_format $output_format \
+			       -group_def $report_def \
+			       -last_value_array_list $last_value_list \
+			       -level_of_detail $level_of_detail \
+			       -row_class $class \
+			       -cell_class $class
+			  ]
+
+    incr counter
 }
+
+im_report_display_footer \
+    -output_format $output_format \
+    -group_def $report_def \
+    -footer_array_list $footer_array_list \
+    -last_value_array_list $last_value_list \
+    -level_of_detail $level_of_detail \
+    -display_all_footers_p 1 \
+    -row_class $class \
+    -cell_class $class
+
+im_report_render_row \
+    -output_format $output_format \
+    -row $footer0 \
+    -row_class $class \
+    -cell_class $class \
+    -upvar_level 1
+
 
 
 
