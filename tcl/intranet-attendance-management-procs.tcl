@@ -175,6 +175,9 @@ ad_proc -public im_attendance_check_consistency {
 	ns_log Notice "check_consistency: ----------------------------------------"
 	ns_log Notice "check_consistency: last: $last_att"
 	ns_log Notice "check_consistency: curr: $curr_att"
+	# attendance_id attendance_type_id attendance_start_date attendance_start attendance_end attendance_duration_hours ts_sum_per_user_day
+
+
 
 	# Exctract start/end date/time from current/last attendance. That's 8 variables in total (2^3)
 	set curr_start_date [string range $curr_hash(attendance_start) 0 9]
@@ -197,6 +200,9 @@ ad_proc -public im_attendance_check_consistency {
 	ns_log Notice "check_consistency: last_start_date='$last_start_date', last_end_date='$last_end_date', last_start_time='$last_start_time', last_end_time='$last_end_time'"
 
 
+	# ----------------------------------------------------------------------
+	# Checks of a single attendance
+
 	# The _date_ component of curr_attendance_start and curr_attendance_end should be the same (unless end_date is empty)
 	if {"" ne $curr_end_date && $curr_start_date ne $curr_end_date} {
 	    lappend errors "Attendance #$curr_hash(attendance_id) on $curr_start_date has different dates between start and end"
@@ -207,7 +213,6 @@ ad_proc -public im_attendance_check_consistency {
 	    lappend errors "Attendance #$curr_hash(attendance_id) on $curr_start_date has different date than it's predecessor. Internal error?"
 	}
 	
-
 	# There should be no breaks shorter than min_break_time
 	if {[im_attendance_type_break] eq $curr_hash(attendance_type_id)} {
 	    set duration $curr_hash(attendance_duration_hours)
@@ -218,16 +223,35 @@ ad_proc -public im_attendance_check_consistency {
 	    }
 	}
 
+	# Check that the work attendance is (more or less...) the same as the timesheet timd
+	if {0 && [im_attendance_type_work] eq $curr_hash(attendance_type_id)} {
+	    set work_duration 0
+	    if {"" ne $curr_hash(attendance_duration_hours)} { set work_duration $curr_hash(attendance_duration_hours) }
+	    set work_duration [expr round(100.0 * $work_duration) / 100.0]
+	    set ts_duration [expr round(100.0 * $curr_hash(ts_sum_per_user_day)) / 100.0]
+	    
+	    set absdiff [expr round(100.0 * abs($work_duration - $ts_duration)) / 100.0]
+	    if {$absdiff > 0.1} {
+		lappend errors "The difference between work attendances ($work_duration) and timesheet hours ($ts_duration) is more than 0.1 hours"
+	    }
+	}
 
+	# ----------------------------------------------------------------------
 	# Compare curr_hash with last_hash, if last_hash is defined
 	if {"" ne $last_end_time} {
+
 	    # Check that last attendance and current one don't overlap
 	    if {$last_end_time > $curr_start_time} {
 		lappend errors "Attendance #$curr_hash(attendance_id) on $curr_start_date overlaps with attendance #$last_hash(attendance_id)."
 	    }
 
+	    
+
 	}
 
+
+	# ----------------------------------------------------------------------
+	# Finish
 
 	# Copy the current attendance into the last attendance
 	set last_att $curr_att
