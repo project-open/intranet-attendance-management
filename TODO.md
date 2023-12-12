@@ -6,12 +6,9 @@ Editor Portlet
 ==============
 
 ToDo: Features
-
 ToDo: Optional Features
 - Add parameters for min and max durations of intervals/breaks?
 Bugs:
-- Entering Start Time of "8:00" (without leading 0 before the 8)
-  doesn't save, but doesn't produce an error message.
 
 
 Timesheet Monthly Calendar
@@ -23,6 +20,7 @@ ToDo: Features
   - Calculate monthly required presence including
     absences
 - Localization of Work, Break etc.
+- Consistency check
 
 
 Report Pausenzeiten
@@ -30,18 +28,24 @@ Report Pausenzeiten
 
 ToDo: Features
 
-- Drill-down per user:
-  - Open with filter per user + LoD++
-  - Try to integrate timesheet hours into "left dimension"
-  - Business Logic Checks:
-	- Mindestens 15 pro Pause
+- Business Logic Checks:
 	- Ab 6h verpflichtend 30min Pause
 	- Ab 9h 45min Pause
-	- Jede Zelle:
-		- Gesamtzeit Pausen
-		- Rot wenn Business-Regeln verletzt (oben)
-		  mit Kommentar warum
-	- Used to manually calculate working time per month
+
+
+Consistency Checker
+===================
+
+Shared between Attendance Report and Monthly View
+
+- Rules:
+	- Overlap of attendances
+	- Short break
+	- Minimum breaks 2x
+	- Comparison between timesheet hours and attendance
+	- No night hours(?)
+
+- Build test-case
 
 
 
@@ -111,7 +115,9 @@ Editor portlet:
   showing the current week. Entries in the last weeks
   can be modified manually.
 - Bug: Manually deleting the end-time of an entry doesn't save.
-- Editing end-time leads to entry disappearing
+- Bug: Editing end-time leads to entry disappearing
+- Bug: Entering Start Time of "8:00" (without leading 0 before the 8)
+  doesn't save, but doesn't produce an error message.
 
 
 Timesheet Monthly Calendar:
@@ -123,6 +129,10 @@ Timesheet Monthly Calendar:
 
 Report Pausenzeiten
 
+- Integrate timesheet hours into "left dimension"
+- Add sums of timesheet hours to various lines
+- Drill-down per user:
+  - Open with filter per user + LoD++
 - Filter:
 	- User
 	- Abteilung
@@ -137,4 +147,12 @@ Report Pausenzeiten
 		  mit Kommentar warum
 	- Used to manually calculate working time per month
 - Translated to German
+- Business Logic Checks:
+	- Mindestens 15 pro Pause
+	- Jede Zelle:
+		- Gesamtzeit Pausen
+		- Rot wenn Business-Regeln verletzt (oben)
+		  mit Kommentar warum
+	- Used to manually calculate working time per month
+
 
