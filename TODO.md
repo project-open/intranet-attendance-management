@@ -2,13 +2,6 @@ ToDo
 ====
 
 
-Editor Portlet
---------------
-
-ToDo: Optional Features:
-
-- [ ] Add parameters for min and max durations of intervals/breaks?
-
 
 Timesheet Monthly Calendar
 --------------------------
@@ -19,6 +12,8 @@ ToDo: Features:
 	- [ ] Monatlich mit Berechnung der Soll-Anwesenheit
 	- [ ] Calculate monthly required presence including
 	  absences
+	- [ ] Comparison between timesheet hours and attendance
+
 - [ ] Localization of Work, Break etc.
 - [ ] Consistency check
 
@@ -26,27 +21,27 @@ ToDo: Features:
 Report Pausenzeiten
 -------------------
 
-ToDo: Features
-
-- [ ] Business Logic Checks:
-	- [ ] Ab 6h verpflichtend 30min Pause
-	- [ ] Ab 9h 45min Pause
-
+Done
 
 Consistency Checker
 -------------------
 
 Shared between Attendance Report and Monthly View
 
-- [ ] Rules:
-	- [ ] Overlap of attendances
-	- [ ] Short break
-	- [ ] Minimum breaks 2x
-	- [ ] Comparison between timesheet hours and attendance
-	- [ ] No night hours(?)
-
 - [ ] Build test-case
 
+
+
+Optional
+========
+
+
+Editor Portlet
+--------------
+
+ToDo: Optional Features:
+
+- [ ] Add parameters for min and max durations of intervals/breaks?
 
 
 
@@ -151,11 +146,16 @@ Report Pausenzeiten
 	- [x] Used to manually calculate working time per month
 - [x] Translated to German
 - [x] Business Logic Checks:
+	- [x] Comparison between timesheet hours and attendance
 	- [x] Mindestens 15 pro Pause
 	- [x] Jede Zelle:
 		- [x] Gesamtzeit Pausen
 		- [x] Rot wenn Business-Regeln verletzt (oben)
 		  mit Kommentar warum
 	- [x] Used to manually calculate working time per month
-
+	- [x] Overlap of attendances
+	- [x] Short break
+	- [ ] No night hours(?)
+	- [x] Ab 6h verpflichtend 30min Pause
+	- [x] Ab 9h 45min Pause
 
