@@ -174,6 +174,8 @@ db_foreach timesheet_info $timesheet_sql {
     set ts_sum_total [expr $ts_sum_total + $hours]
 }
 
+set ts_sum_total [expr round(100.0 * $ts_sum_total) / 100.0]
+
 
 # ------------------------------------------------------------
 # Report SQL
@@ -322,7 +324,7 @@ set report_def [list \
 						  "$attendance_work_pretty"
 						  "$attendance_break_pretty"
 						  ""
-						  "$attendance_note $cell_contents"
+						  "$attendance_note"
 					      } \
 					      content {} \
 					      footer {} \
@@ -336,7 +338,7 @@ set report_def [list \
 				     "<i>$attendance_date_work_pretty</i>"
 				     "<i>$attendance_date_break_pretty</i>"
 				     "$ts_sum_per_user_day_pretty"
-				     "$cell_contents"
+				     "$errors_formatted_for_note_column"
 				 } \
 				] \
 		    footer {
@@ -513,33 +515,6 @@ db_foreach sql $report_sql {
     set attendance_status [im_category_from_id -translate_p 1 $attendance_status_id]
 
     # -------------------------------------------------------
-    # Aggregate attendance data per day and user
-    set key "$attendance_user_id-$attendance_start_date"
-    set v [list]
-    if {[info exists cell_hash($key)]} { set v $cell_hash($key) }
-
-    # Write attendance data into hash-list
-    set list [list]
-    set vars {attendance_id attendance_type_id attendance_start_date attendance_start attendance_end attendance_duration_hours}
-    foreach var $vars { lappend list $var [set $var] }
-    lappend v $list
-    set cell_hash($key) $v
-
-
-    # -------------------------------------------------------
-    # Check for consistency and return a list of issues
-    # Takes as input a list of hashes of attendances (list representation)
-    set errors [im_attendance_check_consistency -attendance_hashs $v]
-
-    # Format the cell "notes" for debugging
-    set cell_contents "<pre>[join $v "\n"]\n<font color=red>[join $errors "\n"]</font></pre>"
-
-    if {[llength $errors] > 0} {
-	ns_log Notice "attendance-report: errors=$errors"
-    }
-
-
-    # -------------------------------------------------------
     # Mix-in the timesheet information
     set ts_sum_per_user_day 0
     set ts_sum_per_user_day_pretty ""
@@ -549,9 +524,37 @@ db_foreach sql $report_sql {
 	set ts_sum_per_user_day_pretty [im_report_format_number [expr round(100.0 * $ts_sum_per_user_day) / 100.0] $output_format $number_locale]
     }
 
+    set ts_diff [expr abs($ts_sum_per_user_day - $attendance_work+0)]
+    if {$ts_diff > 0.1} {
+	set ts_sum_per_user_day_pretty "<font color=red><b>$ts_sum_per_user_day_pretty</b></font>"
+    }
+
     # Sum of hours per user
     set ts_sum_per_user ""
     if {[info exists ts_user_hash($attendance_user_id)]} { set ts_sum_per_user $ts_user_hash($attendance_user_id) }
+
+
+    # -------------------------------------------------------
+    # Check for consistency and return a list of issues
+    # Takes as input a list of hashes of attendances (list representation)
+
+    # Aggregate attendance data per day and user
+    set key "$attendance_user_id-$attendance_start_date"
+    set v [list]
+    if {[info exists cell_hash($key)]} { set v $cell_hash($key) }
+
+    # Write attendance data into hash-list
+    set list [list]
+    set vars {attendance_id attendance_type_id attendance_start_date attendance_start attendance_end attendance_duration_hours ts_sum_per_user_day}
+    foreach var $vars { lappend list $var [set $var] }
+    lappend v $list
+    set cell_hash($key) $v
+
+    # Call consistency checker
+    set errors [im_attendance_check_consistency -attendance_hashs $v]
+
+    # Format the cell "notes" for debugging
+    set errors_formatted_for_note_column "<font color=red>[join $errors "<br>\n"]</font>"
 
 
     # -------------------------------------------------------
@@ -574,7 +577,9 @@ db_foreach sql $report_sql {
     # Format work+break, also for counters
     set attendance_work_pretty ""
     set attendance_break_pretty ""
-    if {"" ne $attendance_work} { set attendance_work_pretty [im_report_format_number [expr round(100.0 * $attendance_work) / 100.0] $output_format $number_locale] }
+    if {"" ne $attendance_work} { 
+	set attendance_work_pretty [im_report_format_number [expr round(100.0 * $attendance_work) / 100.0] $output_format $number_locale] 
+    }
     if {"" ne $attendance_break} { 
 	set attendance_break_pretty [im_report_format_number [expr round(100.0 * $attendance_break ) / 100.0] $output_format $number_locale] 
 
@@ -582,7 +587,6 @@ db_foreach sql $report_sql {
 	if {$attendance_break < 0.15} { set attendance_break_pretty "<font color=red><b>$attendance_break_pretty</b></font>" }
     }
 
-    
     set attendance_date_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_date_work)   / 100.0] $output_format $number_locale]
     set attendance_user_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_user_work)   / 100.0] $output_format $number_locale]
     set attendance_work_total_pretty  [im_report_format_number [expr round(100.0 * $attendance_work_total)  / 100.0] $output_format $number_locale]
@@ -591,6 +595,10 @@ db_foreach sql $report_sql {
     set attendance_user_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_user_break)  / 100.0] $output_format $number_locale]
     set attendance_break_total_pretty [im_report_format_number [expr round(100.0 * $attendance_break_total) / 100.0] $output_format $number_locale]
 
+    if {$ts_diff > 0.1} {
+	set attendance_date_work_pretty "<font color=red><b>$attendance_date_work_pretty</b></font>"
+    }
+    
     set vars {
 	attendance_user_work_pretty attendance_date_work_pretty attendance_work_total_pretty 
 	attendance_date_break_pretty attendance_user_break_pretty attendance_break_total_pretty
