@@ -365,7 +365,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             msg: message,
             minWidth: 500,
             minHeight: 150,
-            buttonText: { yes: l10n.Button_OK },
+            buttonText: { yes: l10n.Button_text_OK },
             icon: Ext.Msg.INFO
         });
     },

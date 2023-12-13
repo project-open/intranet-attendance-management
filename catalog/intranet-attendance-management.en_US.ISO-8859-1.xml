@@ -11,6 +11,7 @@
   <msg key="Button_text_Add">Add entry</msg>
   <msg key="Button_text_Delete">Delete entry</msg>
   <msg key="Button_text_Next_week">Next week</msg>
+  <msg key="Button_text_OK">OK</msg>
   <msg key="Button_text_Previous_week">Previous week</msg>
   <msg key="Button_text_Start_break">Start break</msg>
   <msg key="Button_text_Start_work">Start work</msg>
