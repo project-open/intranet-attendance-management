@@ -6,6 +6,17 @@ ToDo
 Timesheet Monthly Calendar
 --------------------------
 
+Projekte: 3h / erfassen
+Anwesend: 5h
+Pause: 0.4h
+Zu bestätigen: 6.2h
+
+Projects: 3h
+Work: 5h
+Break: 0.4h
+To confirm: 6.2h
+
+
 ToDo: Features:
 
 - [ ] Vergleich Anwesenheit vs. Soll Anwesenheit
@@ -28,6 +39,9 @@ Consistency Checker
 
 Shared between Attendance Report and Monthly View
 
+- Business Rules:
+	- [ ] Check for "holes" between attendances
+   
 - [ ] Build test-case
 
 
