@@ -105,7 +105,9 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 
                 var startDate = PO.Utilities.pgToDate(startIso);
                 var endDate = PO.Utilities.pgToDate(endIso);
-                var diffHours = Math.round(10.0 * (endDate.getTime() - startDate.getTime()) / 1000.0 / 60.0 / 60.0) / 10.0;
+                var diffSeconds = (endDate.getTime() - startDate.getTime()) / 1000.0;
+                var diffMinutes = diffSeconds / 60.0;
+                var diffHours = Math.round(100.0 * diffMinutes / 60.0) / 100.0;
                 return ""+Ext.util.Format.number(diffHours, '0.00')+"h";
             }
         }, {
