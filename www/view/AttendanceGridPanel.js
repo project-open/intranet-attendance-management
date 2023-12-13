@@ -69,8 +69,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 allowBlank: true,
                 startDay: week_start_day,
                 format: 'Y-m-d',
-                allowBlank: false,
-                validator: function(a, b, c) { alert(a); }
+                allowBlank: false
             }
         }, {
             text: l10n.Heading_Start,

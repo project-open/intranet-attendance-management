@@ -331,7 +331,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
                 me.enableDisableButtons();
                 duplicate = true;
             }
-            
         });
 
         // Add to end of the store and sync
@@ -344,7 +343,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
                     var reader = batch.proxy.getReader();
                     var jsonData = reader.jsonData;
                     var message = jsonData.msg;
-                    alert(message);
+                    alert('createNewAttendance: Error synchronizing attendances: '+message);
                 }
             });
         }
