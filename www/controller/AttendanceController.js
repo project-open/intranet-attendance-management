@@ -600,7 +600,13 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             // Complete the attendance and set end time and attendance_end
             var now = new Date();
             var nowTimeISO = /\d\d:\d\d/.exec(""+now)[0];
+            var nowDateISO = Ext.Date.format(now, 'Y-m-d');
             var startDateISO = item.get('attendance_date');
+
+            // Pressed the (x) stop key the next day? Then use the last time of day.
+            if (startDateISO !== nowDateISO) {
+                nowTimeISO = '18:00';  // ToDo: Add parameter for default end time
+            }
 
             // Create attendance_end with date from start (<12h...)
             item.set('attendance_end_time', nowTimeISO);
