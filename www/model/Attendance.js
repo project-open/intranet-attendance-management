@@ -56,7 +56,7 @@ Ext.define('AttendanceManagement.model.Attendance', {
         // {type: 'exclusion', field: 'username', list: ['Admin', 'Operator']},
         {type: 'format', field: 'attendance_date', matcher: /^\d{4}\-\d{2}\-\d{2}$/ },
         {type: 'format', field: 'attendance_start_time', matcher: /^\d{2}\:\d{2}$/ },
-        {type: 'format', field: 'attendance_end_time', matcher: /^\d{2}\:\d{2}$/ }
+        {type: 'format', field: 'attendance_end_time', matcher: /^$|^\d{2}\:\d{2}$/ }
     ]
 
 });
