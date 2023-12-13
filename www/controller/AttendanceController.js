@@ -434,8 +434,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             }
         }
 
-	// Use this to mark a field as bad
-	// editor.editor.getForm().findField('fieldName').markInvalid('Message here');
+        // Use this to mark a field as bad
+        // editor.editor.getForm().findField('fieldName').markInvalid('Message here');
 
         if (!errors.isValid()) {
             editor.editor.form.markInvalid(errors);  //the double "editor" is correct

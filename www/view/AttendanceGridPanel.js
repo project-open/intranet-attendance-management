@@ -69,8 +69,8 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 allowBlank: true,
                 startDay: week_start_day,
                 format: 'Y-m-d',
-		allowBlank: false,
-		validator: function(a, b, c) { alert(a); }
+                allowBlank: false,
+                validator: function(a, b, c) { alert(a); }
             }
         }, {
             text: l10n.Heading_Start,
@@ -81,8 +81,8 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 xtype: 'combobox',
                 triggerAction: 'all',
                 selectOnTab: true,
-                store: timeEntryStore,
-                regex: /^\d{2}\:\d{2}$/
+                store: timeEntryStore
+                // Validation in model
             }
         }, {
             text: l10n.Heading_End, 
@@ -92,7 +92,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 triggerAction: 'all',
                 selectOnTab: true,
                 store: timeEntryStore
-                // ,regex: /^\d{2}\:\d{2}$/
+                // Validation in model
             }
         }, {
             text: l10n.Heading_Duration,
