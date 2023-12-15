@@ -324,8 +324,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             var startIso = item.get('attendance_start');
             if (startIso.substring(0,16) == params.attendance_start.substring(0,16)) {
 
-                var message = '<ul><li>' + l10n.there_is_already_an_entry_with_the_same_start_time +
-                    startIso.substring(0,16) + l10n.we_will_discard_the_new_entry + '</ul>';
+                var message = '<ul><li>' + l10n.there_is_already_an_entry_with_the_same_start_time + ' ' + 
+                    startIso.substring(0,16) + '.<br>' + l10n.we_will_discard_the_new_entry + '</ul>';
                 me.errorMessage(message);
 
                 me.enableDisableButtons();
