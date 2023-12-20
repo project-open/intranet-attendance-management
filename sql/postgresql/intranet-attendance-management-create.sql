@@ -331,3 +331,6 @@ BEGIN
 	return v_name;
 end;$$ language 'plpgsql';
 
+
+\i testcases.sql
+
