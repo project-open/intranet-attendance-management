@@ -244,6 +244,7 @@ select	a.attendance_id,
 	a.attendance_note,
 	im_cost_center_name_from_id(e.department_id) as user_department,
 	to_char(t.date, 'YYYY-MM-DD') as attendance_start_date,
+	to_char(t.date, 'J') as attendance_start_julian,
 	to_char(t.date + '1 day'::interval, 'YYYY-MM-DD') as attendance_start_date_next,
 	to_char(a.attendance_start, 'HH24:MI') as attendance_start_time,
 	to_char(a.attendance_end, 'HH24:MI') as attendance_end_time,
@@ -316,7 +317,7 @@ set report_def [list \
 				 content [list \
 					      group_by attendance_id \
 					      header {
-						  "$attendance_id"
+						  ""
 						  "<nobr>$attendance_start_date</nobr>"
 						  "$attendance_type"
 						  "$attendance_start_time"
@@ -370,11 +371,12 @@ set footer0 [list \
 # ------------------------------------------------------------
 # Counters
 #
-set user_attendance_date_work_counter   [list pretty_name "Attendance Work"        var attendance_date_work reset \$attendance_start_date  expr "\$attendance_work+0"]
+
+set user_attendance_date_work_counter   [list pretty_name "Attendance Work"        var attendance_date_work reset \$attendance_start_julian  expr "\$attendance_work+0"]
 set user_attendance_user_work_counter   [list pretty_name "Attendance User Work"   var attendance_user_work reset \$attendance_user_id     expr "\$attendance_work+0"]
 set user_attendance_work_total_counter  [list pretty_name "Attendance Work Total"  var attendance_work_total reset 0                       expr "\$attendance_work+0"]
 
-set user_attendance_date_break_counter  [list pretty_name "Attendance Break"       var attendance_date_break reset \$attendance_start_date expr "\$attendance_break+0"]
+set user_attendance_date_break_counter  [list pretty_name "Attendance Break"       var attendance_date_break reset \$attendance_start_julian expr "\$attendance_break+0"]
 set user_attendance_user_break_counter  [list pretty_name "Attendance User Break"  var attendance_user_break reset \$attendance_user_id    expr "\$attendance_break+0"]
 set user_attendance_break_total_counter [list pretty_name "Attendance Break Total" var attendance_break_total reset 0                      expr "\$attendance_break+0"]
 
@@ -551,11 +553,13 @@ db_foreach sql $report_sql {
     set cell_hash($key) $v
 
     # Call consistency checker
-    set errors [im_attendance_check_consistency -attendance_hashs $v]
+    set errors [im_attendance_check_consistency -user_id $attendance_user_id -date $attendance_start_date -attendance_hashs $v]
 
     # Format the cell "notes" for debugging
-    set errors_formatted_for_note_column "<font color=red>[join $errors "<br>\n"]</font>"
-
+    set errors_formatted_for_note_column ""
+    if {[llength $errors] > 0} {
+	set errors_formatted_for_note_column "<font color=red><ul><li>[join $errors "<br>\n<li>"]</ul></font>"
+    }
 
     # -------------------------------------------------------
     # Format the report footer
