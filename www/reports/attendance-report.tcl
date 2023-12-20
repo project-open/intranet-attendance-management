@@ -526,11 +526,6 @@ db_foreach sql $report_sql {
 	set ts_sum_per_user_day_pretty [im_report_format_number [expr round(100.0 * $ts_sum_per_user_day) / 100.0] $output_format $number_locale]
     }
 
-    set ts_diff [expr abs($ts_sum_per_user_day - $attendance_work+0)]
-    if {$ts_diff > 0.1} {
-	set ts_sum_per_user_day_pretty "<font color=red><b>$ts_sum_per_user_day_pretty</b></font>"
-    }
-
     # Sum of hours per user
     set ts_sum_per_user ""
     if {[info exists ts_user_hash($attendance_user_id)]} { set ts_sum_per_user $ts_user_hash($attendance_user_id) }
@@ -586,9 +581,6 @@ db_foreach sql $report_sql {
     }
     if {"" ne $attendance_break} { 
 	set attendance_break_pretty [im_report_format_number [expr round(100.0 * $attendance_break ) / 100.0] $output_format $number_locale] 
-
-	# Business Logic: Show short breaks in red
-	if {$attendance_break < 0.15} { set attendance_break_pretty "<font color=red><b>$attendance_break_pretty</b></font>" }
     }
 
     set attendance_date_work_pretty   [im_report_format_number [expr round(100.0 * $attendance_date_work)   / 100.0] $output_format $number_locale]
@@ -599,10 +591,6 @@ db_foreach sql $report_sql {
     set attendance_user_break_pretty  [im_report_format_number [expr round(100.0 * $attendance_user_break)  / 100.0] $output_format $number_locale]
     set attendance_break_total_pretty [im_report_format_number [expr round(100.0 * $attendance_break_total) / 100.0] $output_format $number_locale]
 
-    if {$ts_diff > 0.1} {
-	set attendance_date_work_pretty "<font color=red><b>$attendance_date_work_pretty</b></font>"
-    }
-    
     set vars {
 	attendance_user_work_pretty attendance_date_work_pretty attendance_work_total_pretty 
 	attendance_date_break_pretty attendance_user_break_pretty attendance_break_total_pretty
