@@ -2,37 +2,26 @@ ToDo
 ====
 
 
+Editor Portlet
+--------------
+
+Done
 
 Timesheet Monthly Calendar
 --------------------------
 
-Projekte: 3h / erfassen
-Anwesend: 5h
-Pause: 0.4h
-Zu bestätigen: 6.2h
-
-Projects: 3h
-Work: 5h
-Break: 0.4h
-To confirm: 6.2h
-
-
 ToDo: Features:
 
-- [ ] Vergleich Anwesenheit vs. Soll Anwesenheit
+- [x] Vergleich Anwesenheit vs. Soll Anwesenheit
 	- [ ] Monatlich mit Berechnung der Soll-Anwesenheit
 	- [ ] Calculate monthly required presence including
 	  absences
-	- [ ] Comparison between timesheet hours and attendance
 
 - [ ] Localization of Work, Break etc.
-- [ ] Consistency check
 
 
-Report Pausenzeiten
--------------------
-
-Done
+Report Attendances
+------------------
 
 Consistency Checker
 -------------------
@@ -40,10 +29,10 @@ Consistency Checker
 Shared between Attendance Report and Monthly View
 
 - Business Rules:
-	- [ ] Check for "holes" between attendances
-   
+	- [ ] What about 1h of break after 6h of work?
+ 	  That's not a break, really...   
 - [ ] Build test-case
-
+- [ ] How to deal with cases of too much work logged?
 
 
 Optional
@@ -136,6 +125,7 @@ Timesheet Monthly Calendar
 - [x] Pro Tag zusätzlicher Eintrag: Anwesenheit
 - [x] Farbe rot/grün in Abhängigkeit von 8h 
 - [x] Soll Anwesenheit = 8h/Tag * Verfügbarkeit
+- [x] Consistency check
 
 
 Report Pausenzeiten
@@ -172,4 +162,6 @@ Report Pausenzeiten
 	- [ ] No night hours(?)
 	- [x] Ab 6h verpflichtend 30min Pause
 	- [x] Ab 9h 45min Pause
-
+	- [x] Check for "holes" between attendances, min: 1min?
+	- [x] Ignore weekends for timesheet comparison
+	- [x] Comparison between timesheet hours and attendance
