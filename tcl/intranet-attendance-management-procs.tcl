@@ -129,14 +129,16 @@ ad_proc -public im_attendance_interval_nuke {
 # ---------------------------------------------------------------------
 
 ad_proc -public im_attendance_daily_attendance_hours {
-    {-user_id 0}
+    -user_id
+    -date
 } {
-    Returns the number of hours a person should be present
-    at any work day.
+    Returns the number of hours a person should be present at the given date
 } {
-    if {0 == $user_id} { set user_id [ad_conn user_id] }
     set default_hours_per_day [parameter::get_from_package_key -package_key "intranet-attendance-management" -parameter "DefaultAttendanceHoursPerDay" -default "8.0"]
 
+    # --------------------------------------------------------------
+    # Check HR for the number of hours to work
+    set availability ""
     if {![db_0or1row attendance_user_info "
 	select	*
 	from	im_employees e
@@ -144,21 +146,36 @@ ad_proc -public im_attendance_daily_attendance_hours {
     "]} {
 	# User for some reason doesn't exit...
 	ns_log Error "im_attendance_daily_attendance_hours: user_id=$user_id doesn't exist"
-	return $default_hours_per_day
     }
 
     set hours_per_day $default_hours_per_day
     if {$availability != ""} {
-	set hours_per_day [expr $default_hours_per_day * $availability]
+	set hours_per_day [expr $default_hours_per_day * $availability / 100.0]
     }
-    return $hours_per_day
+
+
+    # --------------------------------------------------------------
+    # Check Resource Management for work days and absences
+    set workday_array [db_string work_day "select im_resource_mgmt_work_days (:user_id, :date, :date)"]
+    set absence_array [db_string absence "select im_resource_mgmt_user_absence (:user_id, :date, :date)"]
+    set workday_list [string map {"," " " "{" "" "}" ""} [lindex [split $workday_array "="] 1]]
+    set absence_list [string map {"," " " "{" "" "}" ""} [lindex [split $absence_array "="] 1]]
+
+    set hours [expr $hours_per_day * ($workday_list - $absence_list) / 100.0]
+
+    ns_log Notice "im_attendance_daily_attendance_hours -user_id $user_id -date $date: hours_per_day=$hours_per_day, work=$workday_list, abs=$absence_list => hours=$hours"
+
+    return $hours
 }
 
 
 ad_proc -public im_attendance_check_consistency {
+    -user_id
+    -date
     -attendance_hashs:required
 } {
     Checks a list of attendances for a given user and day for consistency.
+    The list needs to be for a single day and ordered by attendance_start in order to find overlaps/holes.
     Returns and empty list when successful, or a list of error strings otherwise
 } {
     # ns_log Notice "check_consistency: hash=$attendance_hashs"
@@ -167,6 +184,7 @@ ad_proc -public im_attendance_check_consistency {
     set last_att [list]
     set work_sum 0.0
     set break_sum 0.0
+    set ts_sum 0.0
     foreach curr_att $attendance_hashs {
 	array unset last_hash
 	array unset curr_hash
@@ -184,6 +202,7 @@ ad_proc -public im_attendance_check_consistency {
 	set curr_end_date [string range $curr_hash(attendance_end) 0 9]
 	set curr_start_time [string range $curr_hash(attendance_start) 11 15]
 	set curr_end_time [string range $curr_hash(attendance_end) 11 15]
+	ns_log Notice "check_consistency: curr_hash=$curr_att"
 	ns_log Notice "check_consistency: curr_start_date='$curr_start_date', curr_end_date='$curr_end_date', curr_start_time='$curr_start_time', curr_end_time='$curr_end_time'"
 
 	if {$last_att ne ""} {
@@ -209,6 +228,9 @@ ad_proc -public im_attendance_check_consistency {
 		set err "im_attendance_check_consistency: Found invalid attendance_type_id in att: $curr_att"
 	    }
 	}
+
+	set ts_sum $curr_hash(ts_sum_per_user_day)
+
 	ns_log Notice "check_consistency: last_start_date='$last_start_date', last_end_date='$last_end_date', last_start_time='$last_start_time', last_end_time='$last_end_time', work_sum=$work_sum, break_sum=$break_sum"
 
 
@@ -235,33 +257,21 @@ ad_proc -public im_attendance_check_consistency {
 	    }
 	}
 
-	# Check work vs. break times
-	if {$work_sum > 9.0} {
-	    # At least 45min break after 9h of work
-	    if {$break_sum < 0.75} {
-		lappend errors "After 9h of work (found: ${work_sum}h) there should be at least 0.75h break (found: ${break_sum}h)"
-	    }
-	} else {
-	    # At least 30min break after 6h of work
-	    if {$work_sum > 6.0} {
-		if {$break_sum < 0.5} {
-		    lappend errors "After 6h of work (found: ${work_sum}h) there should be at least 0.5h break (found: ${break_sum}h)"
-		}
-	    }
-	}
-
-
 	# ----------------------------------------------------------------------
 	# Compare curr_hash with last_hash, if last_hash is defined
 	if {"" ne $last_end_time} {
 
+	    set diff_minutes [db_string diff_time "select extract(epoch from :last_end_time::time - :curr_start_time::time) / 60.0"]
+
 	    # Check that last attendance and current one don't overlap
-	    if {$last_end_time > $curr_start_time} {
-		lappend errors "Attendance #$curr_hash(attendance_id) on $curr_start_date overlaps with attendance #$last_hash(attendance_id)."
+	    if {$diff_minutes >= 1.0} {
+		lappend errors "Attendance starting $curr_start_date $curr_start_time overlaps with attendance starting $last_start_date $last_start_time by ${diff_minutes}min"
 	    }
 
-	    
-
+	    # Check for "holes"
+	    if {$diff_minutes < -1.0} {
+		lappend errors "There is a missing time of [expr abs($diff_minutes)]min between attendance starting $last_start_date $last_start_time and attendance starting $curr_start_date $curr_start_time "
+	    }
 	}
 
 
@@ -272,10 +282,45 @@ ad_proc -public im_attendance_check_consistency {
 	set last_att $curr_att
     }
 
-    # ToDo Check:
-    # if there is a timesheet entry, but no attendance
-    # if deviation between timesheet and attendances is > ...
+    # ad_return_complaint 1 "$break_sum $work_sum"
 
+    # Check work vs. break times
+    if {$work_sum > 9.0} {
+	# At least 45min break after 9h of work
+	if {$break_sum < 0.75} {
+	    lappend errors "After 9h of work (found: ${work_sum}h) there should be at least 0.75h break (found: ${break_sum}h)"
+	}
+    } else {
+	# At least 30min break after 6h of work
+	if {$work_sum > 6.0} {
+	    if {$break_sum < 0.5} {
+		lappend errors "After 6h of work (found: ${work_sum}h) there should be at least 0.5h break (found: ${break_sum}h)"
+	    }
+	}
+    }
+
+    # -------------------------------------------------------
+    # These checks now work on the sums of work, break and timesheet
+
+    set required_sum [im_attendance_daily_attendance_hours -user_id $user_id -date $date]
+    
+    set required_margin 0.1
+
+    # Check if there is work but no TS entry
+
+
+    # If there is a timesheet entry
+    # then check for a corresponding attendance time with 
+    # if deviation between timesheet and attendances is > ...
+    if {"" eq $ts_sum} { set ts_sum 0.0 }
+
+    if {$ts_sum < [expr $required_sum - $required_margin]} {
+	lappend errors "Not enough time (${ts_sum}h) logged on projects, expected ${required_sum}h"
+    }
+
+    if {$work_sum < [expr $required_sum - $required_margin]} {
+	lappend errors "Not enough work attendance (${work_sum}h), expected ${required_sum}h"
+    }
 
     return $errors
 }
