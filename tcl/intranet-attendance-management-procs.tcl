@@ -169,6 +169,46 @@ ad_proc -public im_attendance_daily_attendance_hours {
 }
 
 
+ad_proc -public im_attendance_check_consistency_no_front_breaks {
+    list_of_hash
+} {
+    Remove first item from list of hash, if it's a break
+} {
+    set pairs [lindex $list_of_hash 0]
+    set rest [lrange $list_of_hash 1 end]
+
+    array set hash $pairs
+    set type_id 0
+    if {[info exists hash(attendance_type_id)]} { set type_id $hash(attendance_type_id) }
+    if {[im_attendance_type_break] == $type_id} {
+	# First element is a break, repeat recursively
+	return [im_attendance_check_consistency_no_front_breaks $rest]
+    }
+
+    # First element isn't a break, just return original list
+    return $list_of_hash
+}
+
+ad_proc -public im_attendance_check_consistency_no_end_breaks {
+    list_of_hash
+} {
+    Remove last item from list of hash, if it's a break
+} {
+    set pairs [lindex $list_of_hash end]
+    set rest [lrange $list_of_hash 0 end-1]
+
+    array set hash $pairs
+    set type_id 0
+    if {[info exists hash(attendance_type_id)]} { set type_id $hash(attendance_type_id) }
+    if {[im_attendance_type_break] == $type_id} {
+	# Last element is a break, repeat recursively
+	return [im_attendance_check_consistency_no_end_breaks $rest]
+    }
+
+    # First element isn't a break, just return original list
+    return $list_of_hash
+}
+
 ad_proc -public im_attendance_check_consistency {
     -user_id
     -date
@@ -176,16 +216,29 @@ ad_proc -public im_attendance_check_consistency {
 } {
     Checks a list of attendances for a given user and day for consistency.
     The list needs to be for a single day and ordered by attendance_start in order to find overlaps/holes.
-    Returns and empty list when successful, or a list of error strings otherwise
+    Returns and empty list when successful, or a list of error strings otherwise.
+
+    ToDo: Mark as an error to have breaks at the beginning or the end of the working day.
 } {
     # ns_log Notice "check_consistency: hash=$attendance_hashs"
     set errors [list]
+
+    # Remove leading or trailing breaks
+    set hashs_no_front_breaks [im_attendance_check_consistency_no_front_breaks $attendance_hashs]
+    if {$attendance_hashs != $hashs_no_front_breaks} {
+	lappend errors "Found a break as first attendance of the day, ignoring"
+    }
+
+    set hashs_no_end_breaks [im_attendance_check_consistency_no_end_breaks $hashs_no_front_breaks]
+    if {$hashs_no_end_breaks != $hashs_no_front_breaks} {
+	lappend errors "Found a break as last attendance of the day, ignoring"
+    }
 
     set last_att [list]
     set work_sum 0.0
     set break_sum 0.0
     set ts_sum 0.0
-    foreach curr_att $attendance_hashs {
+    foreach curr_att $hashs_no_end_breaks {
 	array unset last_hash
 	array unset curr_hash
 
@@ -302,8 +355,7 @@ ad_proc -public im_attendance_check_consistency {
     # -------------------------------------------------------
     # These checks now work on the sums of work, break and timesheet
 
-    set required_sum [im_attendance_daily_attendance_hours -user_id $user_id -date $date]
-    
+    set required_sum [im_attendance_daily_attendance_hours -user_id $user_id -date $date]    
     set required_margin 0.1
 
     # Check if there is work but no TS entry
