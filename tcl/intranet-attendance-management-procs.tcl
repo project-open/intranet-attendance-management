@@ -306,7 +306,7 @@ ad_proc -public im_attendance_check_consistency {
 	    ns_log Notice "check_consistency: break: duration=$duration"
 	    
 	    if {$curr_hash(attendance_duration_hours) < 0.20} { 
-		lappend errors "Break #$curr_hash(attendance_id) on $curr_start_date is shorter than 15 minutes"
+		lappend errors "Break starting on $curr_start_date $curr_start_time is shorter than 15 minutes"
 	    }
 	}
 
