@@ -166,3 +166,4 @@ Report Pausenzeiten
 	- [x] Ignore weekends for timesheet comparison
 	- [x] Comparison between timesheet hours and attendance
 	- [x] What about 1h of break after 6h of work? That's not a break, really...   
+	- [x] Ignore future

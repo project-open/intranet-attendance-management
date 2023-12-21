@@ -222,6 +222,10 @@ ad_proc -public im_attendance_check_consistency {
 } {
     # ns_log Notice "check_consistency: hash=$attendance_hashs"
     set errors [list]
+    set today [db_string today "select now()::date"]
+
+    # No errors in the future...
+    if {[string compare $date $today] > 0} { return $errors }
 
     # Remove leading or trailing breaks
     set hashs_no_front_breaks [im_attendance_check_consistency_no_front_breaks $attendance_hashs]
