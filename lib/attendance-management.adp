@@ -43,8 +43,12 @@ const DAY_NAME_OF_WEEK_SHORT = [
 ];
 
 // Localization: Start with English and overwrite with locale specific translation from database
-var l10n = {<multiple name="english_messages">@english_messages.message_key@: "@english_messages.message@",
+var l10n = {
+    Button_text_To: 'to'
+};
+var l10n_english = {<multiple name="english_messages">@english_messages.message_key@: "@english_messages.message@",
 </multiple>};
+Object.keys(l10n_english).forEach(key => {var val = l10n_english[key]; l10n[key] = val;});
 var l10n_locale = {<multiple name="locale_messages">@locale_messages.message_key@: "@locale_messages.message@",
 </multiple>};
 Object.keys(l10n_locale).forEach(key => {var val = l10n_locale[key]; l10n[key] = val;});

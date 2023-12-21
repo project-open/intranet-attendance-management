@@ -16,6 +16,7 @@
   <msg key="Button_text_Start_break">Start break</msg>
   <msg key="Button_text_Start_work">Start work</msg>
   <msg key="Button_text_Stop">Stop logging</msg>
+  <msg key="Button_text_To">to</msg>
   <msg key="error_with_attendance_data">Rrror with attendance data</msg>
   <msg key="found_attendance_entries_without_end_time">Found found attendance entries without end time</msg>
   <msg key="found_breaks_shorter_than_allowed">Found breaks shorter than allowed</msg>

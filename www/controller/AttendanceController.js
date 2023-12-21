@@ -135,7 +135,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         // Set the date into the label
         var labelWeek = Ext.getCmp('labelWeek');
-        labelWeek.setText(startISO + ' - ' + endISO);
+        labelWeek.setText(startISO + ' ' + l10n.Button_text_To + ' ' + endISO);
     },
 
     /**

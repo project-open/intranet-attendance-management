@@ -35,6 +35,7 @@ Shared between Attendance Report and Monthly View
 - [ ] How to deal with cases of too much work logged?
 
 
+
 Optional
 ========
 
