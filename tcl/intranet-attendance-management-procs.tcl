@@ -230,12 +230,12 @@ ad_proc -public im_attendance_check_consistency {
     # Remove leading or trailing breaks
     set hashs_no_front_breaks [im_attendance_check_consistency_no_front_breaks $attendance_hashs]
     if {$attendance_hashs != $hashs_no_front_breaks} {
-	lappend errors "Found a break as first attendance of the day, ignoring"
+	lappend errors [lang::message::lookup "" intranet-attendance-management.Found_a_break_as_first_attendance "Found a break as first attendance of the day, ignoring"]
     }
 
     set hashs_no_end_breaks [im_attendance_check_consistency_no_end_breaks $hashs_no_front_breaks]
     if {$hashs_no_end_breaks != $hashs_no_front_breaks} {
-	lappend errors "Found a break as last attendance of the day, ignoring"
+	lappend errors [lang::message::lookup "" intranet-attendance-management.Found_a_break_as_last_attendance "Found a break as last attendance of the day, ignoring"]
     }
 
     set last_att [list]
@@ -294,14 +294,16 @@ ad_proc -public im_attendance_check_consistency {
 	# ----------------------------------------------------------------------
 	# Checks of a single attendance
 
+	set attendance_id $curr_hash(attendance_id)
+
 	# The _date_ component of curr_attendance_start and curr_attendance_end should be the same (unless end_date is empty)
 	if {"" ne $curr_end_date && $curr_start_date ne $curr_end_date} {
-	    lappend errors "Attendance #$curr_hash(attendance_id) on $curr_start_date has different dates between start and end"
+	    lappend errors [lang::message::lookup "" intranet-attendance-management.Different_start_end_date "Attendance #%attendance_id% on %curr_start_date% has different dates between start and end"]
 	}
 	
 	# The _date_ component of last_start_date and curr_start_date should be the same (unless last_start_date is empty (non existent))
 	if {"" ne $last_start_date && $curr_start_date ne $last_start_date} {
-	    lappend errors "Attendance #$curr_hash(attendance_id) on $curr_start_date has different date than it's predecessor. Internal error?"
+	    lappend errors [lang::message::lookup "" intranet-attendance-management.Different_date_than_predecessor "Attendance #%attendance_id% on %curr_start_date% has a different date than it's predecessor. Internal error?"]
 	}
 	
 	# There should be no breaks shorter than min_break_time
@@ -310,7 +312,7 @@ ad_proc -public im_attendance_check_consistency {
 	    ns_log Notice "check_consistency: break: duration=$duration"
 	    
 	    if {$curr_hash(attendance_duration_hours) < 0.20} { 
-		lappend errors "Break starting on $curr_start_date $curr_start_time is shorter than 15 minutes"
+		lappend errors [lang::message::lookup "" intranet-attendance-management.Break_too_short "Break starting on %curr_start_date% %curr_start_time% is shorter than 15min"]
 	    }
 	}
 
@@ -322,12 +324,13 @@ ad_proc -public im_attendance_check_consistency {
 
 	    # Check that last attendance and current one don't overlap
 	    if {$diff_minutes >= 1.0} {
-		lappend errors "Attendance starting $curr_start_date $curr_start_time overlaps with attendance starting $last_start_date $last_start_time by ${diff_minutes}min"
+		lappend errors [lang::message::lookup "" intranet-attendance-management.Attendance_overlaps "Attendance starting %curr_start_date% %curr_start_time% overlaps with attendance starting %last_start_date% %last_start_time% by %diff_minutes%min"]
 	    }
 
 	    # Check for "holes"
 	    if {$diff_minutes < -1.0} {
-		lappend errors "There is a missing time of [expr abs($diff_minutes)]min between attendance starting $last_start_date $last_start_time and attendance starting $curr_start_date $curr_start_time "
+		set abs_diff_minutes [expr abs($diff_minutes)]
+		lappend errors [lang::message::lookup "" intranet-attendance-management.Attendance_gap "There is a gap of %abs_diff_minutes%min between attendance starting $last_start_date$ %last_start_time% and attendance starting %curr_start_date% %curr_start_time%"]
 	    }
 	}
 
@@ -345,13 +348,13 @@ ad_proc -public im_attendance_check_consistency {
     if {$work_sum > 9.0} {
 	# At least 45min break after 9h of work
 	if {$break_sum < 0.75} {
-	    lappend errors "After 9h of work (found: ${work_sum}h) there should be at least 0.75h break (found: ${break_sum}h)"
+	    lappend errors [lang::message::lookup "" intranet-attendance-management.Break_after_long_period "After 9h of work (found: %work_sum%h) there should be at least 0.75h break (found: %break_sum%h)"]
 	}
     } else {
 	# At least 30min break after 6h of work
 	if {$work_sum > 6.0} {
 	    if {$break_sum < 0.5} {
-		lappend errors "After 6h of work (found: ${work_sum}h) there should be at least 0.5h break (found: ${break_sum}h)"
+		lappend errors [lang::message::lookup "" intranet-attendance-management.Break_after_middle_period "After 6h of work (found: %work_sum%h) there should be at least 0.5h break (found: %break_sum%h)"]
 	    }
 	}
     }
@@ -371,11 +374,11 @@ ad_proc -public im_attendance_check_consistency {
     if {"" eq $ts_sum} { set ts_sum 0.0 }
 
     if {$ts_sum < [expr $required_sum - $required_margin]} {
-	lappend errors "Not enough time (${ts_sum}h) logged on projects, expected ${required_sum}h"
+	lappend errors [lang::message::lookup "" intranet-attendance-management.Not_enough_time_logged "Not enough time (%ts_sum%h) logged on projects, expected %required_sum%h"]
     }
 
     if {$work_sum < [expr $required_sum - $required_margin]} {
-	lappend errors "Not enough work attendance (${work_sum}h), expected ${required_sum}h"
+	lappend errors [lang::message::lookup "" intranet-attendance-management.Not_enough_work_logged "Not enough work attendance (%work_sum%h), expected %required_sum%h"]
     }
 
     return $errors

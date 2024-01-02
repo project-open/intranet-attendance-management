@@ -33,7 +33,7 @@ Shared between Attendance Report and Monthly View
 
 - [ ] Build test-case
 - [ ] How to deal with cases of too much work logged?
-
+- [ ] ToAsk: Is it allowed to have two attendances of the some time following each other?
 
 
 Optional
