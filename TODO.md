@@ -5,25 +5,11 @@ ToDo
 Editor Portlet
 --------------
 
-Done
-
-
 Timesheet Monthly Calendar
 --------------------------
 
-ToDo: Features:
-
-- [x] Vergleich Anwesenheit vs. Soll Anwesenheit
-	- [ ] Monatlich mit Berechnung der Soll-Anwesenheit
-	- [ ] Calculate monthly required presence including
-	  absences
-- [ ] Localization of Work, Break etc.
-
-
 Report Attendances
 ------------------
-
-Done
 
 
 Consistency Checker
@@ -127,6 +113,11 @@ Timesheet Monthly Calendar
 - [x] Farbe rot/grün in Abhängigkeit von 8h 
 - [x] Soll Anwesenheit = 8h/Tag * Verfügbarkeit
 - [x] Consistency check
+- [x] Vergleich Anwesenheit vs. Soll Anwesenheit
+	- [x] Monatlich mit Berechnung der Soll-Anwesenheit
+	- [x] Calculate monthly required presence including absences
+- [x] Localization of Work, Break etc.
+
 
 
 Report Pausenzeiten
