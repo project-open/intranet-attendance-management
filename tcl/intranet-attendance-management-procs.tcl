@@ -134,6 +134,16 @@ ad_proc -public im_attendance_daily_attendance_hours {
 } {
     Returns the number of hours a person should be present at the given date
 } {
+    #    return [util_memoize [list im_attendance_daily_attendance_hours_helper -user_id $user_id -date $date] 3600]
+    return [im_attendance_daily_attendance_hours_helper -user_id $user_id -date $date]
+}
+
+ad_proc -public im_attendance_daily_attendance_hours_helper {
+    -user_id
+    -date
+} {
+    Returns the number of hours a person should be present at the given date
+} {
     set default_hours_per_day [parameter::get_from_package_key -package_key "intranet-attendance-management" -parameter "DefaultAttendanceHoursPerDay" -default "8.0"]
 
     # --------------------------------------------------------------
