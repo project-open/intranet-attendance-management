@@ -33,13 +33,13 @@ var user_locale = 'en-US';
 
 // A localized array of shortened days of the week
 const DAY_NAME_OF_WEEK_SHORT = [
-    "<%= [_ intranet-timesheet2.Day_of_week_Sun] %>", 
-    "<%= [_ intranet-timesheet2.Day_of_week_Mon] %>", 
-    "<%= [_ intranet-timesheet2.Day_of_week_Tue] %>", 
-    "<%= [_ intranet-timesheet2.Day_of_week_Wed] %>", 
-    "<%= [_ intranet-timesheet2.Day_of_week_Thu] %>", 
-    "<%= [_ intranet-timesheet2.Day_of_week_Fri] %>", 
-    "<%= [_ intranet-timesheet2.Day_of_week_Sat] %>"
+    '<%= [_ intranet-timesheet2.Day_of_week_Sun] %>', 
+    '<%= [_ intranet-timesheet2.Day_of_week_Mon] %>', 
+    '<%= [_ intranet-timesheet2.Day_of_week_Tue] %>', 
+    '<%= [_ intranet-timesheet2.Day_of_week_Wed] %>', 
+    '<%= [_ intranet-timesheet2.Day_of_week_Thu] %>', 
+    '<%= [_ intranet-timesheet2.Day_of_week_Fri] %>', 
+    '<%= [_ intranet-timesheet2.Day_of_week_Sat] %>'
 ];
 
 // Localization: Start with English and overwrite with locale specific translation from database
