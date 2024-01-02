@@ -2,12 +2,17 @@
 <message_catalog package_key="intranet-attendance-management" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="All_Details">Alle Details</msg>
+  <msg key="Attendance_gap">Es gibt eine Lücke von %abs_diff_minutes%min zwischen den Anwesenheiten $last_start_date$ %last_start_time% und %curr_start_date% %curr_start_time%</msg>
+  <msg key="Attendance_overlaps">Die Anwesenheiten %curr_start_date% %curr_start_time% und %last_start_date% %last_start_time% überlappen sich um %diff_minutes%min</msg>
   <msg key="Attendance_Report">Anwesenheitsbericht</msg>
   <msg key="Attendance_Report_help">Dieser Bericht listet Anwesenheiten gruppiert nach Benutzern und Datum.</msg>
   <msg key="Attendance_Status">Status Anwesenheit</msg>
   <msg key="Attendance_Type">Typ Anwesenheit</msg>
   <msg key="Attendances_per_User">Anwesenheiten pro Benutzer</msg>
   <msg key="Attendances_per_User_Date">Anwesenheiten pro Benutzer und Datum</msg>
+  <msg key="Break">Pause</msg>
+  <msg key="Break_after_middle_period">Nach 6h Arbeit (gefunden: %work_sum%h) muss eine Pause von 0.5h folgen (gefunden: %break_sum%h)</msg>
+  <msg key="Break_too_short">Die Pause vom %curr_start_date% %curr_start_time% ist kürzer als 15min</msg>
   <msg key="Button_text_Add">Neuer Eintrag</msg>
   <msg key="Button_text_Delete">Eintrag löschen</msg>
   <msg key="Button_text_Next_week">Nächste Woche</msg>
@@ -17,6 +22,8 @@
   <msg key="Button_text_Stop">Eintrag beenden</msg>
   <msg key="Button_text_To">bis</msg>
   <msg key="error_with_attendance_data">Fehler mit Anwesenheiten</msg>
+  <msg key="Found_a_break_as_first_attendance">Die erste Anwesenheit des Tages ist eine Pause</msg>
+  <msg key="Found_a_break_as_last_attendance">Die letzte Anwesenheit des Tages ist eine Pause</msg>
   <msg key="found_attendance_entries_without_end_time">Anwesenheiten ohne Endzeit</msg>
   <msg key="found_breaks_shorter_than_allowed">Pause kürzer als erlaubt</msg>
   <msg key="found_entries_with_end_time_before_start_time">Einträge mit Ende vor Anfang</msg>
@@ -33,10 +40,13 @@
   <msg key="Heading_Type">Typ</msg>
   <msg key="Heading_User">Benutzer</msg>
   <msg key="Heading_Work">Arbeit</msg>
+  <msg key="Not_enough_time_logged">Nicht genug Zeit (%ts_sum%h) auf Projekte gelogged, erwartet %required_sum%h</msg>
+  <msg key="Not_enough_work_logged">Nicht genug Arbeit gelogged (%work_sum%h), erwartet %required_sum%h</msg>
   <msg key="please_edit_attendances_to_resolve_the_issues">Bitte Einträge modifizieren, um das Problem zu lösen</msg>
   <msg key="there_is_already_an_entry_with_the_same_start_time">Es gibt bereits einen Eintrag mit der selben Startzeit</msg>
   <msg key="there_should_be_at_most_one_of_them">Es sollte höchstens einen geben</msg>
   <msg key="Total">Total</msg>
   <msg key="User_Department">Abteilung</msg>
   <msg key="we_will_discard_the_new_entry">Der Eintrag wird verworfen</msg>
+  <msg key="Work">Arbeit</msg>
 </message_catalog>
