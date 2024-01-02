@@ -384,11 +384,11 @@ ad_proc -public im_attendance_check_consistency {
     if {"" eq $ts_sum} { set ts_sum 0.0 }
 
     if {$ts_sum < [expr $required_sum - $required_margin]} {
-	lappend errors [lang::message::lookup "" intranet-attendance-management.Not_enough_time_logged "Not enough time (%ts_sum%h) logged on projects, expected %required_sum%h"]
+	# lappend errors [lang::message::lookup "" intranet-attendance-management.Not_enough_time_logged "Not enough time (%ts_sum%h) logged on projects, expected %required_sum%h"]
     }
 
     if {$work_sum < [expr $required_sum - $required_margin]} {
-	lappend errors [lang::message::lookup "" intranet-attendance-management.Not_enough_work_logged "Not enough work attendance (%work_sum%h), expected %required_sum%h"]
+	# lappend errors [lang::message::lookup "" intranet-attendance-management.Not_enough_work_logged "Not enough work attendance (%work_sum%h), expected %required_sum%h"]
     }
 
     return $errors
