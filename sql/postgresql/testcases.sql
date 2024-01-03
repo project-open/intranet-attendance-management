@@ -6,26 +6,84 @@
 
 -- 53574 = Bruno Kesel, 92020 = active, 92100 = work
 
--- work: 9:00 - 12:00, break: 12:01 - 13:00, work: 13:00 - 17:00
-select im_attendance_interval__new (null, 'im_attendance_interval', now(), 0, '0.0.0.0', null, 53574, '2023-12-18  9:00', '2023-12-18 12:00', 92020, 92100, 'perfect day');
-select im_attendance_interval__new (null, 'im_attendance_interval', now(), 0, '0.0.0.0', null, 53574, '2023-12-18 12:01', '2023-12-18 13:00', 92020, 92110, null);
-select im_attendance_interval__new (null, 'im_attendance_interval', now(), 0, '0.0.0.0', null, 53574, '2023-12-18 13:00', '2023-12-18 17:00', 92020, 92100, null);
-insert into im_hours (user_id, project_id, day, hours) values (53574, (select min(project_id) from im_projects where parent_id is null), '2023-12-18', 8.0);
 
-select im_attendance_interval__new (null, 'im_attendance_interval', now(), 0, '0.0.0.0', null, 53574, '2023-12-18  9:00', '2023-12-18 12:00', 92020, 92100, 'perfect day');
-select im_attendance_interval__new (null, 'im_attendance_interval', now(), 0, '0.0.0.0', null, 53574, '2023-12-18 12:01', '2023-12-18 13:00', 92020, 92110, null);
-select im_attendance_interval__new (null, 'im_attendance_interval', now(), 0, '0.0.0.0', null, 53574, '2023-12-18 13:00', '2023-12-18 17:00', 92020, 92100, null);
+drop table if exists ttt;
+create table ttt (
+	uid		integer,
+	type_id		integer,
+	starttz		timestamptz,
+	endtz		timestamptz,
+	note		text
+);
+
+COPY ttt(uid, type_id, starttz, endtz, note) FROM stdin;
+53574	92100	2023-12-10 10:13:00+01	2023-12-10 10:14:00+01	
+53574	92100	2023-12-10 10:14:00+01	2023-12-10 10:14:00+01	
+53574	92100	2023-12-11 08:29:00+01	2023-12-11 09:05:00+01	
+53574	92110	2023-12-11 09:06:00+01	2023-12-11 09:26:00+01	
+53574	92100	2023-12-11 09:13:00+01	2023-12-11 09:14:00+01	
+53574	92100	2023-12-11 09:15:00+01	2023-12-11 09:33:00+01	
+53574	92100	2023-12-11 09:34:00+01	2023-12-11 10:30:00+01	
+53574	92100	2023-12-12 08:36:00+01	2023-12-12 11:00:00+01	
+53574	92100	2023-12-12 13:58:00+01	2023-12-12 15:00:00+01	
+53574	92100	2023-12-18 09:00:00+01	2023-12-18 12:01:00+01	
+53574	92110	2023-12-18 12:02:00+01	2023-12-18 13:00:00+01	
+53574	92100	2023-12-18 13:00:00+01	2023-12-18 17:00:00+01	
+53574	92100	2023-12-23 08:00:00+01	2023-12-23 13:00:00+01	
+53574	92110	2023-12-23 13:00:00+01	2023-12-23 14:00:00+01	
+53574	92100	2023-12-23 14:00:00+01	2023-12-23 18:00:00+01	
+53574	92110	2023-12-24 09:00:00+01	2023-12-24 10:00:00+01	
+53574	92100	2023-12-24 10:00:00+01	2023-12-24 12:00:00+01	
+53574	92110	2023-12-24 12:00:00+01	2023-12-24 13:00:00+01	
+53574	92100	2023-12-25 08:00:00+01	2023-12-25 10:30:00+01	
+53574	92100	2023-12-25 10:52:00+01	2023-12-25 11:01:00+01	
+53574	92110	2023-12-25 11:02:00+01	2023-12-25 11:17:00+01	Test
+53574	92100	2023-12-25 11:08:00+01	2023-12-25 11:15:00+01	
+53574	92100	2023-12-25 11:15:00+01	2023-12-25 12:02:00+01	
+53574	92110	2023-12-25 12:02:00+01	2023-12-25 12:30:00+01	
+53574	92100	2023-12-25 12:30:00+01	2023-12-25 14:25:00+01	
+53574	92100	2023-12-25 14:25:00+01	2023-12-25 15:15:00+01	
+53574	92100	2023-12-25 15:15:00+01	2023-12-25 16:30:00+01	
+53574	92100	2023-12-26 08:53:00+01	2023-12-26 14:43:00+01	
+53574	92110	2023-12-26 14:47:00+01	2023-12-26 15:05:00+01	
+53574	92100	2023-12-26 14:57:00+01	2023-12-26 16:30:00+01	
+53574	92100	2023-12-27 09:00:00+01	2023-12-27 13:00:00+01	
+53574	92110	2023-12-27 13:00:00+01	2023-12-27 13:10:00+01	
+53574	92100	2023-12-27 13:10:00+01	2023-12-27 18:00:00+01	
+53574	92110	2023-12-27 17:00:00+01	2023-12-27 17:50:00+01	
+53574	92100	2023-12-28 10:15:00+01	2023-12-28 10:30:00+01	
+53574	92110	2023-12-28 10:16:00+01	2023-12-28 11:12:00+01	
+53574	92100	2023-12-28 14:00:00+01	2023-12-28 15:15:00+01	
+53574	92110	2023-12-28 15:17:00+01	2023-12-28 15:35:00+01	
+53574	92100	2023-12-28 15:18:00+01	2023-12-28 16:30:00+01	
+\.
+
+-- Delete all attendances in 2023
+select	im_attendance_interval__delete(attendance_id)
+from	(select attendance_id from im_attendance_intervals where attendance_user_id = 53574 and attendance_start < '2024-01-01') t;
+
+-- Create new attendances in 2023 from ttt
+select	im_attendance_interval__new (null, 'im_attendance_interval', now(), 0, '0.0.0.0', null, 53574, starttz, endtz, 92020, type_id, note)
+from	ttt;
 
 
+-- Create some hours
+insert into im_hours (user_id, project_id, day, hours)
+select
+	53574 as user_id,
+	(select project_id from (select project_id, random() as rand from im_projects where parent_id is null order by rand limit 1) t) as project_id,
+	day, 
+	round(4.0::numeric + random()::numeric * 8.0, 1) as hours
+from (select distinct starttz::date as day from ttt where starttz::date not in ('2023-12-24', '2023-12-25')) t;
 
 
 -- Create a vacation for 2023-12-20
 select im_user_absence__new(
 	null, 'im_user_absence', now(), 0, '0.0.0.0', null,
-	'Vacation',
+	'Christmas',
 	53574, -- Bruno Kesel
-	'2023-12-20',
-	'2023-12-20',
+	'2023-12-24',
+	'2023-12-26',
 	16004, -- status active
 	5000, -- type vacation
 	null, -- description,
