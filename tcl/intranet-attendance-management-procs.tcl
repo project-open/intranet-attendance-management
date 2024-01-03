@@ -340,7 +340,7 @@ ad_proc -public im_attendance_check_consistency {
 	    # Check for "holes"
 	    if {$diff_minutes < -1.0} {
 		set abs_diff_minutes [expr abs($diff_minutes)]
-		lappend errors [lang::message::lookup "" intranet-attendance-management.Attendance_gap "There is a gap of %abs_diff_minutes%min between attendance starting $last_start_date$ %last_start_time% and attendance starting %curr_start_date% %curr_start_time%"]
+		# lappend errors [lang::message::lookup "" intranet-attendance-management.Attendance_gap "There is a gap of %abs_diff_minutes%min between attendance starting $last_start_date$ %last_start_time% and attendance starting %curr_start_date% %curr_start_time%"]
 	    }
 	}
 
