@@ -196,7 +196,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         var lastStartDate = null;
         var lastEndDate = null;
-        // ToDo: Make sure the store is ordered by attendance_start!!!
+        // Sort the store, because the algorithm checks consecutive entries
+        me.attendanceStore.sort();
         me.attendanceStore.each(function(item) {
             var endIso = item.get('attendance_end');
             var startIso = item.get('attendance_start');
