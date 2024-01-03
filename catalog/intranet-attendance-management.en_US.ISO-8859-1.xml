@@ -2,7 +2,7 @@
 <message_catalog package_key="intranet-attendance-management" locale="en_US" charset="ISO-8859-1">
 
   <msg key="All_Details">All Details</msg>
-  <msg key="Attendance_gap">There is a gap of %abs_diff_minutes%min between attendance starting $last_start_date$ %last_start_time% and attendance starting %curr_start_date% %curr_start_time%</msg>
+  <msg key="Attendance_gap">There is a gap of %abs_diff_minutes%min between attendance starting %last_start_date% %last_start_time% and attendance starting %curr_start_date% %curr_start_time%</msg>
   <msg key="Attendance_overlaps">Attendance starting %curr_start_date% %curr_start_time% overlaps with attendance starting %last_start_date% %last_start_time% by %diff_minutes%min</msg>
   <msg key="Attendance_Report">Attendance Report</msg>
   <msg key="Attendance_Report_help">This report returns a list of attendances grouped per user and date.</msg>
@@ -29,6 +29,7 @@
   <msg key="found_breaks_shorter_than_allowed">Found breaks shorter than allowed</msg>
   <msg key="found_entries_with_end_time_before_start_time">Found entries with end time before start time</msg>
   <msg key="found_items_longer_than_allowed">Found items longer than allowed</msg>
+  <msg key="found_overlapping_entries">Found overlapping entries</msg>
   <msg key="Heading_Break">Break</msg>
   <msg key="Heading_Date">Date</msg>
   <msg key="Heading_DayOfWeek">DoW</msg>

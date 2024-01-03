@@ -2,7 +2,7 @@
 <message_catalog package_key="intranet-attendance-management" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="All_Details">Alle Details</msg>
-  <msg key="Attendance_gap">Es gibt eine Lücke von %abs_diff_minutes%min zwischen den Anwesenheiten $last_start_date$ %last_start_time% und %curr_start_date% %curr_start_time%</msg>
+  <msg key="Attendance_gap">Es gibt eine Lücke von %abs_diff_minutes%min zwischen den Anwesenheiten %last_start_date% %last_start_time% und %curr_start_date% %curr_start_time%</msg>
   <msg key="Attendance_overlaps">Die Anwesenheiten %curr_start_date% %curr_start_time% und %last_start_date% %last_start_time% überlappen sich um %diff_minutes%min</msg>
   <msg key="Attendance_Report">Anwesenheitsbericht</msg>
   <msg key="Attendance_Report_help">Dieser Bericht listet Anwesenheiten gruppiert nach Benutzern und Datum.</msg>
@@ -16,6 +16,7 @@
   <msg key="Button_text_Add">Neuer Eintrag</msg>
   <msg key="Button_text_Delete">Eintrag löschen</msg>
   <msg key="Button_text_Next_week">Nächste Woche</msg>
+  <msg key="Button_text_OK">OK</msg>
   <msg key="Button_text_Previous_week">Vorige Woche</msg>
   <msg key="Button_text_Start_break">Pause anfangen</msg>
   <msg key="Button_text_Start_work">Arbeit anfangen</msg>
@@ -28,6 +29,7 @@
   <msg key="found_breaks_shorter_than_allowed">Pause kürzer als erlaubt</msg>
   <msg key="found_entries_with_end_time_before_start_time">Einträge mit Ende vor Anfang</msg>
   <msg key="found_items_longer_than_allowed">Einträge länger als erlaubt</msg>
+  <msg key="found_overlapping_entries">Überlappende Einträge gefunden</msg>
   <msg key="Heading_Break">Pause</msg>
   <msg key="Heading_Date">Datum</msg>
   <msg key="Heading_DayOfWeek">Wochentag</msg>
