@@ -17,8 +17,6 @@ Consistency Checker
 
 Shared between Attendance Report and Monthly View
 
-- [ ] Build test-case
-- [ ] How to deal with cases of too much work logged?
 - [ ] ToAsk: Is it allowed to have two attendances of the some time following each other?
 
 
@@ -159,3 +157,5 @@ Report Pausenzeiten
 	- [x] Comparison between timesheet hours and attendance
 	- [x] What about 1h of break after 6h of work? That's not a break, really...   
 	- [x] Ignore future
+	- [x] How to deal with cases of too much work logged?
+- [x] Build test-case
