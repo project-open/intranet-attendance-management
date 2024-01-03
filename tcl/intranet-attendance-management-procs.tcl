@@ -391,5 +391,9 @@ ad_proc -public im_attendance_check_consistency {
 	# lappend errors [lang::message::lookup "" intranet-attendance-management.Not_enough_work_logged "Not enough work attendance (%work_sum%h), expected %required_sum%h"]
     }
 
+    if {$ts_sum < $work_sum} {
+	lappend errors [lang::message::lookup "" intranet-attendance-management.Less_project_hours_than_work "Less hours (%ts_sum%h) logged on projects than on work attendances (%work_sum%h)"]
+    }
+
     return $errors
 }
