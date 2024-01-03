@@ -2,7 +2,7 @@
 <message_catalog package_key="intranet-attendance-management" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="All_Details">Alle Details</msg>
-  <msg key="Attendance_gap">Es gibt eine Lücke von %abs_diff_minutes%min zwischen den Anwesenheiten %last_start_date% %last_start_time% und %curr_start_date% %curr_start_time%</msg>
+  <msg key="Attendance_gap">Es gibt eine Lücke von %abs_diff_minutes%min zwischen den Anwesenheiten $last_start_date$ %last_start_time% und %curr_start_date% %curr_start_time%</msg>
   <msg key="Attendance_overlaps">Die Anwesenheiten %curr_start_date% %curr_start_time% und %last_start_date% %last_start_time% überlappen sich um %diff_minutes%min</msg>
   <msg key="Attendance_Report">Anwesenheitsbericht</msg>
   <msg key="Attendance_Report_help">Dieser Bericht listet Anwesenheiten gruppiert nach Benutzern und Datum.</msg>
@@ -42,6 +42,7 @@
   <msg key="Heading_Type">Typ</msg>
   <msg key="Heading_User">Benutzer</msg>
   <msg key="Heading_Work">Arbeit</msg>
+  <msg key="Less_project_hours_than_work">Weniger Stunden auf Projekte gelogged (%ts_sum%h) als anwesend (%work_sum%h)</msg>
   <msg key="Not_enough_time_logged">Nicht genug Zeit (%ts_sum%h) auf Projekte gelogged, erwartet %required_sum%h</msg>
   <msg key="Not_enough_work_logged">Nicht genug Arbeit gelogged (%work_sum%h), erwartet %required_sum%h</msg>
   <msg key="please_edit_attendances_to_resolve_the_issues">Bitte Einträge modifizieren, um das Problem zu lösen</msg>

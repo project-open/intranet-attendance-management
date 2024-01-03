@@ -42,6 +42,7 @@
   <msg key="Heading_Type">Type</msg>
   <msg key="Heading_User">User</msg>
   <msg key="Heading_Work">Work</msg>
+  <msg key="Less_project_hours_than_work">Less hours (%ts_sum%h) logged on projects than on work attendances (%work_sum%h)</msg>
   <msg key="Not_enough_time_logged">Not enough time (%ts_sum%h) logged on projects, expected %required_sum%h</msg>
   <msg key="Not_enough_work_logged">Not enough work attendance (%work_sum%h), expected %required_sum%h</msg>
   <msg key="please_edit_attendances_to_resolve_the_issues">Please edit attendances to resolve the issues</msg>
