@@ -35,9 +35,6 @@ set read_p [db_string report_perms "
 	where	m.label = :menu_label
 " -default 'f']
 
-# For testing - set manually
-set read_p "t"
-
 if {"t" ne $read_p } {
     ad_return_complaint 1 [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]
     ad_script_abort
