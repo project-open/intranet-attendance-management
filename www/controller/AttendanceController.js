@@ -43,7 +43,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         });
 
         // Listen to a click into the empty space below the grid entries in order to start creating a new entry
-        me.attendanceGrid.on('containerclick', this.onGridContainerClick, me);
+        // me.attendanceGrid.on('containerclick', this.onGridContainerClick, me);
 
         // Listen to changes in the selction model in order to enable/disable the start/stop buttons
         me.attendanceGrid.on('selectionchange', this.onGridSelectionChange, me);
