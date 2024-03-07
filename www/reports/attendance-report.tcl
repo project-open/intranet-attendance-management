@@ -319,8 +319,8 @@ set report_def [list \
 						  "$attendance_type"
 						  "$attendance_start_time"
 						  "$attendance_end_time"
-						  "$attendance_work_pretty"
-						  "$attendance_break_pretty"
+						  "#align=right $attendance_work_pretty"
+						  "#align=right $attendance_break_pretty"
 						  ""
 						  "$attendance_note"
 					      } \
@@ -333,9 +333,9 @@ set report_def [list \
                                      <i>$attendance_start_date</i></nobr>"
 				     ""
 				     ""
-				     "<i>$attendance_date_work_pretty</i>"
-				     "<i>$attendance_date_break_pretty</i>"
-				     "$ts_sum_per_user_day_pretty"
+				     "#align=right <i>$attendance_date_work_pretty</i>"
+				     "#align=right <i>$attendance_date_break_pretty</i>"
+				     "#align=right $ts_sum_per_user_day_pretty"
 				     "$errors_formatted_for_note_column"
 				 } \
 				] \
@@ -343,9 +343,9 @@ set report_def [list \
 			"#colspan=5 <a href=$base_url_date&report_user_id=$attendance_user_id&level_of_detail=3 
                         target=_blank><img src=/intranet/images/plus_9.gif border=0></a>
                         <b><a href=$user_url$attendance_user_id target=_>$user_name</a> ($user_department) </b>"
-			"<b>$attendance_user_work_pretty</b>"
-			"<b>$attendance_user_break_pretty</b>"
-			"<b>$ts_sum_per_user</b>"
+			"#align=right <b>$attendance_user_work_pretty</b>"
+			"#align=right <b>$attendance_user_break_pretty</b>"
+			"#align=right <b>$ts_sum_per_user_pretty</b>"
 			""
 		    } \
 		   ]
@@ -353,14 +353,14 @@ set report_def [list \
 
 # Global Footer Line
 set footer0 [list \
-		 [lang::message::lookup "" intranet-attendance-management.Total "Total"] \
+		 "[lang::message::lookup "" intranet-attendance-management.Total "Total"]" \
 		 "" \
 		 "" \
 		 "" \
 		 "" \
-		 "\$attendance_work_total_pretty" \
-		 "\$attendance_break_total_pretty" \
-		 "\$ts_sum_total" \
+		 "#align=right \$attendance_work_total_pretty" \
+		 "#align=right \$attendance_break_total_pretty" \
+		 "#align=right \$ts_sum_total" \
 		 "" \
 ]
 
@@ -524,8 +524,9 @@ db_foreach sql $report_sql {
     }
 
     # Sum of hours per user
-    set ts_sum_per_user ""
+    set ts_sum_per_user 0.0
     if {[info exists ts_user_hash($attendance_user_id)]} { set ts_sum_per_user $ts_user_hash($attendance_user_id) }
+    set ts_sum_per_user_pretty [im_report_format_number [expr round(100.0 * $ts_sum_per_user) / 100.0] $output_format $number_locale]
 
 
     # -------------------------------------------------------
