@@ -2,36 +2,6 @@ ToDo
 ====
 
 
-Editor Portlet
---------------
-
-Timesheet Monthly Calendar
---------------------------
-
-Report Attendances
-------------------
-
-
-Consistency Checker
--------------------
-
-Shared between Attendance Report and Monthly View
-
-- [ ] ToAsk: Is it allowed to have two attendances of the some time following each other?
-
-
-Optional
-========
-
-
-Editor Portlet
---------------
-
-ToDo: Optional Features:
-
-- [ ] Add parameters for min and max durations of intervals/breaks?
-
-
 
 Done
 ====
