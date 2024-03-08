@@ -172,6 +172,7 @@ db_foreach timesheet_info $timesheet_sql {
 }
 
 set ts_sum_total [expr round(100.0 * $ts_sum_total) / 100.0]
+set ts_sum_total_pretty [im_report_format_number [expr round(100.0 * $ts_sum_total) / 100.0] $output_format $number_locale]
 
 
 # ------------------------------------------------------------
@@ -360,7 +361,7 @@ set footer0 [list \
 		 "" \
 		 "#align=right \$attendance_work_total_pretty" \
 		 "#align=right \$attendance_break_total_pretty" \
-		 "#align=right \$ts_sum_total" \
+		 "#align=right \$ts_sum_total_pretty" \
 		 "" \
 ]
 
