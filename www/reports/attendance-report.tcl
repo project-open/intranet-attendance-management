@@ -248,8 +248,8 @@ select	a.attendance_id,
 	to_char(a.attendance_end, 'HH24:MI') as attendance_end_time,
 	im_name_from_user_id(t.user_id) as user_name,
 	coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) as attendance_duration_hours,
-	CASE when a.attendance_type_id = [im_attendance_type_work] THEN coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) END as attendance_work,
-	CASE when a.attendance_type_id = [im_attendance_type_break] THEN coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) END as attendance_break
+	CASE when a.attendance_type_id = [im_attendance_type_work] THEN round(coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0)::numeric, 2) END as attendance_work,
+	CASE when a.attendance_type_id = [im_attendance_type_break] THEN round(coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0)::numeric, 2) END as attendance_break
 from
 	-- Create a list of all (date, user_id) tuples with either attenances or im_hours
 	(select distinct date, user_id
@@ -576,7 +576,7 @@ db_foreach sql $report_sql {
     set attendance_work_pretty ""
     set attendance_break_pretty ""
     if {"" ne $attendance_work} { 
-	set attendance_work_pretty [im_report_format_number [expr round(100.0 * $attendance_work) / 100.0] $output_format $number_locale] 
+	set attendance_work_pretty [im_report_format_number [expr round(100.0 * $attendance_work) / 100.0] $output_format $number_locale]
     }
     if {"" ne $attendance_break} { 
 	set attendance_break_pretty [im_report_format_number [expr round(100.0 * $attendance_break ) / 100.0] $output_format $number_locale] 
