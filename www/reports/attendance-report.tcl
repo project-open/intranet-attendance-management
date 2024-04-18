@@ -140,42 +140,6 @@ set levels [list \
 
 
 # ------------------------------------------------------------
-# Timesheet Data
-#
-
-set timesheet_sql "
-	select	sum(h.hours) as hours,
-		h.user_id,
-		h.day::date as day_date
-	from	im_hours h
-	where	h.day >= :report_start_date and
-		h.day < :report_end_date
-	group by
-		h.user_id,
-		h.day::date
-"
-set ts_sum_total 0.0
-db_foreach timesheet_info $timesheet_sql {
-    # timesheet sum per user and date
-    set ts_key "$user_id-$day_date"
-    set ts_hash($ts_key) $hours
-
-    # timesheet sum per user
-    set ts_key "$user_id"
-    set v 0.0
-    if {[info exists ts_user_hash($ts_key)]} { set v $ts_user_hash($ts_key) }
-    set v [expr $v + $hours]
-    set ts_user_hash($ts_key) $v
-
-    # timesheet total
-    set ts_sum_total [expr $ts_sum_total + $hours]
-}
-
-set ts_sum_total [expr round(100.0 * $ts_sum_total) / 100.0]
-set ts_sum_total_pretty [im_report_format_number [expr round(100.0 * $ts_sum_total) / 100.0] $output_format $number_locale]
-
-
-# ------------------------------------------------------------
 # Report SQL
 #
 
@@ -282,6 +246,63 @@ order by
 	
 "
 # ad_return_complaint 1 [im_ad_hoc_query -format html $report_sql]
+
+# ------------------------------------------------------------
+# Timesheet Data
+#
+
+set ts_criteria [list]
+if {"" ne $report_department_id && 0 ne $report_department_id} {
+    lappend ts_criteria "e.department_id in ([join [im_sub_cost_center_ids $report_department_id] ", "])\n"
+}
+
+if {"" ne $report_user_id && 0 ne $report_user_id} {
+    lappend ts_criteria "e.employee_id = :report_user_id"
+}
+
+set ts_where_clause [join $ts_criteria " and\n\t"]
+if { $ts_where_clause ne "" } { set ts_where_clause " and $ts_where_clause" }
+
+
+
+# ad_return_complaint 1 "<pre>$ts_where_clause</pre>"
+set timesheet_sql "
+	select	sum(h.hours) as hours,
+		h.user_id,
+		h.day::date as day_date
+	from	im_hours h,
+		im_employees e
+	where	h.user_id = e.employee_id and
+		h.day >= :report_start_date and
+		h.day < :report_end_date
+		$ts_where_clause
+	group by
+		h.user_id,
+		h.day::date
+"
+set ts_sum_total 0.0
+db_foreach timesheet_info $timesheet_sql {
+    # timesheet sum per user and date
+    set ts_key "$user_id-$day_date"
+    set ts_hash($ts_key) $hours
+
+    # timesheet sum per user
+    set ts_key "$user_id"
+    set v 0.0
+    if {[info exists ts_user_hash($ts_key)]} { set v $ts_user_hash($ts_key) }
+    set v [expr $v + $hours]
+    set ts_user_hash($ts_key) $v
+
+    # timesheet total
+    set ts_sum_total [expr $ts_sum_total + $hours]
+}
+
+set ts_sum_total [expr round(100.0 * $ts_sum_total) / 100.0]
+set ts_sum_total_pretty [im_report_format_number [expr round(100.0 * $ts_sum_total) / 100.0] $output_format $number_locale]
+
+
+
+
 
 # ------------------------------------------------------------
 # Report Definition
