@@ -84,7 +84,9 @@ create table im_attendance_intervals (
 	attendance_activity_id	integer
 				constraint im_attendance_intervals_activity_fk
 				references im_categories,
-	attendance_note		text
+	attendance_note		text,
+				-- Calculated date, required for GUI
+	attendance_date_calculated date
 );
 
 -- Unique constraint to avoid that you can add two identical rows
@@ -94,6 +96,20 @@ unique (attendance_user_id, attendance_start);
 
 create index im_attendance_intervals_user_id_idx on im_attendance_intervals(attendance_user_id);
 create index im_attendance_intervals_attendance_start_idx on im_attendance_intervals(attendance_start);
+
+
+-- trigger to calculate the attendance_date_calculated
+create or replace function im_attendance_intervals_calculate_date ()
+returns trigger as $$
+begin
+	IF pg_trigger_depth() > 1 THEN return new; END IF;
+	UPDATE im_attendance_intervals set attendance_date_calculated = new.attendance_start::date where attendance_id = new.attendance_id;
+	return new;
+end;$$ language 'plpgsql';
+
+CREATE TRIGGER im_attendance_intervals_date_calculated_tr
+AFTER INSERT or UPDATE ON im_attendance_intervals
+FOR EACH ROW EXECUTE PROCEDURE im_attendance_intervals_calculate_date();
 
 
 

@@ -322,6 +322,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             attendance_type_id: 92100,    // Work
             attendance_status_id: 92020,  // active
             attendance_date: startDateIso,
+            attendance_date_calculated: startDateIso,
             attendance_start_time: startTime,
             attendance_start: startDateIso+' '+startTime, // no time zone -> current TZ
             attendance_note: ""
@@ -334,6 +335,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             attendance_type_id: ""+params.attendance_type_id,
             attendance_status_id: ""+params.attendance_status_id,
             attendance_date: params.attendance_date,
+            attendance_date_calculated: params.attendance_date,
             attendance_start_time: params.attendance_start_time,
             attendance_start: params.attendance_start,
             attendance_note: params.attendance_note
@@ -485,6 +487,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
         // Calculate attendance_start and attendance_end based on time values
         if (attendance_date != null) {
+            rec.set('attendance_date_calculated', attendance_date);
             if (attendance_start_time != null) {
                 rec.set('attendance_start', attendance_date + ' ' + attendance_start_time);
             } else {
@@ -591,6 +594,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Set default args for a new attendance. Can be overwritten by config.
         var att = me.createNewAttendance({
             attendance_date: startDateIso,
+            attendance_date_calculated: startDateIso,
             attendance_start_time: startTime,
             attendance_start: startDateIso+' '+startTime
         });
