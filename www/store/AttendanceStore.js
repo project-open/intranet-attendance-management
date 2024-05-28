@@ -13,6 +13,13 @@ Ext.define('AttendanceManagement.store.AttendanceStore', {
     autoLoad:	    false, // Load manually per week
     autoSync:	    true, // immediately write changes to backend
     pageSize:	    10000, // just load everything
+
+    remoteSort: false,
+    remoteGroup: false,
+    remoteFilter: false,
+
+    // groupField: 'attendance_user_id',
+    groupField: 'attendance_date_calculated',
     
     sorters: [
         {property: 'attendance_start', direction: 'ASC'}

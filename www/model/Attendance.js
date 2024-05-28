@@ -46,7 +46,9 @@ Ext.define('AttendanceManagement.model.Attendance', {
         // These fields are kept in sync with the previous ones using store events.
         'attendance_date',			// Date part of start- and end time
         'attendance_start_time',		// Time part of start date
-        'attendance_end_time'			// Time part of end date
+        'attendance_end_time',			// Time part of end date
+
+	'attendance_date_calculated'		// start date calculated from attendance_start by DB trigger
     ],
 
     validations: [

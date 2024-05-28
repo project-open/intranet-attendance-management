@@ -26,6 +26,31 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
     extend: 'Ext.grid.Panel',
     layout: 'fit',
     region: 'center',
+    store: 'attendanceStore',
+
+    // plugins: Set during launch: [rowEditing],
+
+    requires: [
+        'Ext.grid.feature.Grouping'
+    ],
+    
+    features: [{
+        id: 'dayGrouping',
+        ftype: 'groupingsummary',
+        groupHeaderTpl: '{name} ({rows.length})',
+        hideGroupedHeader: false,
+        startCollapsed: false,
+        enableGroupingMenu: true
+    }],
+
+    initComponent: function() {
+        console.log('AttendanceGripPanel.initComponent: Starting');
+        this.callParent();
+        console.log('AttendanceGripPanel.initComponent: after callParent()');
+
+        // this.groupingFeature = this.view.getFeature('dayGrouping');
+    },
+
     columns: [
         {
             text: l10n.Heading_ID, width: 60, dataIndex: 'id', hidden: true
@@ -43,6 +68,11 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 store:                  'attendanceTypeStore',
                 displayField:           'category_translated',
                 valueField:             'category_id',
+            },
+
+	    summaryType: 'count',
+            summaryRenderer: function(value, summaryData, dataIndex) {
+                // return "<b>" + ((value === 0 || value > 1) ? '(' + value + ' Tasks)' : '(1 Task)') + "</b>";
             }
         }, {
             text: l10n.Heading_DayOfWeek,
@@ -108,6 +138,31 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 var diffMinutes = diffSeconds / 60.0;
                 var diffHours = Math.round(100.0 * diffMinutes / 60.0) / 100.0;
                 return ""+Ext.util.Format.number(diffHours, '0.00')+"h";
+            },
+
+            summaryType: function(modelArray, column) {
+                console.log(modelArray);
+                var diffHours = 0.0
+                for (var i = 0; i < modelArray.length; i++) {
+                    var model = modelArray[i];
+
+                    var startIso = model.get('attendance_start');
+                    var endIso = model.get('attendance_end');
+                    if ("" == startIso || "" == endIso) 
+                        continue;
+                    
+                    var startDate = PO.Utilities.pgToDate(startIso);
+                    var endDate = PO.Utilities.pgToDate(endIso);
+                    var diffSeconds = (endDate.getTime() - startDate.getTime()) / 1000.0;
+                    var diffMinutes = diffSeconds / 60.0;
+                    var diffHours = diffHours + diffMinutes / 60.0;
+                }
+                return diffHours;
+
+            },
+            summaryRenderer: function(value, summaryData, dataIndex) { 
+                var roundedHours = Math.round(100.0 * value) / 100.0;
+		return "<b>"+Ext.util.Format.number(roundedHours, '0.00')+"h</b>";
             }
         }, {
             text: l10n.Heading_Note, flex: 1, dataIndex: 'attendance_note',

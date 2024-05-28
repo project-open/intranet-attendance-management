@@ -65,7 +65,7 @@ function launchTimesheetAttendanceLogging(){
 
     // The actual grid for attendance entries
     var attendanceGrid = Ext.create('AttendanceManagement.view.AttendanceGridPanel', {
-        store: attendanceStore,
+        // store: attendanceStore,
         plugins: [rowEditing],
     });
 
