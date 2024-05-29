@@ -36,11 +36,26 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
     
     features: [{
         id: 'dayGrouping',
-        ftype: 'groupingsummary',
-        groupHeaderTpl: '{name} ({rows.length})',
+        ftype: 'groupingsummary',        // 'groupingsummary' or 'grouping'
+        groupHeaderTpl: '{name} ({rows.length}) <img class="groupAddButtonClass" src="/intranet/images/navbar_default/add.png">', 
         hideGroupedHeader: false,
         startCollapsed: false,
-        enableGroupingMenu: true
+        enableGroupingMenu: true,
+
+        /**
+         * Overwriting the onGroupClick function, because the groupclick
+         * event doesn't work for some reason.
+         */
+        onGroupClick: function(view, rowElement, groupName, e) {
+            var targetClassName = e.target.className;
+            if ("groupAddButtonClass" == targetClassName) {
+                // The user clicked on the (+)
+		console.log('AttendanceGroupPanel.grouping.onGroupClick: About to copy values to new day');
+            } else {
+		var result = Ext.grid.feature.Grouping.prototype.onGroupClick.apply(this, arguments);
+		return result;
+	    }
+        }
     }],
 
     initComponent: function() {
@@ -70,7 +85,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 valueField:             'category_id',
             },
 
-	    summaryType: 'count',
+            summaryType: 'count',
             summaryRenderer: function(value, summaryData, dataIndex) {
                 // return "<b>" + ((value === 0 || value > 1) ? '(' + value + ' Tasks)' : '(1 Task)') + "</b>";
             }
@@ -162,7 +177,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
             },
             summaryRenderer: function(value, summaryData, dataIndex) { 
                 var roundedHours = Math.round(100.0 * value) / 100.0;
-		return "<b>"+Ext.util.Format.number(roundedHours, '0.00')+"h</b>";
+                return "<b>"+Ext.util.Format.number(roundedHours, '0.00')+"h</b>";
             }
         }, {
             text: l10n.Heading_Note, flex: 1, dataIndex: 'attendance_note',
