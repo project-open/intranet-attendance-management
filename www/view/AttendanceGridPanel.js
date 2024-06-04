@@ -27,17 +27,14 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
     layout: 'fit',
     region: 'center',
     store: 'attendanceStore',
-
+    
+    attendanceController: null,        // Set during init
     // plugins: Set during launch: [rowEditing],
 
-    requires: [
-        'Ext.grid.feature.Grouping'
-    ],
-    
     features: [{
         id: 'dayGrouping',
         ftype: 'groupingsummary',        // 'groupingsummary' or 'grouping'
-        groupHeaderTpl: '{name} ({rows.length}) <img class="groupAddButtonClass" src="/intranet/images/navbar_default/add.png">', 
+        groupHeaderTpl: '{name} ({rows.length}) <img class="groupAddButtonClass" src="/intranet/images/navbar_default/page_white_copy.png" title="Copy &amp; Paste">', 
         hideGroupedHeader: false,
         startCollapsed: false,
         enableGroupingMenu: true,
@@ -50,11 +47,14 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
             var targetClassName = e.target.className;
             if ("groupAddButtonClass" == targetClassName) {
                 // The user clicked on the (+)
-		console.log('AttendanceGroupPanel.grouping.onGroupClick: About to copy values to new day');
+                console.log('AttendanceGroupPanel.grouping.onGroupClick: About to copy values to new day');
+                
+                // attendanceController is global. A bit ugly...
+                attendanceController.onGroupButtonCopy.apply(attendanceController, arguments);
             } else {
-		var result = Ext.grid.feature.Grouping.prototype.onGroupClick.apply(this, arguments);
-		return result;
-	    }
+                var result = Ext.grid.feature.Grouping.prototype.onGroupClick.apply(this, arguments);
+                return result;
+            }
         }
     }],
 

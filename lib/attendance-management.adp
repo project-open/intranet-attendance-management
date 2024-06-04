@@ -53,6 +53,8 @@ var l10n_locale = {<multiple name="locale_messages">@locale_messages.message_key
 </multiple>};
 Object.keys(l10n_locale).forEach(key => {var val = l10n_locale[key]; l10n[key] = val;});
 
+var attendanceController = null; // Global scope, so we can address it from the panel
+
 function launchTimesheetAttendanceLogging(){
     // Stores
     var attendanceStore = Ext.StoreManager.get('attendanceStore');
@@ -65,7 +67,6 @@ function launchTimesheetAttendanceLogging(){
 
     // The actual grid for attendance entries
     var attendanceGrid = Ext.create('AttendanceManagement.view.AttendanceGridPanel', {
-        // store: attendanceStore,
         plugins: [rowEditing],
     });
 
@@ -80,8 +81,8 @@ function launchTimesheetAttendanceLogging(){
         ]
     });
 
-    // Main controller
-    var attendanceController = Ext.create('AttendanceManagement.controller.AttendanceController', {
+    // Global main controller
+    attendanceController = Ext.create('AttendanceManagement.controller.AttendanceController', {
         'attendanceStore': attendanceStore,
         'attendanceButtonPanel': attendanceButtonPanel,
         'attendanceController': attendanceController,
@@ -91,7 +92,7 @@ function launchTimesheetAttendanceLogging(){
 	'initial_date_ansi': '@ansi_date@'
     });
     attendanceController.init(this).onLaunch(this);
-
+    attendanceGrid.attendanceController = attendanceController;
 };
 
 
@@ -110,7 +111,7 @@ Ext.onReady(function() {
     var coordinator = Ext.create('PO.controller.StoreLoadCoordinator', {
         stores: [
             'attendanceTypeStore',
-            // 'attendanceStore'
+            // 'attendanceStore' // is loaded in attendanceController, not required to start app
         ],
         listeners: {
             load: function() {
@@ -127,6 +128,9 @@ Ext.onReady(function() {
     // This should only be "Work" and "Break"...
     attendanceTypeStore.load();
     
+    // attendanceStore is loaded in 
+    // attendanceController.loadAttendanceStore()
+
 });
 </script>
 </div>
