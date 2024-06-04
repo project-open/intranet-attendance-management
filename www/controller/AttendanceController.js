@@ -627,7 +627,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         me.attendanceStore.each(function(item) {
             var itemDateISO = item.get('attendance_date');
             if (itemDateISO == sourceDateISO) { 
-                sourceItems.push(Ext.clone(item)); 
+                sourceItems.push(item);
             }
         });
 
@@ -682,28 +682,31 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
             // The previous (recursive) execution of the method already
             // loaded the right store for the groupDate into memory.
-            sourceItems.forEach(function(clonedModel) {
-                var attendance_date = clonedModel.get('attendance_date');
-                var attendance_start = clonedModel.get('attendance_start');
-                var attendance_start_time = clonedModel.get('attendance_start_time');
-                var attendance_end = clonedModel.get('attendance_end');
-                var attendance_end_time = clonedModel.get('attendance_end_time');
+            sourceItems.forEach(function(model) {
+                var attendance_date = model.get('attendance_date');
+                var attendance_start = model.get('attendance_start');
+                var attendance_start_time = model.get('attendance_start_time');
+                var attendance_end = model.get('attendance_end');
+                var attendance_end_time = model.get('attendance_end_time');
 
-                clonedModel.set({
-                    id: "", attendance_id: "", // Reset IDs, so a new item will be created in the DB
+                // Set default args for a new attendance. Can be overwritten by config.
+                var att = new Ext.create('AttendanceManagement.model.Attendance', {
                     attendance_date: dateISO,
                     attendance_date_calculated: dateISO,
                     attendance_start: dateISO + ' ' + attendance_start_time,
                     attendance_start_time: attendance_start_time,
                     attendance_end: dateISO + ' ' + attendance_end_time,
-                    attendance_end_time: attendance_end_time
+                    attendance_end_time: attendance_end_time,
+
+                    attendance_user_id: model.get('attendance_user_id'),
+                    attendance_status_id: model.get('attendance_status_id'),
+                    attendance_type_id: model.get('attendance_type_id'),
+                    attendance_material_id: model.get('attendance_material_id'),
+                    attendance_activity_id: model.get('attendance_activity_id'),
+                    attendance_note: model.get('attendance_note')
                 });
-                me.attendanceStore.add(clonedModel);
+                me.attendanceStore.add(att);
             });
-
-            // Refresh the view for new target date (may be weeks later)
-            setTimeout(function() { me.loadAttendanceStore(new Date(sourceDateISO)); }, 500);
-
         } else {
             // No "free" day found in this week. We have to load the next 
             // week and repeat the search recursively when loaded.

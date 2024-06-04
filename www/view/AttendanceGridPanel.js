@@ -33,7 +33,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
 
     features: [{
         id: 'dayGrouping',
-        ftype: 'groupingsummary',        // 'groupingsummary' or 'grouping'
+        ftype: 'grouping',        // 'groupingsummary' or 'grouping'
         groupHeaderTpl: '{name} ({rows.length}) <img class="groupAddButtonClass" src="/intranet/images/navbar_default/page_white_copy.png" title="Copy &amp; Paste">', 
         hideGroupedHeader: false,
         startCollapsed: false,
