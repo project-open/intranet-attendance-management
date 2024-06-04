@@ -621,60 +621,68 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         var me = this;
         console.log('AttendanceController.onGroupButtonCopy');
 
+        // Get the source list of attendances
+        var sourceDateISO = groupName; // Group is named by date
+        sourceItems = [];
+        me.attendanceStore.each(function(item) {
+            var itemDateISO = item.get('attendance_date');
+            if (itemDateISO == sourceDateISO) { 
+                sourceItems.push(Ext.clone(item)); 
+            }
+        });
+
+        // Copy the attendance items from groupDate to the next "free" day
+        me.copyGroupItems(sourceItems, sourceDateISO);
+    },
+
+    /*
+     * Copy sourceItems into the next day after groupDateISO
+     */
+    copyGroupItems: function(sourceItems, sourceDateISO) {
+        var me = this;
+        console.log('AttendanceController.copyGroupItems: '+sourceDateISO);
+
         // Check for the next day without entries
         var mondayDate = me.attendanceWeekDate;
         var sundayDate = new Date(mondayDate.getTime() + 1000.0 * 3600 * 24 * 7 - 1000.0 * 1);
-
         var mondayISO = Ext.Date.format(mondayDate, 'Y-m-d');
         var sundayISO = Ext.Date.format(sundayDate, 'Y-m-d');
-
-        var store = me.attendanceStore;        
-        var sourceDateISO = groupName; // Group is named by date
 
         // This loop should stop either if we reach sunday or if there is a day without entries
         var weekendP = false;
         var items = [""];
 
-        // Get the source list of attendances
-        source = [];
-        me.attendanceStore.each(function(item) {
-            var itemDateISO = item.get('attendance_date');
-            if (itemDateISO == sourceDateISO) { 
-                source.push(Ext.clone(item)); 
-            }
-        });
-
         // Search the store for this week for an "empty" day
-        var groupDateISO = sourceDateISO
-        while (groupDateISO < sundayISO) {
+        var dateISO = sourceDateISO
+        while (dateISO < sundayISO) {
             // Skip weekends
-            var groupDate = new Date(groupDateISO);
+            var groupDate = new Date(dateISO);
             weekendP = (groupDate.getDay() == 6 || groupDate.getDay() == 0);
-            if (weekendP) break; // items.length > 0 here!
+            if (weekendP) break; // items.length > 0 here!, so the next week will be loaded
 
-            // Check the store contents (current week) for entries for groupDateISO
+            // Check the store contents (current week) for entries for dateISO
             items = []; // Reset to empty list
             me.attendanceStore.each(function(item) {
                 var itemDateISO = item.get('attendance_date');
-                if (itemDateISO == groupDateISO) { items.push(item); }
+                if (itemDateISO == dateISO) { items.push(item); }
             });
             if (items.length == 0) break;
 
             // Day was busy, move to next ISO date
-            var nextDay = new Date(new Date(groupDateISO).getTime() + 1000.0 * 3600 * 24);
-            groupDateISO = Ext.Date.format(nextDay, 'Y-m-d');
+            var nextDay = new Date(new Date(dateISO).getTime() + 1000.0 * 3600 * 24);
+            dateISO = Ext.Date.format(nextDay, 'Y-m-d');
         }
-        var targetDateISO = groupDateISO;
+        var targetDateISO = dateISO;
 
         // We have finished to search the current week store.
         // A successful day is empty (items.length==0) and is not a weekend
         if (items.length == 0 && !weekendP) {
             // Sucessfully found an empty working day in this week
-            console.log('AttendanceController.onGroupButtonCopy('+groupName+'): found target: '+groupDateISO);
+            console.log('AttendanceController.copyGroupItems('+dateISO+'): copying sourceItems to target date: '+targetDateISO);
 
             // The previous (recursive) execution of the method already
             // loaded the right store for the groupDate into memory.
-            source.forEach(function(clonedModel) {
+            sourceItems.forEach(function(clonedModel) {
                 var attendance_date = clonedModel.get('attendance_date');
                 var attendance_start = clonedModel.get('attendance_start');
                 var attendance_start_time = clonedModel.get('attendance_start_time');
@@ -682,41 +690,36 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
                 var attendance_end_time = clonedModel.get('attendance_end_time');
 
                 clonedModel.set({
-		    id: "",
-		    attendance_id: "",
-		    
-                    attendance_date: groupDateISO,
-                    attendance_date_calculated: groupDateISO,
-
-                    attendance_start: groupDateISO + ' ' + attendance_start_time,
+                    id: "", attendance_id: "", // Reset IDs, so a new item will be created in the DB
+                    attendance_date: dateISO,
+                    attendance_date_calculated: dateISO,
+                    attendance_start: dateISO + ' ' + attendance_start_time,
                     attendance_start_time: attendance_start_time,
-
-                    attendance_end: groupDateISO + ' ' + attendance_end_time,
-                    attendance_end_time: attendance_end_time,
-
+                    attendance_end: dateISO + ' ' + attendance_end_time,
+                    attendance_end_time: attendance_end_time
                 });
-                me.attendanceStore.add(clonedModel);                
+                me.attendanceStore.add(clonedModel);
             });
 
-            me.loadAttendanceStore(new Date(sourceDateISO));
+            // Refresh the view for new target date (may be weeks later)
+            setTimeout(function() { me.loadAttendanceStore(new Date(sourceDateISO)); }, 500);
 
-            // ToDo: Copy attendances into this day
         } else {
             // No "free" day found in this week. We have to load the next 
             // week and repeat the search recursively when loaded.
 
-            // Get the date of the next Monday
+            // Skip of the weekend, get the date of the next Monday
             while (weekendP) {
-                var nextDay = new Date(new Date(groupDateISO).getTime() + 1000.0 * 3600 * 24);
-                groupDateISO = Ext.Date.format(nextDay, 'Y-m-d');
-                var groupDate = new Date(groupDateISO);
+                var nextDay = new Date(new Date(dateISO).getTime() + 1000.0 * 3600 * 24);
+                dateISO = Ext.Date.format(nextDay, 'Y-m-d');
+                var groupDate = new Date(dateISO);
                 weekendP = (groupDate.getDay() == 6 || groupDate.getDay() == 0);
             }
+            var nextMonday = dateISO;
 
-            var nextMonday = groupDateISO;
             me.loadAttendanceStore(new Date(nextMonday), function() {
                 // Recursive call of this function after the store has loaded
-                me.onGroupButtonCopy(gridView, rowElement, nextMonday, e);
+                me.copyGroupItems(sourceItems, nextMonday);
             });
         }
     },
