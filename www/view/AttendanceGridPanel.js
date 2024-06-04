@@ -34,7 +34,48 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
     features: [{
         id: 'dayGrouping',
         ftype: 'grouping',        // 'groupingsummary' or 'grouping'
-        groupHeaderTpl: '{name} ({rows.length}) <img class="groupAddButtonClass" src="/intranet/images/navbar_default/page_white_copy.png" title="Copy &amp; Paste">', 
+        groupHeaderTpl: [
+	    '{name:this.weekday} ',
+	    '{name} ',
+            'mit',
+	    ' {rows:this.hours} ',
+	    'in',
+            ' {rows:this.entries} ',
+            ' <img class="groupAddButtonClass" src="/intranet/images/navbar_default/page_white_copy.png" title="Copy &amp; Paste">',
+            {
+                weekday: function(name) { 
+                    var dayOfWeek = new Date(name).getDay();
+                    if (dayOfWeek) return DAY_NAME_OF_WEEK_SHORT[dayOfWeek];
+                    return 'Error';
+                },
+                hours: function(rows) {
+		    console.log(rows);
+		    var hours = 0.0;
+		    rows.forEach(function(model) {
+			var startIso = model.get('attendance_start');
+			var endIso = model.get('attendance_end');
+			if ("" == startIso || "" == endIso) return "";
+			
+			var startDate = PO.Utilities.pgToDate(startIso);
+			var endDate = PO.Utilities.pgToDate(endIso);
+			var diffSeconds = (endDate.getTime() - startDate.getTime()) / 1000.0;
+			var diffMinutes = diffSeconds / 60.0;
+			var diffHours = Math.round(100.0 * diffMinutes / 60.0) / 100.0;
+			
+			hours = hours + diffHours;
+		    });
+                    return Ext.util.Format.number(hours, '0.00')+"h";
+                },
+		entries: function(rows) {
+		    if (rows.length != 1) {
+			return rows.length + ' Einträgen';
+		    } else {
+			return '1 Eintrag';
+		    }
+
+		}
+            }
+        ],
         hideGroupedHeader: false,
         startCollapsed: false,
         enableGroupingMenu: true,
@@ -55,7 +96,12 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                 var result = Ext.grid.feature.Grouping.prototype.onGroupClick.apply(this, arguments);
                 return result;
             }
-        }
+        },
+
+	listeners: {
+	    groupcollapse: function() { attendanceController.onGroupCollapse.apply(attendanceController, arguments); },
+	    groupexpand: function() { attendanceController.onGroupExpand.apply(attendanceController, arguments); }
+	}
     }],
 
     initComponent: function() {

@@ -609,6 +609,24 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         me.checkConsistency();
     },
 
+
+
+    /*
+     * User clicked in [-] in group template
+     */
+    onGroupCollapse: function(a, b, c, d, e, f) {
+        var me = this;
+        console.log('AttendanceController.onGroupCollapse');
+    },
+
+    /*
+     * User clicked in [+] in group template
+     */
+    onGroupExpand: function(a, b, c, d, e, f) {
+        var me = this;
+        console.log('AttendanceController.onGroupExpand');
+    },
+
     /*
      * Called from a workaround in AttendanceGridPanel when
      * the user clicks on the (+) button of the grid grouping header.
