@@ -242,6 +242,7 @@ where
 	$where_clause
 order by
 	user_name,
+	t.date,
 	attendance_start
 	
 "
