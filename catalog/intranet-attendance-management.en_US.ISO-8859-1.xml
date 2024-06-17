@@ -10,6 +10,7 @@
   <msg key="Attendance_Type">Attendance Type</msg>
   <msg key="Attendances_per_User">Attendances per User</msg>
   <msg key="Attendances_per_User_Date">Attendances per User and Date</msg>
+  <msg key="Attendances_Report">Attendances Report</msg>
   <msg key="Break">Break</msg>
   <msg key="Break_after_middle_period">After 6h of work (found: %work_sum%h) there should be at least 0.5h break (found: %break_sum%h)</msg>
   <msg key="Break_too_short">Break starting on %curr_start_date% %curr_start_time% is shorter than 15min</msg>
@@ -22,7 +23,9 @@
   <msg key="Button_text_Start_work">Start work</msg>
   <msg key="Button_text_Stop">Stop logging</msg>
   <msg key="Button_text_To">to</msg>
+  <msg key="Deviation">Deviation</msg>
   <msg key="error_with_attendance_data">Rrror with attendance data</msg>
+  <msg key="expected_hours_expected">%expected_hours% expected</msg>
   <msg key="Found_a_break_as_first_attendance">Found a break as first attendance of the day, ignoring</msg>
   <msg key="Found_a_break_as_last_attendance">Found a break as last attendance of the day, ignoring</msg>
   <msg key="found_attendance_entries_without_end_time">Found found attendance entries without end time</msg>
@@ -45,7 +48,9 @@
   <msg key="Less_project_hours_than_work">Less hours (%ts_sum%h) logged on projects than on work attendances (%work_sum%h)</msg>
   <msg key="Not_enough_time_logged">Not enough time (%ts_sum%h) logged on projects, expected %required_sum%h</msg>
   <msg key="Not_enough_work_logged">Not enough work attendance (%work_sum%h), expected %required_sum%h</msg>
+  <msg key="Of_expected_hours_expected">of %expected_hours% expected</msg>
   <msg key="please_edit_attendances_to_resolve_the_issues">Please edit attendances to resolve the issues</msg>
+  <msg key="still_expected">hours still to go</msg>
   <msg key="there_is_already_an_entry_with_the_same_start_time">There is already an entry with the same start time</msg>
   <msg key="there_should_be_at_most_one_of_them">There should be at most one of them</msg>
   <msg key="Total">Total</msg>
