@@ -35,7 +35,7 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
         id: 'dayGrouping',
         ftype: 'grouping',        // 'groupingsummary' or 'grouping'
         groupHeaderTpl: [
-	    '{name:this.weekday} ',
+	    '{name:this.weekday}, ',
 	    '{name} ',
             'mit',
 	    ' {rows:this.hours} ',
@@ -76,7 +76,6 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
 		    } else {
 			return '1 Eintrag';
 		    }
-
 		}
             }
         ],
