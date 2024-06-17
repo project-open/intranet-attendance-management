@@ -55,6 +55,10 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
 			var startIso = model.get('attendance_start');
 			var endIso = model.get('attendance_end');
 			if ("" == startIso || "" == endIso) return "";
+
+			// Exclude breaks from the sum
+			var attendance_type_id = model.get('attendance_type_id');
+			if ("92110" == attendance_type_id) return "";
 			
 			var startDate = PO.Utilities.pgToDate(startIso);
 			var endDate = PO.Utilities.pgToDate(endIso);
