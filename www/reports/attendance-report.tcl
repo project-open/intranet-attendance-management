@@ -1,4 +1,4 @@
-# /packages/intranet-attendance-management/www/attendance-report.tcl
+# /Packages/intranet-attendance-management/www/attendance-report.tcl
 #
 # Copyright (c) 2003-2013 ]project-open[
 #
@@ -307,10 +307,10 @@ if { $absence_where_clause ne "" } { set absence_where_clause " and $absence_whe
 
 set iso_days [list]
 db_foreach days "select * from im_day_enumerator(:report_start_date, :report_end_date)" { lappend iso_days $im_day_enumerator }
-ns_log Notice "attendance-report: uid=$user_id, iso_days=$iso_days"
 
 set absence_sql "
 	select	u.user_id,
+		coalesce(e.availability, 100.0) as availability,
 		im_resource_mgmt_work_days (u.user_id, :report_start_date, :report_end_date) as work_days,
 		im_resource_mgmt_user_absence (u.user_id, :report_start_date, :report_end_date) as absence_days
 	from	users u
@@ -329,7 +329,7 @@ db_foreach absence_query $absence_sql {
 	set work_hours [lindex $work_list $cnt]
 	set absence_hours [lindex $absence_list $cnt]
 	set key "$user_id-$day"
-	set hours [expr $default_hours_per_day * ($work_hours - $absence_hours) / 100.0]
+	set hours [expr $default_hours_per_day * $availability / 100.0 * ($work_hours - $absence_hours) / 100.0]
 	if {$hours < 0.0} { set hours 0.0 }
 
 	# Fill Hash with availability per day
@@ -420,10 +420,9 @@ set report_def [list \
 			"#align=right <b>$attendance_user_break_pretty</b>"
 			"#align=right <b>$ts_sum_per_user_pretty</b>"
 			"#align=right <b>$absence_sum_per_user_pretty</b>"
-			""
+			"[lang::message::lookup {} intranet-attendance-management.Deviation Deviation]: [im_report_format_number [expr round(100.0 * ($attendance_user_work - $absence_sum_per_user)) / 100.0] $output_format $number_locale] [_ intranet-core.Hours]"
 		    } \
 		   ]
-
 
 # Global Footer Line
 set footer0 [list \
@@ -473,6 +472,10 @@ set attendance_break_total 0
 set attendance_break_total_pretty 0
 
 set ts_sum_per_user_day 0
+
+set absence_sum_all_users 0
+set absence_sum_all_users_pretty ""
+
 
 # ------------------------------------------------------------
 # Start Formatting the HTML Page Contents
@@ -618,7 +621,7 @@ db_foreach sql $report_sql {
 
     set absence_sum_all_users_pretty [im_report_format_number [expr round(100.0 * $availability_all_users) / 100.0] $output_format $number_locale]
 
-    
+
     # TS sum of hours per user
     set ts_sum_per_user 0.0
     if {[info exists ts_user_hash($attendance_user_id)]} { set ts_sum_per_user $ts_user_hash($attendance_user_id) }
