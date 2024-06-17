@@ -94,6 +94,8 @@ if {"" == $report_end_date} {
     set report_end_date "$end_year-$end_month-01"
 }
 
+set default_hours_per_day [parameter::get_from_package_key -package_key "intranet-attendance-management" -parameter "DefaultAttendanceHoursPerDay" -default "8.0"]
+
 
 
 # ------------------------------------------------------------
@@ -244,28 +246,19 @@ order by
 	user_name,
 	t.date,
 	attendance_start
-	
 "
 # ad_return_complaint 1 [im_ad_hoc_query -format html $report_sql]
+
+
 
 # ------------------------------------------------------------
 # Timesheet Data
 #
-
 set ts_criteria [list]
-if {"" ne $report_department_id && 0 ne $report_department_id} {
-    lappend ts_criteria "e.department_id in ([join [im_sub_cost_center_ids $report_department_id] ", "])\n"
-}
-
-if {"" ne $report_user_id && 0 ne $report_user_id} {
-    lappend ts_criteria "e.employee_id = :report_user_id"
-}
-
+if {"" ne $report_department_id && 0 ne $report_department_id} { lappend ts_criteria "e.department_id in ([join [im_sub_cost_center_ids $report_department_id] ", "])\n" }
+if {"" ne $report_user_id && 0 ne $report_user_id} { lappend ts_criteria "e.employee_id = :report_user_id" }
 set ts_where_clause [join $ts_criteria " and\n\t"]
 if { $ts_where_clause ne "" } { set ts_where_clause " and $ts_where_clause" }
-
-
-
 # ad_return_complaint 1 "<pre>$ts_where_clause</pre>"
 set timesheet_sql "
 	select	sum(h.hours) as hours,
@@ -303,6 +296,60 @@ set ts_sum_total_pretty [im_report_format_number [expr round(100.0 * $ts_sum_tot
 
 
 
+# ------------------------------------------------------------
+# Absence Data and availability
+#
+set absence_criteria [list]
+if {"" ne $report_department_id && 0 ne $report_department_id} { lappend absence_criteria "e.department_id in ([join [im_sub_cost_center_ids $report_department_id] ", "])\n" }
+if {"" ne $report_user_id && 0 ne $report_user_id} { lappend absence_criteria "u.user_id = :report_user_id" }
+set absence_where_clause [join $absence_criteria " and\n\t"]
+if { $absence_where_clause ne "" } { set absence_where_clause " and $absence_where_clause" }
+
+set iso_days [list]
+db_foreach days "select * from im_day_enumerator(:report_start_date, :report_end_date)" { lappend iso_days $im_day_enumerator }
+ns_log Notice "attendance-report: uid=$user_id, iso_days=$iso_days"
+
+set absence_sql "
+	select	u.user_id,
+		im_resource_mgmt_work_days (u.user_id, :report_start_date, :report_end_date) as work_days,
+		im_resource_mgmt_user_absence (u.user_id, :report_start_date, :report_end_date) as absence_days
+	from	users u
+		LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
+	where	1=1
+		$absence_where_clause
+"
+set availability_all_users 0.0
+db_foreach absence_query $absence_sql {
+    set work_list [string map {"," " " "{" "" "}" ""} [lindex [split $work_days "="] 1]]
+    set absence_list [string map {"," " " "{" "" "}" ""} [lindex [split $absence_days "="] 1]]
+    ns_log Notice "attendance-report: uid=$user_id, work_list=$work_list, absence_list=$absence_list"
+
+    set cnt 0
+    foreach day $iso_days {
+	set work_hours [lindex $work_list $cnt]
+	set absence_hours [lindex $absence_list $cnt]
+	set key "$user_id-$day"
+	set hours [expr $default_hours_per_day * ($work_hours - $absence_hours) / 100.0]
+	if {$hours < 0.0} { set hours 0.0 }
+
+	# Fill Hash with availability per day
+	set availability_user_day_hash($key) $hours
+
+	# Fill Hash with availability of user for all days
+	set sum 0.0
+	set key $user_id
+	if {[info exists availability_user_hash($key)]} { set sum $availability_user_hash($key) }
+	set sum [expr $sum + $hours]
+	set availability_user_hash($key) $sum
+
+	# Fill availability for all users
+	set availability_all_users [expr $availability_all_users + $hours]
+	
+	incr cnt
+    }    
+}
+# ad_return_complaint 1 "<pre>$absence_sql</pre><br>[im_ad_hoc_query -format html $absence_sql]<br>[array get day_presence_hash]"
+
 
 
 # ------------------------------------------------------------
@@ -319,6 +366,7 @@ set header0 [list \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_Work "Work"] \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_Break "Break"] \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_Timesheet "Timesheet"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Expected "Expected"] \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_note "Note"] \
 ]
 
@@ -327,7 +375,7 @@ set header0 [list \
 set report_def [list \
 		    group_by attendance_user_id \
 		    header {
-			"#colspan=9 
+			"#colspan=10
                         <a href=$user_url$attendance_user_id target=_>$user_name</a> ($user_department)"
 		    } \
 		    content [list \
@@ -345,6 +393,7 @@ set report_def [list \
 						  "#align=right $attendance_work_pretty"
 						  "#align=right $attendance_break_pretty"
 						  ""
+						  ""
 						  "$attendance_note"
 					      } \
 					      content {} \
@@ -359,6 +408,7 @@ set report_def [list \
 				     "#align=right <i>$attendance_date_work_pretty</i>"
 				     "#align=right <i>$attendance_date_break_pretty</i>"
 				     "#align=right $ts_sum_per_user_day_pretty"
+				     "#align=right $absence_sum_per_user_day_pretty"
 				     "$errors_formatted_for_note_column"
 				 } \
 				] \
@@ -369,6 +419,7 @@ set report_def [list \
 			"#align=right <b>$attendance_user_work_pretty</b>"
 			"#align=right <b>$attendance_user_break_pretty</b>"
 			"#align=right <b>$ts_sum_per_user_pretty</b>"
+			"#align=right <b>$absence_sum_per_user_pretty</b>"
 			""
 		    } \
 		   ]
@@ -384,6 +435,7 @@ set footer0 [list \
 		 "#align=right \$attendance_work_total_pretty" \
 		 "#align=right \$attendance_break_total_pretty" \
 		 "#align=right \$ts_sum_total_pretty" \
+		 "#align=right \$absence_sum_all_users_pretty" \
 		 "" \
 ]
 
@@ -546,11 +598,33 @@ db_foreach sql $report_sql {
 	set ts_sum_per_user_day_pretty [im_report_format_number [expr round(100.0 * $ts_sum_per_user_day) / 100.0] $output_format $number_locale]
     }
 
-    # Sum of hours per user
+    # -------------------------------------------------------
+    # Mix-in the absence information
+    set absence_sum_per_user_day 0
+    set absence_sum_per_user_day_pretty ""
+    set absence_key "$attendance_user_id-$attendance_start_date"
+    if {[info exists availability_user_day_hash($absence_key)]} { 
+	set absence_sum_per_user_day $availability_user_day_hash($absence_key) 
+	set absence_sum_per_user_day_pretty [im_report_format_number [expr round(100.0 * $absence_sum_per_user_day) / 100.0] $output_format $number_locale]
+    }
+
+    set absence_sum_per_user 0
+    set absence_sum_per_user_pretty ""
+    set key $attendance_user_id
+    if {[info exists availability_user_hash($key)]} { 
+	set absence_sum_per_user $availability_user_hash($key) 
+	set absence_sum_per_user_pretty [im_report_format_number [expr round(100.0 * $absence_sum_per_user) / 100.0] $output_format $number_locale]
+    }
+
+    set absence_sum_all_users_pretty [im_report_format_number [expr round(100.0 * $availability_all_users) / 100.0] $output_format $number_locale]
+
+    
+    # TS sum of hours per user
     set ts_sum_per_user 0.0
     if {[info exists ts_user_hash($attendance_user_id)]} { set ts_sum_per_user $ts_user_hash($attendance_user_id) }
     set ts_sum_per_user_pretty [im_report_format_number [expr round(100.0 * $ts_sum_per_user) / 100.0] $output_format $number_locale]
 
+    
 
     # -------------------------------------------------------
     # Check for consistency and return a list of issues
