@@ -73,7 +73,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
     ***************************************************************************************** */
 
     /**
-     * Return Monday 00:00:00 of the current week
+     * Return Monday 00:00:00 of the specified week
      */
     getMonday: function (d) {
         d = new Date(d);
@@ -407,6 +407,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         var buttonStartBreak = Ext.getCmp('buttonStartBreak');
         var buttonDelete = Ext.getCmp('buttonDelete');
         var buttonStop = Ext.getCmp('buttonStop');
+        var buttonAdd = Ext.getCmp('buttonAdd');
 
         // Check if we are showing the current week.
         // Otherwise just disable all buttons.
@@ -430,6 +431,26 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // => disabled if either items are open or not this week.
         buttonStartWork.setDisabled(0 != openItemsCount || !currentWeekP);
         buttonStartBreak.setDisabled(0 != openItemsCount || !currentWeekP);
+
+        // Disable buttons for past week or current week
+        // Past weeks only get the (+), while the current week gets Work+Break start
+        var mondayDate = me.attendanceWeekDate;
+        var sundayDate = new Date(mondayDate.getTime() + 1000.0 * 3600 * 24 * 7 - 1000.0 * 1);
+
+	var mondayEpoch = mondayDate.getTime();
+        var sundayEpoch = sundayDate.getTime();
+        var nowEpoch = new Date().getTime();
+
+	buttonAdd.setDisabled(0); // Enable the (+) button
+        if (nowEpoch > mondayEpoch && nowEpoch < sundayEpoch) {
+            // If we're in the current week enable Work+Break ->, disable (+)
+            buttonAdd.setDisabled(1);
+        } else {
+            // In previous weeks enable the (+), but disable Work+Break ->
+            buttonStartWork.setDisabled(1);
+            buttonStartBreak.setDisabled(1);
+        }
+
     },
 
 
