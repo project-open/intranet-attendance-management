@@ -49,10 +49,15 @@ ad_proc -public im_attendance_management_portlet {
 	set ansi_date [im_date_julian_to_ansi $julian]
     }
 
+    # Check if the calling page has "user_id_from_search"
+    set user_id_from_search [im_opt_val user_id_from_search]
+    if {"" eq $user_id_from_search || ![string is integer $user_id_from_search]} { set user_id_from_search $current_user_id }
+
     set params [list \
 		    [list height $height] \
 		    [list width $width] \
 		    [list ansi_date $ansi_date] \
+		    [list user_id_from_search $user_id_from_search] \
     ]
 
     set result [ad_parse_template -params $params "/packages/intranet-attendance-management/lib/attendance-management"]

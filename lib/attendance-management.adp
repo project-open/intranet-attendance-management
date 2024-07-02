@@ -43,15 +43,13 @@ const DAY_NAME_OF_WEEK_SHORT = [
 ];
 
 // Localization: Start with English and overwrite with locale specific translation from database
-var l10n = {
-    Button_text_To: 'to'
-};
+var l10n = { Button_text_To: 'to' };
 var l10n_english = {<multiple name="english_messages">@english_messages.message_key@: "@english_messages.message@",
 </multiple>};
-Object.keys(l10n_english).forEach(key => {var val = l10n_english[key]; l10n[key] = val;});
+Object.keys(l10n_english).forEach(key => { var val = l10n_english[key]; l10n[key] = val; });
 var l10n_locale = {<multiple name="locale_messages">@locale_messages.message_key@: "@locale_messages.message@",
 </multiple>};
-Object.keys(l10n_locale).forEach(key => {var val = l10n_locale[key]; l10n[key] = val;});
+Object.keys(l10n_locale).forEach(key => { var val = l10n_locale[key]; l10n[key] = val; });
 
 var attendanceController = null; // Global scope, so we can address it from the panel
 
@@ -75,6 +73,8 @@ function launchTimesheetAttendanceLogging(){
         renderTo: '@attendance_editor_id@',
         width: @portlet_width@,
         height: @portlet_height@,
+        current_user_id: @user_id_from_search@,
+	current_user_name: '@user_name_from_search@',
         resizable: false,			// Add handles to the panel, so the user can change size
         items: [
             attendanceGrid
@@ -83,13 +83,14 @@ function launchTimesheetAttendanceLogging(){
 
     // Global main controller
     attendanceController = Ext.create('AttendanceManagement.controller.AttendanceController', {
-        'attendanceStore': attendanceStore,
-        'attendanceButtonPanel': attendanceButtonPanel,
-        'attendanceController': attendanceController,
-        'attendanceGrid': attendanceGrid,
-        'attendanceGridRowEditing': rowEditing,
-        'current_user_id': @current_user_id@,
-	'initial_date_ansi': '@ansi_date@'
+        attendanceStore: attendanceStore,
+        attendanceButtonPanel: attendanceButtonPanel,
+        attendanceController: attendanceController,
+        attendanceGrid: attendanceGrid,
+        attendanceGridRowEditing: rowEditing,
+        current_user_id: @user_id_from_search@,
+        current_user_name: '@user_name_from_search@',
+        initial_date_ansi: '@ansi_date@'
     });
     attendanceController.init(this).onLaunch(this);
     attendanceGrid.attendanceController = attendanceController;
@@ -134,3 +135,5 @@ Ext.onReady(function() {
 });
 </script>
 </div>
+
+@audit_html;noquote@

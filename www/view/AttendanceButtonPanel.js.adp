@@ -13,6 +13,10 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
     extend: 'Ext.panel.Panel',
     alias: 'ganttButtonPanel',
     layout: 'border',
+
+    current_user_id: null,                         // Set during initialization
+    curren_user_name: null,                        // Set during initialization
+
     defaults: {
         collapsible: true,
         split: true,
@@ -63,6 +67,25 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
         tooltip: '<nobr><%= [lang::message::lookup "" intranet-attendance-management.Button_text_Next_week "Next week"] %></nobr>',
         id: 'buttonNextWeek',
         disabled: false
+    }, '->', {
+	// A label with the name of a user when the portlet is called with user_id_from_search
+        xtype: 'label',
+        text: 'not yet computed',
+        id: 'currentusername',
+        listeners: {
+            beforerender: function(label, eOpts) { 
+                var toolbar = label.ownerCt;
+                var buttonPanel = toolbar.ownerCt;
+                var current_user_id = buttonPanel.current_user_id;
+
+		if (current_user_id != <%= [ad_conn user_id] %>) {
+                    var current_user_name = buttonPanel.current_user_name;
+                    label.setText(current_user_name);
+		} else {
+                    label.setText("");
+		}
+            }
+        }
     }, {
         xtype: 'tbspacer', width: 20
     }]

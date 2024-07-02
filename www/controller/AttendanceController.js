@@ -15,7 +15,8 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
 
     // Parameters
     'renderDiv': null,
-    'current_user_id': null,
+    'current_user_id': null,                  // Set during initialization
+    'current_user_name': null,                // Set during initialization
 
     'attendanceStore': null,
     'attendanceButtonPanel': null,
