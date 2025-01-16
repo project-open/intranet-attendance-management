@@ -214,8 +214,12 @@ select	a.attendance_id,
 	to_char(a.attendance_end, 'HH24:MI') as attendance_end_time,
 	im_name_from_user_id(t.user_id) as user_name,
 	coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0) as attendance_duration_hours,
-	CASE when a.attendance_type_id = [im_attendance_type_work] THEN round(coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0)::numeric, 2) END as attendance_work,
-	CASE when a.attendance_type_id = [im_attendance_type_break] THEN round(coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0)::numeric, 2) END as attendance_break
+	CASE when a.attendance_type_id = [im_attendance_type_work] 
+		THEN round(coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0)::numeric, 2) 
+	END as attendance_work,
+	CASE when a.attendance_type_id = [im_attendance_type_break]
+		THEN round(coalesce(EXTRACT(EPOCH FROM attendance_end - attendance_start) / 3600, 0)::numeric, 2) 
+	END as attendance_break
 from
 	-- Create a list of all (date, user_id) tuples with either attenances or im_hours
 	(select distinct date, user_id
@@ -233,6 +237,13 @@ from
 		from	im_hours h
 		where	h.day >= :report_start_date and
 			h.day < :report_end_date
+	UNION
+		select	im_day_enumerator(uaa.start_date::date, uaa.end_date::date) as date,
+			uaa.owner_id as user_id
+		from	im_user_absences uaa
+		where	uaa.end_date >= :report_start_date and 1=1 and
+			uaa.start_date < :report_end_date and
+			uaa.absence_type_id in ([join [im_sub_categories [im_user_absence_type_overtime]] ","])
 		) tt
 	) t
 	-- Join the list
@@ -248,6 +259,7 @@ order by
 	attendance_start
 "
 # ad_return_complaint 1 [im_ad_hoc_query -format html $report_sql]
+#	LEFT OUTER JOIN im_user_absences ua ON (t.user_id = ua.owner_id and t.date::date between ua.start_date::date and ua.end_date::date)
 
 
 
@@ -293,6 +305,54 @@ db_foreach timesheet_info $timesheet_sql {
 
 set ts_sum_total [expr round(100.0 * $ts_sum_total) / 100.0]
 set ts_sum_total_pretty [im_report_format_number [expr round(100.0 * $ts_sum_total) / 100.0] $output_format $number_locale]
+
+
+
+
+# ------------------------------------------------------------
+# Overtime Reduction Data
+#
+
+# Reuse the criterial from TS timesheet with $ts_where_clause below
+set overtime_sql "
+select	*
+from	(
+	select	8.0 as hours,
+		ua.owner_id as user_id,
+		im_day_enumerator(ua.start_date::date, ua.end_date::date) as day_date
+	from	im_user_absences ua,
+		im_employees e
+	where	ua.owner_id = e.employee_id and
+		ua.end_date >= :report_start_date and
+		ua.start_date < :report_end_date
+		$ts_where_clause
+	) t
+where
+	t.day_date >= :report_start_date and
+	t.day_date < :report_end_date
+"
+# ad_return_complaint 1 "[im_ad_hoc_query -format html $overtime_sql]<pre>$overtime_sql</pre>"
+set overtime_sum_total 0.0
+db_foreach overtime_info $overtime_sql {
+    # overtime reduction per user and date
+    set overtime_key "$user_id-$day_date"
+    set overtime_hash($overtime_key) $hours
+
+    # overtime sum per user
+    set overtime_key "$user_id"
+    set v 0.0
+    if {[info exists overtime_user_hash($overtime_key)]} { set v $overtime_user_hash($overtime_key) }
+    set v [expr $v + $hours]
+    set overtime_user_hash($overtime_key) $v
+
+    # overtime total
+    set overtime_sum_total [expr $overtime_sum_total + $hours]
+}
+
+set overtime_sum_total [expr round(100.0 * $overtime_sum_total) / 100.0]
+set overtime_sum_total_pretty [im_report_format_number [expr round(100.0 * $overtime_sum_total) / 100.0] $output_format $number_locale]
+
+# ad_return_complaint 1 [array get overtime_user_hash]
 
 
 
@@ -366,6 +426,7 @@ set header0 [list \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_Work "Work"] \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_Break "Break"] \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_Timesheet "Timesheet"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Overtime_Reduction "Overtime<br>Reduction"] \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_Expected "Expected"] \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_note "Note"] \
 ]
@@ -375,7 +436,7 @@ set header0 [list \
 set report_def [list \
 		    group_by attendance_user_id \
 		    header {
-			"#colspan=10
+			"#colspan=11
                         <a href=$user_url$attendance_user_id target=_>$user_name</a> ($user_department)"
 		    } \
 		    content [list \
@@ -394,6 +455,7 @@ set report_def [list \
 						  "#align=right $attendance_break_pretty"
 						  ""
 						  ""
+						  ""
 						  "$attendance_note"
 					      } \
 					      content {} \
@@ -408,6 +470,7 @@ set report_def [list \
 				     "#align=right <i>$attendance_date_work_pretty</i>"
 				     "#align=right <i>$attendance_date_break_pretty</i>"
 				     "#align=right $ts_sum_per_user_day_pretty"
+				     "#align=right $overtime_sum_per_user_day_pretty"
 				     "#align=right $absence_sum_per_user_day_pretty"
 				     "$errors_formatted_for_note_column"
 				 } \
@@ -419,6 +482,7 @@ set report_def [list \
 			"#align=right <b>$attendance_user_work_pretty</b>"
 			"#align=right <b>$attendance_user_break_pretty</b>"
 			"#align=right <b>$ts_sum_per_user_pretty</b>"
+			"#align=right <b>$overtime_sum_per_user_pretty</b>"
 			"#align=right <b>$absence_sum_per_user_pretty</b>"
 			"[lang::message::lookup {} intranet-attendance-management.Deviation Deviation]: [im_report_format_number [expr round(100.0 * ($attendance_user_work - $absence_sum_per_user)) / 100.0] $output_format $number_locale] [_ intranet-core.Hours]"
 		    } \
@@ -434,6 +498,7 @@ set footer0 [list \
 		 "#align=right \$attendance_work_total_pretty" \
 		 "#align=right \$attendance_break_total_pretty" \
 		 "#align=right \$ts_sum_total_pretty" \
+		 "#align=right \$overtime_sum_total_pretty" \
 		 "#align=right \$absence_sum_all_users_pretty" \
 		 "" \
 ]
@@ -472,6 +537,7 @@ set attendance_break_total 0
 set attendance_break_total_pretty 0
 
 set ts_sum_per_user_day 0
+set overtime_sum_per_user_day 0
 
 set absence_sum_all_users 0
 set absence_sum_all_users_pretty ""
@@ -602,6 +668,17 @@ db_foreach sql $report_sql {
     }
 
     # -------------------------------------------------------
+    # Mix-in overtime reduction
+    # ToDo: Check the overtime_hash, there is probably an error
+    set overtime_sum_per_user_day 0
+    set overtime_sum_per_user_day_pretty ""
+    set overtime_key "$attendance_user_id-$attendance_start_date"
+    if {[info exists overtime_hash($overtime_key)]} { 
+	set overtime_sum_per_user_day $overtime_hash($overtime_key) 
+	set overtime_sum_per_user_day_pretty [im_report_format_number [expr round(100.0 * $overtime_sum_per_user_day) / 100.0] $output_format $number_locale]
+    }
+
+    # -------------------------------------------------------
     # Mix-in the absence information
     set absence_sum_per_user_day 0
     set absence_sum_per_user_day_pretty ""
@@ -626,6 +703,11 @@ db_foreach sql $report_sql {
     set ts_sum_per_user 0.0
     if {[info exists ts_user_hash($attendance_user_id)]} { set ts_sum_per_user $ts_user_hash($attendance_user_id) }
     set ts_sum_per_user_pretty [im_report_format_number [expr round(100.0 * $ts_sum_per_user) / 100.0] $output_format $number_locale]
+
+    # Overtime Reduction sum of hours per user
+    set overtime_sum_per_user 0.0
+    if {[info exists overtime_user_hash($attendance_user_id)]} { set overtime_sum_per_user $overtime_user_hash($attendance_user_id) }
+    set overtime_sum_per_user_pretty [im_report_format_number [expr round(100.0 * $overtime_sum_per_user) / 100.0] $output_format $number_locale]
 
     
 
