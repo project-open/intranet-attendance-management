@@ -238,7 +238,7 @@ from
 		where	h.day >= :report_start_date and
 			h.day < :report_end_date
 	UNION
-		select	im_day_enumerator(uaa.start_date::date, uaa.end_date::date) as date,
+		select	im_day_enumerator(uaa.start_date::date, uaa.end_date::date + 1) as date,
 			uaa.owner_id as user_id
 		from	im_user_absences uaa
 		where	uaa.end_date >= :report_start_date and 1=1 and
@@ -317,12 +317,15 @@ set ts_sum_total_pretty [im_report_format_number [expr round(100.0 * $ts_sum_tot
 set overtime_sql "
 select	*
 from	(
-	select	8.0 as hours,
+	select	ua.absence_id,
+		:default_hours_per_day * coalesce(e.availability/100.0, 1.0) as hours,
 		ua.owner_id as user_id,
-		im_day_enumerator(ua.start_date::date, ua.end_date::date) as day_date
+		im_resource_mgmt_work_days (e.employee_id, ua.start_date::date, ua.end_date::date) as work_days,
+		im_day_enumerator(ua.start_date::date, ua.end_date::date + 1) as day_date
 	from	im_user_absences ua,
 		im_employees e
 	where	ua.owner_id = e.employee_id and
+		ua.absence_type_id in ([join [im_sub_categories [im_user_absence_type_overtime]] ","]) and
 		ua.end_date >= :report_start_date and
 		ua.start_date < :report_end_date
 		$ts_where_clause
@@ -331,22 +334,44 @@ where
 	t.day_date >= :report_start_date and
 	t.day_date < :report_end_date
 "
+
 # ad_return_complaint 1 "[im_ad_hoc_query -format html $overtime_sql]<pre>$overtime_sql</pre>"
 set overtime_sum_total 0.0
+set old_absence_id 0
+set absence_day_count 0
 db_foreach overtime_info $overtime_sql {
+    # Counter for the relative days within one absence
+    if {$old_absence_id != $absence_id} { 
+	set absence_day_count 0 
+	set old_absence_id $absence_id
+    }
+
+    # Correct the overtime with weekends and bank holidays (not vacation!)
+    # Extract the list of komma separated percentage values
+    regexp {\{(.+)\}} $work_days match percentage_komma_list
+    set percentage_list [string map {"," " "} $percentage_komma_list]
+    set work_day_percentage [lindex $percentage_list $absence_day_count]
+    set hours_corrected_by_weekends [expr $hours * $work_day_percentage / 100.0]
+
+    ns_log Notice "attendance-report: cnt=$absence_day_count, wp=$work_day_percentage, h_corr=$hours_corrected_by_weekends, absence_id=$absence_id, hours=$hours, user_id=$user_id, work_days=$work_days, day_date=$day_date"
+
     # overtime reduction per user and date
     set overtime_key "$user_id-$day_date"
-    set overtime_hash($overtime_key) $hours
+    set overtime_hash($overtime_key) $hours_corrected_by_weekends
+
+    # Also remember the vacation request
+    set overtime_id_hash($overtime_key) $absence_id
 
     # overtime sum per user
     set overtime_key "$user_id"
     set v 0.0
     if {[info exists overtime_user_hash($overtime_key)]} { set v $overtime_user_hash($overtime_key) }
-    set v [expr $v + $hours]
+    set v [expr $v + $hours_corrected_by_weekends]
     set overtime_user_hash($overtime_key) $v
 
     # overtime total
-    set overtime_sum_total [expr $overtime_sum_total + $hours]
+    set overtime_sum_total [expr $overtime_sum_total + $hours_corrected_by_weekends]
+    incr absence_day_count
 }
 
 set overtime_sum_total [expr round(100.0 * $overtime_sum_total) / 100.0]
@@ -427,7 +452,9 @@ set header0 [list \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_Break "Break"] \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_Timesheet "Timesheet"] \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_Overtime_Reduction "Overtime<br>Reduction"] \
-		 [lang::message::lookup "" intranet-attendance-management.Heading_Expected "Expected"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Expected_per_Day "Expected<br>per Day"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Expected_in_Interval "Expected<br>in Interval"] \
+		 [lang::message::lookup "" intranet-attendance-management.Heading_Deviation_hours "Deviation<br>(hours)"] \
 		 [lang::message::lookup "" intranet-attendance-management.Heading_note "Note"] \
 ]
 
@@ -436,7 +463,7 @@ set header0 [list \
 set report_def [list \
 		    group_by attendance_user_id \
 		    header {
-			"#colspan=11
+			"#colspan=13
                         <a href=$user_url$attendance_user_id target=_>$user_name</a> ($user_department)"
 		    } \
 		    content [list \
@@ -456,6 +483,8 @@ set report_def [list \
 						  ""
 						  ""
 						  ""
+						  ""
+						  ""
 						  "$attendance_note"
 					      } \
 					      content {} \
@@ -472,6 +501,8 @@ set report_def [list \
 				     "#align=right $ts_sum_per_user_day_pretty"
 				     "#align=right $overtime_sum_per_user_day_pretty"
 				     "#align=right $absence_sum_per_user_day_pretty"
+				     ""
+				     ""
 				     "$errors_formatted_for_note_column"
 				 } \
 				] \
@@ -483,8 +514,10 @@ set report_def [list \
 			"#align=right <b>$attendance_user_break_pretty</b>"
 			"#align=right <b>$ts_sum_per_user_pretty</b>"
 			"#align=right <b>$overtime_sum_per_user_pretty</b>"
+			""
 			"#align=right <b>$absence_sum_per_user_pretty</b>"
-			"[lang::message::lookup {} intranet-attendance-management.Deviation Deviation]: [im_report_format_number [expr round(100.0 * ($attendance_user_work - $absence_sum_per_user)) / 100.0] $output_format $number_locale] [_ intranet-core.Hours]"
+			"#align=right <b>[im_report_format_number [expr round(100.0 * ($attendance_user_work - $absence_sum_per_user - $overtime_sum_per_user)) / 100.0] $output_format $number_locale]</b>[im_gif help \"= $attendance_user_work - [expr round(100.0 * $overtime_sum_per_user) / 100.0] - [expr round(100.0 * $absence_sum_per_user) / 100.0]\"]"
+			"" \
 		    } \
 		   ]
 
@@ -499,7 +532,9 @@ set footer0 [list \
 		 "#align=right \$attendance_break_total_pretty" \
 		 "#align=right \$ts_sum_total_pretty" \
 		 "#align=right \$overtime_sum_total_pretty" \
+		 "" \
 		 "#align=right \$absence_sum_all_users_pretty" \
+		 "" \
 		 "" \
 ]
 
@@ -676,6 +711,14 @@ db_foreach sql $report_sql {
     if {[info exists overtime_hash($overtime_key)]} { 
 	set overtime_sum_per_user_day $overtime_hash($overtime_key) 
 	set overtime_sum_per_user_day_pretty [im_report_format_number [expr round(100.0 * $overtime_sum_per_user_day) / 100.0] $output_format $number_locale]
+    }
+
+    if {"" ne $overtime_sum_per_user_day_pretty} {
+        if {[info exists overtime_id_hash($overtime_key)]} {
+	    set absence_id $overtime_id_hash($overtime_key)
+	    set absence_url [export_vars -base "/intranet-timesheet2/absences/new" {{form_mode display} absence_id}]
+	    set overtime_sum_per_user_day_pretty "<a href='$absence_url' target=_>$overtime_sum_per_user_day_pretty</a>"
+	}
     }
 
     # -------------------------------------------------------
