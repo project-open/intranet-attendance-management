@@ -178,7 +178,11 @@ ad_proc -public im_attendance_daily_attendance_hours_helper {
 
     set hours [expr $hours_per_day * ($workday_list - $absence_list) / 100.0]
 
-    ns_log Notice "im_attendance_daily_attendance_hours -user_id $user_id -date $date: hours_per_day=$hours_per_day, work=$workday_list, abs=$absence_list => hours=$hours"
+    # hours can get negative if there is a absence overlapping a bank holiday.
+    # In the vacation the bank holiday is not counted in duration
+    if {$hours < 0.0} { set hours 0.0 }
+
+    ns_log Notice "im_attendance_daily_attendance_hours -user_id $user_id -date $date: hours=$hours = \[expr hours_per_day=$hours_per_day * (workday_list=$workday_list - absence_list=$absence_list) / 100.0\]"
 
     return $hours
 }
