@@ -8,7 +8,7 @@
     <inherit-templates-p>f</inherit-templates-p>
     <auto-mount>intranet-attendance-management</auto-mount>
 
-    <version name="5.1.0.0.0" url="https://www.project-open.net/download/apm/intranet-attendance-management-5.1.0.0.0.apm">
+    <version name="5.2.0.0.0" url="https://www.project-open.net/download/apm/intranet-attendance-management-5.2.0.0.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Attendance management with start-end recording</summary>
         <release-date>2016-11-15</release-date>
