@@ -348,5 +348,5 @@ BEGIN
 end;$$ language 'plpgsql';
 
 
-\i testcases.sql
+-- \i testcases.sql
 
