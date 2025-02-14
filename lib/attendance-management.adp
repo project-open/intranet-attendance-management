@@ -13,6 +13,7 @@ Ext.require([
     'PO.store.CategoryStore',
     'PO.controller.StoreLoadCoordinator',
     'PO.view.field.PODateField',
+    'PO.view.menu.HelpMenu',
     'AttendanceManagement.model.Attendance',
     'AttendanceManagement.store.AttendanceStore',
     'AttendanceManagement.store.AttendanceTypeStore',
@@ -30,6 +31,7 @@ var start_hour = @start_hour@;
 var end_hour = @end_hour@;
 // var user_locale = '@user_locale@';
 var user_locale = 'en-US';
+var gifPath = "/intranet/images/navbar_default/";
 
 // A localized array of shortened days of the week
 const DAY_NAME_OF_WEEK_SHORT = [
@@ -57,6 +59,10 @@ function launchTimesheetAttendanceLogging(){
     // Stores
     var attendanceStore = Ext.StoreManager.get('attendanceStore');
 
+    /* ***********************************************************************
+     * Grid Gui
+     *********************************************************************** */
+    
     // Row editor for attendance grid
     // The controller registers validateedit and edit events
     var rowEditing = Ext.create('Ext.grid.plugin.RowEditing', {

@@ -88,5 +88,18 @@ Ext.define('AttendanceManagement.view.AttendanceButtonPanel', {
         }
     }, {
         xtype: 'tbspacer', width: 20
+    },	
+    {
+	text: 'Help',
+	icon: gifPath+'help.png',
+	menu: Ext.create('PO.view.menu.HelpMenu', {
+            id: 'helpMenu',
+            debug: false,
+            style: {overflow: 'visible'},						// For the Combo popup
+            store: Ext.create('Ext.data.Store', { fields: ['text', 'url'], data: [
+		{text: 'Attendance Management', url: 'https://www.project-open.net/en/package-intranet-attendance-management'}
+            ]})
+	})
     }]
 });
+
