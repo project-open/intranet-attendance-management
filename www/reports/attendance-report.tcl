@@ -200,7 +200,8 @@ from
 	LEFT JOIN im_attendance_intervals a ON a.attendance_start::date = t.date and a.attendance_user_id = e.employee_id
 where	
 	t.date >= :report_start_date and
-	t.date < :report_end_date
+	t.date < :report_end_date and
+	e.employee_id in (select user_id from users_active)
 	$where_clause
 order by
 	user_name,
