@@ -231,6 +231,25 @@ select im_priv_create('edit_attendances_all', 'Accounting');
 select im_priv_create('add_attendances', 'Employees');
 
 
+-- We need to create a rest_object_type for im_attendance_intervals
+-- in order to set permissions for the REST interface
+
+select im_rest_object_type__new(
+	null, 'im_rest_object_type', now(), 0, '0.0.0.0', null,
+	'im_attendance_interval', null, null
+);
+
+select im_grant_permission(
+	(select object_type_id from im_rest_object_types where object_type = 'im_attendance_interval'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+select im_grant_permission(
+	(select object_type_id from im_rest_object_types where object_type = 'im_attendance_interval'),
+	(select group_id from groups where group_name = 'Employees'),
+	'write'
+);
+
 
 -----------------------------------------------------------
 -- Reporting menu
