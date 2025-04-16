@@ -29,6 +29,7 @@ Ext.require([
 var week_start_day = @week_start_day@;
 var start_hour = @start_hour@;
 var end_hour = @end_hour@;
+var minimum_break_duration_minutes = @minimum_break_duration_minutes@;
 // var user_locale = '@user_locale@';
 var user_locale = 'en-US';
 var gifPath = "/intranet/images/navbar_default/";

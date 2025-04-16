@@ -89,6 +89,15 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         return result;
     },
 
+    /**
+     * Conver the -120 minutes time zone offset (CEST) to '+02' suitable for PostgreSQL TZ
+     */
+    timezoneOffset2Code: function (tzOffset) {
+        var offsetHours = tzOffset / -60;
+        hourString = ''+Math.abs(offsetHours);
+        if (hourString.length < 2) hourString = '0'+hourString;
+        return 	offsetHours < 0 ? '-'+hourString : '+'+hourString;
+    },   
 
     /**
      * Set the current week and load attendance store
@@ -199,6 +208,9 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Overlapping entries
         var overlappingEntries = 0;
 
+        var message = "";
+        var issueCount = 0;
+
         var lastStartDate = null;
         var lastEndDate = null;
         // Sort the store, because the algorithm checks consecutive entries
@@ -211,9 +223,15 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             var endDate = null;
             if ("" != endIso) var endDate = new Date(endIso);
 
+            var lastEndDateISOString = "";
+            if (lastEndDate) lastEndDateISOString = lastEndDate.toISOString();
+	    
             // Check overlapping entries
             if (lastEndDate) {
-                if (startDate.getTime() < lastEndDate.getTime()) overlappingEntries++;
+                if (startDate.getTime() < lastEndDate.getTime()) {
+                    // message = message + '<li>Overlapping: startDate='+startDate.toISOString()+' - lastEndDate='+lastEndDateISOString;
+                    overlappingEntries++;
+                }
             }
 
             if ("" == endIso) {
@@ -229,7 +247,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
                 switch (type_id) {
                 case "92100": { break; }            // Work
                 case "92110": {                            // Break
-                    if (durationMinutes < 15) breaksTooShort++;
+                    if (durationMinutes < minimum_break_duration_minutes) breaksTooShort++;
                     break;
                 }
                 default: {}
@@ -240,9 +258,6 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             lastStartDate = startDate;
             lastEndDate = endDate;
         });
-
-        var message = "";
-        var issueCount = 0;
 
         // Is there more then one ongoing attendance?
         // There should be never more than one...
@@ -267,7 +282,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         // Breaks shorter than 15min
         if (breaksTooShort > 0) {
             issueCount = issueCount + breaksTooShort;
-            message = message + '<li>'+l10n.found_breaks_shorter_than_allowed;
+            message = message + '<li>'+l10n.found_breaks_shorter_than_allowed + ' ('+minimum_break_duration_minutes+' min)';
         }
 
         // Interval Too long
@@ -322,6 +337,9 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         var startTime = /\d\d:\d\d/.exec(""+now)[0];
         var startDateIso = now.toISOString().substring(0,10);
 
+        // The timezone difference is in minutes and
+        var tzCode = me.timezoneOffset2Code(new Date().getTimezoneOffset()); // +02 for Europe/Madrid
+	
         // Set default args for a new attendance. Can be overwritten by config.
         var params = Ext.apply({
             attendance_type_id: 92100,    // Work
@@ -329,7 +347,7 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
             attendance_date: startDateIso,
             attendance_date_calculated: startDateIso,
             attendance_start_time: startTime,
-            attendance_start: startDateIso+' '+startTime, // no time zone -> current TZ
+            attendance_start: startDateIso+' '+startTime+' '+tzCode,
             attendance_note: ""
         }, config);
 
@@ -438,11 +456,11 @@ Ext.define('AttendanceManagement.controller.AttendanceController', {
         var mondayDate = me.attendanceWeekDate;
         var sundayDate = new Date(mondayDate.getTime() + 1000.0 * 3600 * 24 * 7 - 1000.0 * 1);
 
-	var mondayEpoch = mondayDate.getTime();
+        var mondayEpoch = mondayDate.getTime();
         var sundayEpoch = sundayDate.getTime();
         var nowEpoch = new Date().getTime();
 
-	buttonAdd.setDisabled(0); // Enable the (+) button
+        buttonAdd.setDisabled(0); // Enable the (+) button
         if (nowEpoch > mondayEpoch && nowEpoch < sundayEpoch) {
             // If we're in the current week enable Work+Break ->, disable (+)
             buttonAdd.setDisabled(1);

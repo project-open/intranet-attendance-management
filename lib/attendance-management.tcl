@@ -26,7 +26,8 @@ set attendance_editor_id "attendance_editor_$attendance_editor_rand"
 # Start and end time for default combo box with time entry options
 set start_hour [parameter::get_from_package_key -package_key "intranet-attendance-management" -parameter "AttendanceStartHour" -default "7"]
 set end_hour [parameter::get_from_package_key -package_key "intranet-attendance-management" -parameter "AttendanceEndHour" -default "22"]
-set week_start_day [parameter::get_from_package_key -package_key "intranet-timesheet2" -parameter WeekStartDay -default 1]
+set week_start_day [parameter::get_from_package_key -package_key "intranet-timesheet2" -parameter "WeekStartDay" -default 1]
+set minimum_break_duration_minutes [parameter::get_from_package_key -package_key "intranet-attendance-management" -parameter "AttendanceMinimumBreakMinutes" -default 15]
 
 # Default material and Unit of Measure: "Default" and "Hour"
 set default_material_id [im_material_default_material_id]

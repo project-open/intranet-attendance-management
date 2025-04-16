@@ -49,7 +49,6 @@ Ext.define('AttendanceManagement.view.AttendanceGridPanel', {
                     return 'Error';
                 },
                 hours: function(rows) {
-		    console.log(rows);
 		    var hours = 0.0;
 		    rows.forEach(function(model) {
 			var startIso = model.get('attendance_start');

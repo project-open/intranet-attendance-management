@@ -25,6 +25,7 @@
             <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="AttendanceEndHour"  default="22" description="Start of the time drop-down. Default is &quot;18&quot;, but you can set it to &quot;24&quot; for 24h logging"/>
             <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="AttendanceStartHour"  default="7" description="Start of the time drop-down. Default is &quot;9&quot;, but you can set it to &quot;0&quot; for a 24h logging."/>
             <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="DefaultAttendanceHoursPerDay"  default="8.0" description="Default number of hours that a full-time employee attend per day."/>
+            <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="AttendanceMinimumBreakMinutes"  default="15" description="Do breaks have a minimum length? Germany has a minimum of 15 minutes."/>
         </parameters>
     </version>
 </package>
